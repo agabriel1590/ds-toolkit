@@ -9,8 +9,11 @@ Alipio Gabriel
 ```
 ds-toolkit/
 ├── ds-toolkit.php
+├── composer.json
+├── .gitignore
 ├── includes/
-│   └── class-ds-toolkit.php
+│   ├── class-ds-toolkit.php
+│   ├── class-ds-toolkit-updater.php
 ├── admin/
 │   └── class-ds-toolkit-admin.php
 ├── features/
@@ -18,6 +21,9 @@ ds-toolkit/
 ├── assets/
 │   └── images/
 │       └── cropped-LA-circle-logo-1.png
+├── vendor/
+│   └── yahnis-elsts/
+│       └── plugin-update-checker/
 ├── uninstall.php
 └── README.md
 ```
@@ -33,14 +39,24 @@ Adds custom branding to the WordPress login page:
 
 Toggle via: **WP Admin > DS Toolkit > Features > Enable LeagueApps Custom Login**
 
+### Auto-Updates via GitHub
+The plugin uses Plugin Update Checker (v5.6) to check for updates directly from the GitHub repo. When a new release is published, WordPress will show an update notice on the Plugins page.
+
 ---
 
 ## Changelog
 
+### v0.3.0 - 2026-03-19
+- Added Plugin Update Checker (PUC v5.6) for automatic WordPress plugin updates via GitHub releases
+- Added composer.json
+- Added .gitignore
+- Added includes/class-ds-toolkit-updater.php
+- Bundled PUC vendor files (no Composer required on server)
+
 ### v0.2.1 - 2026-03-19
 - Removed Shop Name field from admin General Settings
-- Cleaned up General Settings section entirely
-- Updated uninstall.php to remove shop_name from cleanup
+- Removed General Settings section entirely
+- Updated uninstall.php to clean up shop_name option key
 
 ### v0.2.0 - 2026-03-19
 - Added Features section in admin settings page
@@ -52,5 +68,4 @@ Toggle via: **WP Admin > DS Toolkit > Features > Enable LeagueApps Custom Login*
 
 ### v0.1.0 - 2026-03-19
 - Initial plugin boilerplate
-- Admin settings page with General Settings section
-- Shop Name field
+- Admin settings page
