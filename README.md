@@ -46,10 +46,13 @@ Uses Plugin Update Checker (PUC v5.6) to detect new GitHub releases automaticall
 
 ## Changelog
 
+### v0.3.2 - 2026-03-19
+- Fixed fatal error caused by duplicate function declaration when multiple plugin versions exist
+- Wrapped ds_toolkit_run() in function_exists() check
+
 ### v0.3.1 - 2026-03-19
 - Fixed fatal error on plugin activation caused by incorrect PUC bootstrap
 - Now uses load-v5p6.php as the PUC entry point for correct autoloading
-- Added missing PUC theme/vcs files
 - Added file_exists check before loading PUC to prevent fatal errors
 
 ### v0.3.0 - 2026-03-19
