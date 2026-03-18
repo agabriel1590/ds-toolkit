@@ -1,0 +1,12 @@
+{
+  "name": "agabriel1590/ds-toolkit",
+  "description": "Design Shop custom WordPress plugin",
+  "require": {
+    "yahnis-elsts/plugin-update-checker": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "YahnisElsts\\PluginUpdateChecker\\": "vendor/yahnis-elsts/plugin-update-checker/"
+    }
+  }
+}
