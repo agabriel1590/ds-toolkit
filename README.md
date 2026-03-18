@@ -37,6 +37,11 @@ Toggle via: **WP Admin > DS Toolkit > Features > Enable LeagueApps Custom Login*
 
 ## Changelog
 
+### v0.2.1 - 2026-03-19
+- Removed Shop Name field from admin General Settings
+- Cleaned up General Settings section entirely
+- Updated uninstall.php to remove shop_name from cleanup
+
 ### v0.2.0 - 2026-03-19
 - Added Features section in admin settings page
 - Added "Enable LeagueApps Custom Login" toggle
@@ -45,7 +50,7 @@ Toggle via: **WP Admin > DS Toolkit > Features > Enable LeagueApps Custom Login*
 - Logo links to home_url, hover text pulls from site name
 - "Need help? Visit Design Shop Academy" support link below login form
 
-### v0.1.0
+### v0.1.0 - 2026-03-19
 - Initial plugin boilerplate
 - Admin settings page with General Settings section
 - Shop Name field
