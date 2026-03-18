@@ -32,22 +32,22 @@ Adds custom branding to the WordPress login page:
 - Logo links to home URL, hover text uses site name
 - "Need help? Visit Design Shop Academy" message below the login form
 
-Toggle via: **WP Admin > DS Toolkit > Features > Enable LeagueApps Custom Login**
+Enabled by default on activation. Toggle via: **WP Admin > DS Toolkit > Features**
 
 ### Auto-Updates via GitHub
 Uses native WordPress update hooks to check GitHub releases every 12 hours.
 No external libraries or Composer required.
-When a new release is published on GitHub, WordPress shows an Update button on the Plugins page.
 
 ---
 
 ## Changelog
 
+### v0.4.2 - 2026-03-19
+- Enable LeagueApps Custom Login is now ON by default when plugin is first activated
+
 ### v0.4.1 - 2026-03-19
 - Added native WordPress auto-updater via GitHub Releases API
 - No external libraries, no Composer, no autoloader
-- Uses wp_remote_get + pre_set_site_transient_update_plugins
-- Checks for updates every 12 hours via WP transient cache
 
 ### v0.4.0 - 2026-03-19
 - Stable build, removed PUC auto-updater
