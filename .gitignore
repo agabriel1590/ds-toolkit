@@ -1,4 +1,4 @@
-# Dev dependencies
+# Dev only
 node_modules/
 .env
 *.log
