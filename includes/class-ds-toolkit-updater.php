@@ -10,6 +10,7 @@ class DS_Toolkit_Updater {
     public function init() {
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
         add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
+        add_filter( 'upgrader_source_selection', array( $this, 'fix_source_dir' ), 10, 4 );
     }
 
     public function check_for_update( $transient ) {
@@ -61,6 +62,27 @@ class DS_Toolkit_Updater {
             ),
             'download_link' => $release['zipball_url'],
         );
+    }
+
+    /**
+     * Rename the extracted GitHub zip folder to match the plugin slug.
+     * GitHub zipballs extract as "owner-repo-commithash/" which breaks WP installs.
+     */
+    public function fix_source_dir( $source, $remote_source, $upgrader, $hook_extra = array() ) {
+        global $wp_filesystem;
+
+        if ( ! isset( $hook_extra['plugin'] ) || strpos( $hook_extra['plugin'], $this->slug ) === false ) {
+            return $source;
+        }
+
+        $corrected = trailingslashit( $remote_source ) . $this->slug . '/';
+
+        if ( $source !== $corrected ) {
+            $wp_filesystem->move( $source, $corrected );
+            return $corrected;
+        }
+
+        return $source;
     }
 
     private function get_latest_release() {

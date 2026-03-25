@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.0 - 2026-03-25
+- Fixed GitHub auto-updater: renamed extracted zip folder to match plugin slug so updates install correctly
+
 ### v0.4.2 - 2026-03-19
 - Enable LeagueApps Custom Login is now ON by default when plugin is first activated
 
