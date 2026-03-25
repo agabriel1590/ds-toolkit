@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.1 - 2026-03-25
+- Moved DS Toolkit menu from top-level admin menu to Settings > DS Toolkit
+
 ### v0.5.0 - 2026-03-25
 - Fixed GitHub auto-updater: renamed extracted zip folder to match plugin slug so updates install correctly
 

@@ -8,7 +8,7 @@ class DS_Toolkit_Admin {
     }
 
     public function add_menu() {
-        add_menu_page( 'DS Toolkit', 'DS Toolkit', 'manage_options', 'ds-toolkit', array( $this, 'render_page' ), 'dashicons-hammer', 80 );
+        add_options_page( 'DS Toolkit', 'DS Toolkit', 'manage_options', 'ds-toolkit', array( $this, 'render_page' ) );
     }
 
     public function register_settings() {
