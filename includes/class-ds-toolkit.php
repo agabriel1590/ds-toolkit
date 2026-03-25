@@ -28,7 +28,17 @@ class DS_Toolkit {
     public static function activate() {
         $settings = get_option( 'ds_toolkit_settings', array() );
 
-        $defaults = array(
+        foreach ( self::get_defaults() as $key => $value ) {
+            if ( ! isset( $settings[ $key ] ) ) {
+                $settings[ $key ] = $value;
+            }
+        }
+
+        update_option( 'ds_toolkit_settings', $settings );
+    }
+
+    private static function get_defaults() {
+        return array(
             'enable_login_branding' => 1,
             'hide_fl_assistant'     => 1,
             'acf_css_vars_enabled'  => 1,
@@ -40,17 +50,31 @@ class DS_Toolkit {
                 ),
             ),
         );
+    }
 
-        foreach ( $defaults as $key => $value ) {
+    /**
+     * Fills in any missing settings keys with their defaults.
+     * Runs on every load so existing installs pick up new feature defaults automatically.
+     */
+    private function maybe_set_defaults() {
+        $settings = get_option( 'ds_toolkit_settings', array() );
+        $changed  = false;
+
+        foreach ( self::get_defaults() as $key => $value ) {
             if ( ! isset( $settings[ $key ] ) ) {
                 $settings[ $key ] = $value;
+                $changed          = true;
             }
         }
 
-        update_option( 'ds_toolkit_settings', $settings );
+        if ( $changed ) {
+            update_option( 'ds_toolkit_settings', $settings );
+        }
     }
 
     public function run() {
+        $this->maybe_set_defaults();
+
         if ( is_admin() ) {
             require_once DS_TOOLKIT_PATH . 'admin/class-ds-toolkit-admin.php';
             $admin = new DS_Toolkit_Admin();

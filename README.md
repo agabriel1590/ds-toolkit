@@ -49,6 +49,11 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.6.2 - 2026-03-26
+- Fixed: feature defaults now apply to existing installs, not just fresh activations
+- Added maybe_set_defaults() — runs on every load, fills in any missing settings keys so updates automatically enable new features with correct pre-filled values
+- Centralised all defaults into get_defaults() shared by both activate() and maybe_set_defaults()
+
 ### v0.6.1 - 2026-03-26
 - Added "ACF Theme Options → CSS Variables" feature with dynamic mapping table UI
 - Map any ACF options field to a CSS custom property output in :root on every page
