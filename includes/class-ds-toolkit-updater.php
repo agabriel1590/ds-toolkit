@@ -11,8 +11,17 @@ class DS_Toolkit_Updater {
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
         add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
         add_filter( 'upgrader_source_selection', array( $this, 'fix_source_dir' ), 10, 4 );
-        add_filter( 'plugin_action_links_' . $this->slug . '/' . $this->slug . '.php', array( $this, 'add_check_update_link' ) );
+        add_filter( 'plugin_action_links_' . $this->plugin_file(), array( $this, 'add_check_update_link' ) );
         add_action( 'admin_init', array( $this, 'handle_check_update' ) );
+    }
+
+    /**
+     * Returns the plugin's actual file path relative to the plugins directory.
+     * Works regardless of what the plugin folder is currently named.
+     * e.g. "ds-toolkit-0.5.4/ds-toolkit.php" or "ds-toolkit/ds-toolkit.php"
+     */
+    private function plugin_file() {
+        return plugin_basename( DS_TOOLKIT_PATH . $this->slug . '.php' );
     }
 
     public function check_for_update( $transient ) {
@@ -27,7 +36,7 @@ class DS_Toolkit_Updater {
 
         $latest_version  = ltrim( $release['tag_name'], 'v' );
         $current_version = DS_TOOLKIT_VERSION;
-        $plugin_file     = $this->slug . '/' . $this->slug . '.php';
+        $plugin_file     = $this->plugin_file();
 
         if ( version_compare( $latest_version, $current_version, '>' ) ) {
             $transient->response[ $plugin_file ] = (object) array(
@@ -67,24 +76,29 @@ class DS_Toolkit_Updater {
     }
 
     /**
-     * Rename the extracted GitHub zip folder to match the plugin slug.
-     * GitHub zipballs extract as "owner-repo-commithash/" which breaks WP installs.
+     * Rename the extracted zip folder to ds-toolkit/ regardless of what it was called.
+     * Confirms it's our plugin by checking for ds-toolkit.php inside the extracted folder.
      */
     public function fix_source_dir( $source, $remote_source, $upgrader, $hook_extra = array() ) {
         global $wp_filesystem;
 
-        if ( ! isset( $hook_extra['plugin'] ) || strpos( $hook_extra['plugin'], $this->slug ) === false ) {
+        // Only act when this is a plugin upgrade
+        if ( ! isset( $hook_extra['plugin'] ) ) {
             return $source;
         }
 
-        $corrected = trailingslashit( $remote_source ) . $this->slug . '/';
-
-        if ( $source !== $corrected ) {
-            $wp_filesystem->move( $source, $corrected );
-            return $corrected;
+        // Confirm the extracted folder actually contains our plugin file
+        if ( ! $wp_filesystem->exists( trailingslashit( $source ) . $this->slug . '.php' ) ) {
+            return $source;
         }
 
-        return $source;
+        $corrected = trailingslashit( $remote_source ) . $this->slug;
+
+        if ( untrailingslashit( $source ) !== $corrected ) {
+            $wp_filesystem->move( $source, $corrected );
+        }
+
+        return trailingslashit( $corrected );
     }
 
     public function add_check_update_link( $links ) {
@@ -111,8 +125,8 @@ class DS_Toolkit_Updater {
     }
 
     /**
-     * Returns the release asset zip URL if available, otherwise falls back to zipball.
-     * The asset zip has the correct ds-toolkit/ folder structure inside.
+     * Prefer the attached release asset zip (correct folder name inside)
+     * over GitHub's raw zipball (which uses owner-repo-hash as folder name).
      */
     private function get_download_url( $release ) {
         if ( ! empty( $release['assets'] ) ) {
