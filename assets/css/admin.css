@@ -53,6 +53,39 @@
     letter-spacing: 0.3px;
 }
 
+/* Tab nav */
+.dst-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0;
+}
+.dst-tab {
+    display: inline-block;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: -2px;
+    border: 2px solid transparent;
+    border-bottom: none;
+    transition: color 0.15s, background 0.15s;
+}
+.dst-tab:hover {
+    color: #2271b1;
+    background: #f0f6ff;
+}
+.dst-tab.is-active {
+    color: #2271b1;
+    background: #fff;
+    border-color: #e2e8f0;
+    border-bottom-color: #fff;
+    font-weight: 600;
+}
+
 /* Section title */
 .dst-section-title {
     font-size: 11px;

@@ -49,6 +49,12 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.7.2 - 2026-03-26
+- Merged University Logo Finder into DS Toolkit settings page as a tab (Features | University Logo Finder)
+- Removed separate "Team Logos" submenu — everything lives under Settings > DS Toolkit
+- Logo finder assets only load on the logos tab (features tab unaffected)
+- Fixed version mismatch on update — version is now bumped before tagging so the plugin zip always contains the correct version number
+
 ### v0.7.1 - 2026-03-26
 - Fixed: all 365 university team logo PNGs now included in the plugin package (were missing from v0.7.0)
 - Fixed: logo image URLs now built in PHP using rawurlencode() so filenames with spaces load correctly

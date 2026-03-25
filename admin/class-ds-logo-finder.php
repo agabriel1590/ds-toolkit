@@ -4,25 +4,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class DS_Logo_Finder {
 
     public function init() {
-        add_action( 'admin_menu',            array( $this, 'add_menu' ) );
-        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        // Only register the AJAX handler — menu and assets are managed by DS_Toolkit_Admin
         add_action( 'wp_ajax_ds_import_logo', array( $this, 'ajax_import_logo' ) );
     }
 
-    public function add_menu() {
-        add_options_page(
-            'Team Logo Finder',
-            'Team Logos',
-            'manage_options',
-            'ds-logo-finder',
-            array( $this, 'render_page' )
-        );
-    }
-
-    public function enqueue_scripts( $hook ) {
-        if ( $hook !== 'settings_page_ds-logo-finder' ) {
-            return;
-        }
+    /**
+     * Enqueues logo finder assets. Called by DS_Toolkit_Admin when the logos tab is active.
+     */
+    public function enqueue_assets() {
         wp_enqueue_style(
             'ds-logo-finder',
             DS_TOOLKIT_URL . 'assets/css/logo-finder.css',
@@ -37,23 +26,15 @@ class DS_Logo_Finder {
             true
         );
         wp_localize_script( 'ds-logo-finder', 'dsLogoFinder', array(
-            'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'ds_import_logo' ),
-            'logoUrl'  => DS_TOOLKIT_URL . 'assets/images/team_logos/',
-            'logos'    => $this->get_logo_list(),
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'nonce'   => wp_create_nonce( 'ds_import_logo' ),
+            'logos'   => $this->get_logo_list(),
         ) );
     }
 
-    public function render_page() {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
-        require DS_TOOLKIT_PATH . 'admin/views/page-logo-finder.php';
-    }
-
     /**
-     * Returns an array of logos with name and pre-built URL.
-     * URL is built in PHP so rawurlencode handles spaces in filenames correctly.
+     * Returns sorted array of logos with name and pre-built URL.
+     * URL built in PHP with rawurlencode so spaces in filenames work correctly.
      */
     public function get_logo_list() {
         $dir   = DS_TOOLKIT_PATH . 'assets/images/team_logos/';
@@ -77,7 +58,7 @@ class DS_Logo_Finder {
 
     /**
      * AJAX handler — imports a single logo into the WP Media Library.
-     * Called once per logo so the JS can report progress in real time.
+     * Called once per logo so JS can show real-time progress.
      */
     public function ajax_import_logo() {
         check_ajax_referer( 'ds_import_logo', 'nonce' );
@@ -98,7 +79,7 @@ class DS_Logo_Finder {
             wp_send_json_error( array( 'message' => 'File not found: ' . $filename ) );
         }
 
-        // Check if already imported by looking for attachment with same filename in meta
+        // Check if already imported
         $existing = get_posts( array(
             'post_type'      => 'attachment',
             'post_status'    => 'inherit',
@@ -119,12 +100,10 @@ class DS_Logo_Finder {
             ) );
         }
 
-        // Load WP sideload helpers
         require_once ABSPATH . 'wp-admin/includes/image.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
 
-        // Copy to temp file so media_handle_sideload can manage it
         $tmp = wp_tempnam( $filename );
         if ( ! copy( $source, $tmp ) ) {
             wp_send_json_error( array( 'message' => 'Could not copy file to temp location.' ) );
