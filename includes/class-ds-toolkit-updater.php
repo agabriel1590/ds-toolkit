@@ -46,6 +46,16 @@ class DS_Toolkit_Updater {
                 'url'         => 'https://github.com/' . $this->repo,
                 'package'     => $this->get_download_url( $release ),
             );
+        } else {
+            // Plugin is up to date — clear any stale response entry and mark as checked
+            unset( $transient->response[ $plugin_file ] );
+            $transient->no_update[ $plugin_file ] = (object) array(
+                'slug'        => $this->slug,
+                'plugin'      => $plugin_file,
+                'new_version' => $current_version,
+                'url'         => 'https://github.com/' . $this->repo,
+                'package'     => '',
+            );
         }
 
         return $transient;

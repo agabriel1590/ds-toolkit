@@ -70,4 +70,13 @@
         $(this).closest('tr').remove();
     });
 
+    // Show/hide Forminator partner docs row when toggle changes
+    $('#forminator_email_partner_enabled').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#dst-forminator-partner-row').slideDown(200);
+        } else {
+            $('#dst-forminator-partner-row').slideUp(200);
+        }
+    });
+
 }(jQuery));

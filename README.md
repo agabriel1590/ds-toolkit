@@ -49,6 +49,22 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.6.5 - 2026-03-26
+- Added [current_year] shortcode — outputs the current year, auto-updates every year, no maintenance needed
+- Added Forminator {email_partner} variable — replaces {email_partner} in Forminator forms with the ACF partner_email options field
+- Forminator fallback email is configurable in Settings > DS Toolkit (defaults to designshop@leagueapps.com)
+- Both features enabled by default on activation and for existing installs via maybe_set_defaults()
+
+### v0.6.4 - 2026-03-26
+- Added [getsubmenu] shortcode feature — outputs child pages of any page as a navigation list
+- Supports three modes: current page (no args), by page ID (`id="42"`), or by page slug (`parent="about-us"`)
+- Toggleable via Settings > DS Toolkit, enabled by default
+- Settings card includes plain-English usage examples for each mode
+
+### v0.6.3 - 2026-03-26
+- Fixed: "new version available" notice showing even when plugin is up to date
+- Updater now adds plugin to $transient->no_update when current, clearing any stale response entry
+
 ### v0.6.2 - 2026-03-26
 - Fixed: feature defaults now apply to existing installs, not just fresh activations
 - Added maybe_set_defaults() — runs on every load, fills in any missing settings keys so updates automatically enable new features with correct pre-filled values

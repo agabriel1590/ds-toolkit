@@ -52,6 +52,12 @@ class DS_Toolkit_Admin {
         $hide_fl_assistant     = ! empty( $opts['hide_fl_assistant'] );
         $acf_css_vars_enabled  = ! empty( $opts['acf_css_vars_enabled'] );
         $acf_css_vars_mappings = ! empty( $opts['acf_css_vars_mappings'] ) ? $opts['acf_css_vars_mappings'] : array();
+        $getsubmenu_enabled                 = ! empty( $opts['getsubmenu_enabled'] );
+        $current_year_enabled               = ! empty( $opts['current_year_enabled'] );
+        $forminator_email_partner_enabled   = ! empty( $opts['forminator_email_partner_enabled'] );
+        $forminator_email_partner_fallback  = ! empty( $opts['forminator_email_partner_fallback'] )
+            ? $opts['forminator_email_partner_fallback']
+            : 'designshop@leagueapps.com';
 
         require DS_TOOLKIT_PATH . 'admin/views/page-settings.php';
     }

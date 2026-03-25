@@ -23,6 +23,18 @@ class DS_Toolkit {
             'file'  => 'features/class-ds-acf-css-vars.php',
             'class' => 'DS_ACF_CSS_Vars',
         ),
+        'getsubmenu_enabled' => array(
+            'file'  => 'features/class-ds-getsubmenu.php',
+            'class' => 'DS_Getsubmenu',
+        ),
+        'current_year_enabled' => array(
+            'file'  => 'features/class-ds-current-year.php',
+            'class' => 'DS_Current_Year',
+        ),
+        'forminator_email_partner_enabled' => array(
+            'file'  => 'features/class-ds-forminator-email-partner.php',
+            'class' => 'DS_Forminator_Email_Partner',
+        ),
     );
 
     public static function activate() {
@@ -49,6 +61,10 @@ class DS_Toolkit {
                     'fallback'  => 'var(--fl-global-accent)',
                 ),
             ),
+            'getsubmenu_enabled'                  => 1,
+            'current_year_enabled'               => 1,
+            'forminator_email_partner_enabled'   => 1,
+            'forminator_email_partner_fallback'  => 'designshop@leagueapps.com',
         );
     }
 

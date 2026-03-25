@@ -266,6 +266,31 @@
     padding: 0 12px;
 }
 
+/* Shortcode docs sub-row */
+.dst-shortcode-docs {
+    align-items: flex-start;
+    background: #f8f9fa;
+}
+.dst-shortcode-docs .dst-card-info p {
+    font-size: 12px;
+    color: #4a5568;
+    margin: 10px 0 4px;
+    line-height: 1.5;
+}
+.dst-shortcode-docs .dst-card-info p:first-of-type {
+    margin-top: 6px;
+}
+.dst-shortcode-docs .dst-card-info code {
+    display: inline-block;
+    background: #1d2327;
+    color: #a8d8a8;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-top: 2px;
+    font-family: monospace;
+}
+
 /* Footer */
 .dst-footer {
     display: flex;
