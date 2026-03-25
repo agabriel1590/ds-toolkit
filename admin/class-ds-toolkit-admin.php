@@ -13,27 +13,203 @@ class DS_Toolkit_Admin {
 
     public function register_settings() {
         register_setting( 'ds_toolkit_options', 'ds_toolkit_settings' );
-        add_settings_section( 'ds_toolkit_features', 'Features', null, 'ds-toolkit' );
-        add_settings_field( 'enable_login_branding', 'Enable LeagueApps Custom Login', array( $this, 'field_login_branding' ), 'ds-toolkit', 'ds_toolkit_features' );
-    }
-
-    public function field_login_branding() {
-        $opts    = get_option( 'ds_toolkit_settings', array() );
-        $checked = ! empty( $opts['enable_login_branding'] ) ? 'checked' : '';
-        echo '<label><input type="checkbox" name="ds_toolkit_settings[enable_login_branding]" value="1" ' . $checked . '> Enable custom login logo, branding, and support link</label>';
     }
 
     public function render_page() {
         if ( ! current_user_can( 'manage_options' ) ) return;
+        $opts    = get_option( 'ds_toolkit_settings', array() );
+        $enabled = ! empty( $opts['enable_login_branding'] );
         ?>
-        <div class="wrap">
-            <h1>DS Toolkit <span style="font-size:13px;color:#999;">v<?php echo DS_TOOLKIT_VERSION; ?></span></h1>
+        <div class="wrap dst-wrap">
+
+            <style>
+                .dst-wrap { max-width: 800px; }
+                .dst-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    padding: 24px 28px;
+                    background: #1d2327;
+                    border-radius: 8px;
+                    margin: 20px 0 24px;
+                }
+                .dst-header-icon {
+                    width: 42px;
+                    height: 42px;
+                    background: #2271b1;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                .dst-header-icon .dashicons {
+                    color: #fff;
+                    font-size: 22px;
+                    width: 22px;
+                    height: 22px;
+                    line-height: 1;
+                }
+                .dst-header-text h1 {
+                    color: #fff;
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 2px;
+                    padding: 0;
+                    line-height: 1.3;
+                }
+                .dst-header-text p {
+                    color: #8c9aaa;
+                    font-size: 12px;
+                    margin: 0;
+                }
+                .dst-badge {
+                    margin-left: auto;
+                    background: #2271b1;
+                    color: #fff;
+                    font-size: 11px;
+                    font-weight: 600;
+                    padding: 3px 10px;
+                    border-radius: 20px;
+                    letter-spacing: 0.3px;
+                }
+                .dst-section-title {
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.8px;
+                    color: #8c9aaa;
+                    margin: 0 0 10px;
+                }
+                .dst-card {
+                    background: #fff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    margin-bottom: 12px;
+                    overflow: hidden;
+                }
+                .dst-card-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 18px 22px;
+                }
+                .dst-card-row + .dst-card-row {
+                    border-top: 1px solid #f0f2f4;
+                }
+                .dst-card-icon {
+                    width: 36px;
+                    height: 36px;
+                    background: #f0f6ff;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                .dst-card-icon .dashicons {
+                    color: #2271b1;
+                    font-size: 18px;
+                    width: 18px;
+                    height: 18px;
+                    line-height: 1;
+                }
+                .dst-card-info { flex: 1; }
+                .dst-card-info strong {
+                    display: block;
+                    font-size: 13px;
+                    color: #1d2327;
+                    margin-bottom: 2px;
+                }
+                .dst-card-info span {
+                    font-size: 12px;
+                    color: #8c9aaa;
+                    line-height: 1.4;
+                }
+                /* Toggle switch */
+                .dst-toggle { flex-shrink: 0; }
+                .dst-toggle input { display: none; }
+                .dst-toggle label {
+                    display: block;
+                    width: 40px;
+                    height: 22px;
+                    background: #c8d0d8;
+                    border-radius: 22px;
+                    cursor: pointer;
+                    position: relative;
+                    transition: background 0.2s;
+                }
+                .dst-toggle label::after {
+                    content: '';
+                    position: absolute;
+                    top: 3px;
+                    left: 3px;
+                    width: 16px;
+                    height: 16px;
+                    background: #fff;
+                    border-radius: 50%;
+                    transition: left 0.2s;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                }
+                .dst-toggle input:checked + label { background: #2271b1; }
+                .dst-toggle input:checked + label::after { left: 21px; }
+                /* Footer */
+                .dst-footer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-top: 20px;
+                }
+                .dst-footer .button-primary {
+                    height: 36px;
+                    line-height: 34px;
+                    padding: 0 20px;
+                    font-size: 13px;
+                    border-radius: 6px;
+                }
+                .dst-footer-meta {
+                    font-size: 11px;
+                    color: #c8d0d8;
+                }
+                .dst-footer-meta a { color: #c8d0d8; text-decoration: none; }
+                .dst-footer-meta a:hover { color: #8c9aaa; }
+            </style>
+
+            <div class="dst-header">
+                <div class="dst-header-icon"><span class="dashicons dashicons-hammer"></span></div>
+                <div class="dst-header-text">
+                    <h1>DS Toolkit</h1>
+                    <p>Design Shop custom features and build toolkit</p>
+                </div>
+                <span class="dst-badge">v<?php echo esc_html( DS_TOOLKIT_VERSION ); ?></span>
+            </div>
+
             <form method="post" action="options.php">
-                <?php
-                settings_fields( 'ds_toolkit_options' );
-                do_settings_sections( 'ds-toolkit' );
-                submit_button();
-                ?>
+                <?php settings_fields( 'ds_toolkit_options' ); ?>
+
+                <p class="dst-section-title">Features</p>
+                <div class="dst-card">
+                    <div class="dst-card-row">
+                        <div class="dst-card-icon"><span class="dashicons dashicons-admin-appearance"></span></div>
+                        <div class="dst-card-info">
+                            <strong>LeagueApps Custom Login</strong>
+                            <span>Custom logo, "Powered by LeagueApps Design Shop" branding, and support link on the WP login page.</span>
+                        </div>
+                        <div class="dst-toggle">
+                            <input type="checkbox" id="enable_login_branding" name="ds_toolkit_settings[enable_login_branding]" value="1" <?php checked( $enabled ); ?>>
+                            <label for="enable_login_branding"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dst-footer">
+                    <?php submit_button( 'Save Changes', 'primary', 'submit', false ); ?>
+                    <span class="dst-footer-meta">
+                        <a href="https://github.com/agabriel1590/ds-toolkit" target="_blank" rel="noopener">GitHub</a>
+                        &nbsp;&middot;&nbsp; By Alipio Gabriel
+                    </span>
+                </div>
+
             </form>
         </div>
         <?php

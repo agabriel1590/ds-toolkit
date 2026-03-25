@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.3 - 2026-03-25
+- Redesigned settings page UI with dark header, feature cards, toggle switches, and footer meta
+
 ### v0.5.2 - 2026-03-25
 - Added "Check for Updates" link on the Plugins page to force an immediate update check
 
