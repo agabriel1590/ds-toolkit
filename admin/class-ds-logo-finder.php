@@ -52,7 +52,8 @@ class DS_Logo_Finder {
     }
 
     /**
-     * Returns an array of all logo filenames (without extension) sorted alphabetically.
+     * Returns an array of logos with name and pre-built URL.
+     * URL is built in PHP so rawurlencode handles spaces in filenames correctly.
      */
     public function get_logo_list() {
         $dir   = DS_TOOLKIT_PATH . 'assets/images/team_logos/';
@@ -62,9 +63,15 @@ class DS_Logo_Finder {
         }
         $logos = array();
         foreach ( $files as $file ) {
-            $logos[] = basename( $file, '.png' );
+            $name    = basename( $file, '.png' );
+            $logos[] = array(
+                'name' => $name,
+                'url'  => DS_TOOLKIT_URL . 'assets/images/team_logos/' . rawurlencode( $name ) . '.png',
+            );
         }
-        sort( $logos );
+        usort( $logos, function( $a, $b ) {
+            return strcmp( $a['name'], $b['name'] );
+        } );
         return $logos;
     }
 
