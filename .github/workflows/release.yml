@@ -1,0 +1,22 @@
+name: Attach Plugin Zip to Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ds-toolkit.zip
+        run: |
+          mkdir -p ds-toolkit
+          rsync -av --exclude='.git' --exclude='.github' --exclude='ds-toolkit' . ds-toolkit/
+          zip -r ds-toolkit.zip ds-toolkit/
+
+      - name: Upload zip to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ds-toolkit.zip

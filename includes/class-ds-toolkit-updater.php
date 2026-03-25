@@ -35,7 +35,7 @@ class DS_Toolkit_Updater {
                 'plugin'      => $plugin_file,
                 'new_version' => $latest_version,
                 'url'         => 'https://github.com/' . $this->repo,
-                'package'     => $release['zipball_url'],
+                'package'     => $this->get_download_url( $release ),
             );
         }
 
@@ -62,7 +62,7 @@ class DS_Toolkit_Updater {
                 'description' => 'Design Shop custom features and build toolkit.',
                 'changelog'   => isset( $release['body'] ) ? $release['body'] : '',
             ),
-            'download_link' => $release['zipball_url'],
+            'download_link' => $this->get_download_url( $release ),
         );
     }
 
@@ -108,6 +108,21 @@ class DS_Toolkit_Updater {
         delete_site_transient( 'update_plugins' );
         wp_safe_redirect( admin_url( 'plugins.php' ) );
         exit;
+    }
+
+    /**
+     * Returns the release asset zip URL if available, otherwise falls back to zipball.
+     * The asset zip has the correct ds-toolkit/ folder structure inside.
+     */
+    private function get_download_url( $release ) {
+        if ( ! empty( $release['assets'] ) ) {
+            foreach ( $release['assets'] as $asset ) {
+                if ( isset( $asset['name'] ) && $asset['name'] === $this->slug . '.zip' ) {
+                    return $asset['browser_download_url'];
+                }
+            }
+        }
+        return $release['zipball_url'];
     }
 
     private function get_latest_release() {

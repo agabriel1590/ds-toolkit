@@ -42,6 +42,10 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.4 - 2026-03-25
+- Added GitHub Actions workflow to attach a correctly-named ds-toolkit.zip to every release
+- Updater now uses the release asset zip (correct folder name) instead of the raw GitHub zipball
+
 ### v0.5.3 - 2026-03-25
 - Redesigned settings page UI with dark header, feature cards, toggle switches, and footer meta
 
