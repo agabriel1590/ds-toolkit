@@ -51,6 +51,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.9.1 - 2026-03-26
+- Fixed MCP config generator: Claude Desktop requires `mcp-remote` as a stdio proxy — direct `url` format only works in Claude Code. Generated config now outputs the correct `command/args` format using `npx mcp-remote`
+
 ### v0.9.0 - 2026-03-26
 - Added DS Toolkit as a self-contained MCP (Model Context Protocol) server — no extra plugins required
 - Registers `/wp-json/ds-toolkit/v1/mcp` REST endpoint that speaks MCP JSON-RPC 2.0 (protocol `2024-11-05`)

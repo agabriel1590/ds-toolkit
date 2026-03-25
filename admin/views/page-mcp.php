@@ -248,11 +248,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         var desktopConfig = JSON.stringify({
             "mcpServers": {
                 "ds-toolkit": {
-                    "type": "http",
-                    "url": mcpUrl,
-                    "headers": {
-                        "Authorization": authHeader
-                    }
+                    "command": "npx",
+                    "args": [
+                        "mcp-remote",
+                        mcpUrl,
+                        "--header",
+                        "Authorization:" + authHeader
+                    ]
                 }
             }
         }, null, 2);
