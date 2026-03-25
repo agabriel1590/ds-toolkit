@@ -7,6 +7,10 @@ class DS_Toolkit_Admin {
         add_action( 'admin_menu', array( $this, 'add_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+
+        require_once DS_TOOLKIT_PATH . 'admin/class-ds-logo-finder.php';
+        $logo_finder = new DS_Logo_Finder();
+        $logo_finder->init();
     }
 
     public function add_menu() {

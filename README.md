@@ -49,6 +49,15 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.7.0 - 2026-03-26
+- Added University Team Logo Finder — dedicated admin tool at Settings > Team Logos
+- Search 365 university logos by name or mascot with live filtering
+- Multi-select logos via click (checkmark overlay), Select All / Clear controls
+- Import selected logos directly into the WordPress Media Library via WP sideload API
+- Duplicate detection — skips logos already in the Media Library with a warning
+- Real-time import progress log with color-coded status (imported / already exists / error)
+- Sticky import footer bar shows selection count and import button
+
 ### v0.6.6 - 2026-03-26
 - Fixed [getsubmenu] shortcode — rewrote to match original functions.php implementation
 - Correct attributes: listfrom (page title/slug/ID) and mode (pages or menus)
