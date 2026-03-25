@@ -11,7 +11,9 @@ class DS_Login_Branding {
     }
 
     public function custom_login_branding() {
-        $logo_url = DS_TOOLKIT_URL . 'assets/images/cropped-LA-circle-logo-1.png';
+        $opts     = get_option( 'ds_toolkit_settings', array() );
+        $logo_id  = ! empty( $opts['login_logo_id'] ) ? absint( $opts['login_logo_id'] ) : 0;
+        $logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'full' ) : DS_TOOLKIT_URL . 'assets/images/cropped-LA-circle-logo-1.png';
         ?><style>body.login div#login h1 a{background-image:url('<?php echo esc_url($logo_url);?>') !important;background-size:contain;background-repeat:no-repeat;background-position:center;width:100%;height:90px;margin:0 auto 10px;padding:0;}.ag-login-powered-by{text-align:center;font-size:13px;line-height:1.4;margin:0 0 18px;opacity:0.85;}</style><?php
     }
 

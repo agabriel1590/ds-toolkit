@@ -5,6 +5,7 @@ class DS_Toolkit_Admin {
     public function init() {
         add_action( 'admin_menu', array( $this, 'add_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
     }
 
     public function add_menu() {
@@ -15,10 +16,18 @@ class DS_Toolkit_Admin {
         register_setting( 'ds_toolkit_options', 'ds_toolkit_settings' );
     }
 
+    public function enqueue_scripts( $hook ) {
+        if ( $hook !== 'settings_page_ds-toolkit' ) return;
+        wp_enqueue_media();
+    }
+
     public function render_page() {
         if ( ! current_user_can( 'manage_options' ) ) return;
-        $opts    = get_option( 'ds_toolkit_settings', array() );
-        $enabled = ! empty( $opts['enable_login_branding'] );
+        $opts        = get_option( 'ds_toolkit_settings', array() );
+        $enabled     = ! empty( $opts['enable_login_branding'] );
+        $logo_id     = ! empty( $opts['login_logo_id'] ) ? absint( $opts['login_logo_id'] ) : 0;
+        $logo_url    = $logo_id ? wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
+        $default_url = DS_TOOLKIT_URL . 'assets/images/cropped-LA-circle-logo-1.png';
         ?>
         <div class="wrap dst-wrap">
 
@@ -153,6 +162,40 @@ class DS_Toolkit_Admin {
                 }
                 .dst-toggle input:checked + label { background: #2271b1; }
                 .dst-toggle input:checked + label::after { left: 21px; }
+                /* Logo picker */
+                .dst-logo-picker {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    flex: 1;
+                }
+                .dst-logo-preview {
+                    width: 64px;
+                    height: 64px;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    background: #f8f9fa;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                .dst-logo-preview img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                }
+                .dst-logo-actions { display: flex; flex-direction: column; gap: 6px; }
+                .dst-logo-actions .button { font-size: 12px; height: 28px; line-height: 26px; padding: 0 10px; }
+                .dst-logo-label { flex: 1; }
+                .dst-logo-label strong {
+                    display: block;
+                    font-size: 13px;
+                    color: #1d2327;
+                    margin-bottom: 2px;
+                }
+                .dst-logo-label span { font-size: 12px; color: #8c9aaa; }
                 /* Footer */
                 .dst-footer {
                     display: flex;
@@ -167,10 +210,7 @@ class DS_Toolkit_Admin {
                     font-size: 13px;
                     border-radius: 6px;
                 }
-                .dst-footer-meta {
-                    font-size: 11px;
-                    color: #c8d0d8;
-                }
+                .dst-footer-meta { font-size: 11px; color: #c8d0d8; }
                 .dst-footer-meta a { color: #c8d0d8; text-decoration: none; }
                 .dst-footer-meta a:hover { color: #8c9aaa; }
             </style>
@@ -189,6 +229,8 @@ class DS_Toolkit_Admin {
 
                 <p class="dst-section-title">Features</p>
                 <div class="dst-card">
+
+                    <!-- Toggle row -->
                     <div class="dst-card-row">
                         <div class="dst-card-icon"><span class="dashicons dashicons-admin-appearance"></span></div>
                         <div class="dst-card-info">
@@ -200,6 +242,26 @@ class DS_Toolkit_Admin {
                             <label for="enable_login_branding"></label>
                         </div>
                     </div>
+
+                    <!-- Logo picker row -->
+                    <div class="dst-card-row">
+                        <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
+                        <div class="dst-logo-label">
+                            <strong>Login Logo</strong>
+                            <span>Replaces the default LeagueApps logo on the login page.</span>
+                        </div>
+                        <div class="dst-logo-picker">
+                            <div class="dst-logo-preview" id="dst-logo-preview">
+                                <img id="dst-logo-img" src="<?php echo esc_url( $logo_url ?: $default_url ); ?>" alt="Login logo">
+                            </div>
+                            <div class="dst-logo-actions">
+                                <input type="hidden" id="dst-logo-id" name="ds_toolkit_settings[login_logo_id]" value="<?php echo esc_attr( $logo_id ); ?>">
+                                <button type="button" class="button" id="dst-logo-select">Select Logo</button>
+                                <button type="button" class="button" id="dst-logo-remove" <?php echo $logo_id ? '' : 'style="display:none"'; ?>>Use Default</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="dst-footer">
@@ -212,6 +274,38 @@ class DS_Toolkit_Admin {
 
             </form>
         </div>
+
+        <script>
+        (function($){
+            var defaultSrc = <?php echo json_encode( $default_url ); ?>;
+            var frame;
+
+            $('#dst-logo-select').on('click', function(e){
+                e.preventDefault();
+                if ( frame ) { frame.open(); return; }
+                frame = wp.media({
+                    title: 'Select Login Logo',
+                    button: { text: 'Use this logo' },
+                    multiple: false,
+                    library: { type: 'image' }
+                });
+                frame.on('select', function(){
+                    var attachment = frame.state().get('selection').first().toJSON();
+                    $('#dst-logo-id').val( attachment.id );
+                    $('#dst-logo-img').attr( 'src', attachment.url );
+                    $('#dst-logo-remove').show();
+                });
+                frame.open();
+            });
+
+            $('#dst-logo-remove').on('click', function(e){
+                e.preventDefault();
+                $('#dst-logo-id').val('');
+                $('#dst-logo-img').attr('src', defaultSrc);
+                $(this).hide();
+            });
+        }(jQuery));
+        </script>
         <?php
     }
 }

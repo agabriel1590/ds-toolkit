@@ -42,6 +42,10 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.5 - 2026-03-25
+- Added custom login logo picker — select any image from the Media Library to replace the default logo
+- Falls back to the default LeagueApps logo if no custom logo is set
+
 ### v0.5.4 - 2026-03-25
 - Added GitHub Actions workflow to attach a correctly-named ds-toolkit.zip to every release
 - Updater now uses the release asset zip (correct folder name) instead of the raw GitHub zipball
