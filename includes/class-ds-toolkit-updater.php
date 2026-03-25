@@ -11,6 +11,8 @@ class DS_Toolkit_Updater {
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
         add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
         add_filter( 'upgrader_source_selection', array( $this, 'fix_source_dir' ), 10, 4 );
+        add_filter( 'plugin_action_links_' . $this->slug . '/' . $this->slug . '.php', array( $this, 'add_check_update_link' ) );
+        add_action( 'admin_init', array( $this, 'handle_check_update' ) );
     }
 
     public function check_for_update( $transient ) {
@@ -83,6 +85,29 @@ class DS_Toolkit_Updater {
         }
 
         return $source;
+    }
+
+    public function add_check_update_link( $links ) {
+        $url = wp_nonce_url(
+            add_query_arg( 'ds_toolkit_check_update', '1', admin_url( 'plugins.php' ) ),
+            'ds_toolkit_check_update'
+        );
+        $links[] = '<a href="' . esc_url( $url ) . '">Check for Updates</a>';
+        return $links;
+    }
+
+    public function handle_check_update() {
+        if ( ! isset( $_GET['ds_toolkit_check_update'] ) ) {
+            return;
+        }
+        check_admin_referer( 'ds_toolkit_check_update' );
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+        delete_transient( 'ds_toolkit_latest_release' );
+        delete_site_transient( 'update_plugins' );
+        wp_safe_redirect( admin_url( 'plugins.php' ) );
+        exit;
     }
 
     private function get_latest_release() {

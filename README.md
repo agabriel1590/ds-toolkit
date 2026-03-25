@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.2 - 2026-03-25
+- Added "Check for Updates" link on the Plugins page to force an immediate update check
+
 ### v0.5.1 - 2026-03-25
 - Moved DS Toolkit menu from top-level admin menu to Settings > DS Toolkit
 
