@@ -1,51 +1,182 @@
 # DS Toolkit
 
-Design Shop custom WordPress plugin. Houses all custom features for Design Shop builds.
+A professional WordPress plugin for Design Shop (LeagueApps) builds. Bundles all recurring custom features — shortcodes, admin tools, branding, CSS/JS management, and a built-in MCP server so Claude can communicate directly with WordPress — into a single, self-updating plugin.
+
+Visible only to `@leagueapps.com` users in WP Admin.
 
 ## Author
 Alipio Gabriel
 
+---
+
+## Requirements
+- WordPress 5.6+
+- PHP 7.4+
+- HTTPS (live sites) — or `define('WP_ENVIRONMENT_TYPE', 'local')` for LocalWP
+- Node.js / npx — required on developer machines for the Claude Desktop MCP connection
+
+---
+
 ## Plugin Structure
 ```
 ds-toolkit/
-├── ds-toolkit.php
-├── uninstall.php
+├── ds-toolkit.php                          — Entry point, constants, bootstrap
+├── uninstall.php                           — Cleanup on deletion
 ├── includes/
-│   ├── class-ds-toolkit.php
-│   └── class-ds-toolkit-updater.php
+│   ├── class-ds-toolkit.php                — Core loader, feature registry, defaults
+│   ├── class-ds-toolkit-updater.php        — GitHub Releases auto-updater
+│   └── defaults/
+│       ├── global-css.css                  — Default LaunchPad 4 CSS baseline
+│       └── global-js.js                    — Default SiteUI JS (sticky header, etc.)
 ├── admin/
-│   ├── class-ds-toolkit-admin.php
-│   ├── class-ds-mcp-server.php
+│   ├── class-ds-toolkit-admin.php          — Admin menu, tabs, settings registration
+│   ├── class-ds-logo-finder.php            — University logo finder AJAX + assets
+│   ├── class-ds-mcp-server.php             — MCP JSON-RPC server (REST endpoint)
 │   └── views/
-│       ├── page-settings.php
-│       └── page-mcp.php
+│       ├── page-settings.php               — Features tab
+│       ├── page-logo-finder.php            — University Logo Finder tab
+│       ├── page-global-css.php             — Global CSS tab
+│       ├── page-global-js.php              — Global JS tab
+│       └── page-mcp.php                    — MCP tab (config generator + tools reference)
 ├── features/
-│   └── class-ds-login-branding.php
+│   ├── class-ds-login-branding.php         — Custom WP login page branding
+│   ├── class-ds-hide-fl-assistant.php      — Hide BB FL Assistant for non-LeagueApps users
+│   ├── class-ds-acf-css-vars.php           — ACF options fields → CSS custom properties
+│   ├── class-ds-getsubmenu.php             — [getsubmenu] shortcode
+│   ├── class-ds-current-year.php           — [current_year] shortcode
+│   ├── class-ds-forminator-email-partner.php — Forminator {email_partner} variable
+│   ├── class-ds-global-css.php             — Injects Global CSS into <head>
+│   ├── class-ds-global-js.php              — Injects Global JS before </body>
+│   └── class-ds-child-pages.php            — [child_pages] + [get_parent_page_title] shortcodes
 └── assets/
     ├── css/
-    │   ├── admin.css
-    │   └── login.css
+    │   ├── admin.css                        — All admin UI styles
+    │   ├── logo-finder.css                  — Logo finder grid + import bar
+    │   ├── child-pages.css                  — Responsive card grid
+    │   └── login.css                        — Custom login page styles
     ├── js/
-    │   ├── admin.js
-    │   └── login.js
+    │   ├── admin.js                         — Admin toggles, media picker, mapping table
+    │   └── logo-finder.js                   — Live search, multi-select, AJAX import
     └── images/
-        └── cropped-LA-circle-logo-1.png
+        ├── cropped-LA-circle-logo-1.png     — Default login logo
+        └── team_logos/                      — 365 university team logo PNGs
 ```
+
+---
 
 ## Features
 
-### Enable LeagueApps Custom Login
-Adds custom branding to the WordPress login page:
-- Custom logo served from plugin assets
-- "Powered by LeagueApps Design Shop" text under the logo
-- Logo links to home URL, hover text uses site name
-- "Need help? Visit Design Shop Academy" message below the login form
+### LeagueApps Custom Login Branding
+Replaces the default WordPress login page with LeagueApps / Design Shop branding.
+- Custom logo (default: LeagueApps circle logo, or pick any image from Media Library)
+- "Powered by LeagueApps Design Shop" tagline
+- Logo links to home URL; "Need help? Visit Design Shop Academy" link below the form
+- Toggle and logo picker under **Settings → DS Toolkit → Features**
 
-Enabled by default on activation. Toggle via: **WP Admin > DS Toolkit > Features**
+### Hide Beaver Builder FL Assistant
+Hides the Beaver Builder Cloud / FL Assistant toolbar button for anyone not logged in with a `@leagueapps.com` email — keeps the admin bar clean for clients.
+
+### ACF Theme Options → CSS Variables
+Maps ACF options page fields to CSS custom properties output in `:root` on every front-end page.
+- Add/remove mappings via the dynamic table in the Features tab
+- Optional fallback value per mapping
+- Default mapping: `header_scrolled_bar_color` → `--header-scrolled-bar-color`
+
+### [getsubmenu] Shortcode
+Outputs a navigation list of child pages or sub-menu items.
+```
+[getsubmenu listfrom="About Us" mode="pages"]
+[getsubmenu listfrom="Main Menu" mode="menus"]
+```
+- `mode="pages"` — resolves parent by ID, slug, path, or title; lists published child pages
+- `mode="menus"` — finds a top-level nav menu item matching `listfrom`; lists its direct children
+- Output: `<div class="submenu-text">` with links separated by `<br />`
+
+### [current_year] Shortcode
+Outputs the current 4-digit year. Auto-updates — no maintenance needed.
+```
+© [current_year] LeagueApps
+```
+
+### Forminator {email_partner} Variable
+Injects a custom `{email_partner}` merge tag into Forminator forms, resolved from the ACF `partner_email` options field. Configurable fallback email in the Features tab.
+
+### Global CSS
+Site-wide CSS injected into `<head>` at priority 99 (after all theme styles).
+- Full LaunchPad 4 CSS baseline pre-loaded on activation
+- Edit directly in the admin with CodeMirror syntax highlighting
+- Toggle on/off without losing content
+- Tab: **Settings → DS Toolkit → Global CSS**
+
+### Global JS
+Site-wide JavaScript injected before `</body>` at priority 99.
+- Pre-loaded with SiteUI JS: sticky header, clickable columns, equal heights, button normaliser
+- CodeMirror editor with JS syntax highlighting
+- Toggle on/off without losing content
+- Tab: **Settings → DS Toolkit → Global JS**
+
+### [child_pages] Shortcode
+Renders child pages of the current page as a responsive card grid using a Beaver Builder saved layout template.
+```
+[child_pages]
+[child_pages template="56369" columns="4" columns_tablet="2" columns_mobile="1"]
+```
+- Default template ID and column counts configurable in the Features tab
+- BB template reads child page title and permalink dynamically via `setup_postdata()`
+- Responsive grid via CSS custom properties (`--dst-cols`, `--dst-cols-tablet`, `--dst-cols-mobile`)
+
+### [get_parent_page_title] Shortcode
+Used inside the BB card template — outputs the title of the page where `[child_pages]` is placed.
+
+### University Logo Finder
+Browse and import 365 university team logos directly into the WordPress Media Library.
+- Live search by university name or mascot
+- Click to select logos (checkmark overlay); Select All / Clear
+- Floating import bar with selection count
+- Sequential AJAX import with real-time progress log
+- Duplicate detection — skips logos already in the Media Library
+- Tab: **Settings → DS Toolkit → University Logo Finder**
+
+### MCP Server (Claude ↔ WordPress)
+DS Toolkit registers a [Model Context Protocol](https://modelcontextprotocol.io) endpoint so Claude can read and edit WordPress content without any additional plugins.
+
+**Endpoint:** `https://yoursite.com/wp-json/ds-toolkit/v1/mcp`
+**Auth:** WordPress Application Passwords (WP 5.6+ built-in)
+**Protocol:** MCP JSON-RPC 2.0 (`2024-11-05`)
+
+**Available tools:**
+
+| Tool | Description | Requires |
+|---|---|---|
+| `list_posts` | List posts/pages with filters | edit_posts |
+| `get_post` | Get full content of a post by ID | edit_posts |
+| `create_post` | Create a new post or page | publish_posts |
+| `update_post` | Edit title, content, excerpt, or status | edit_post |
+| `delete_post` | Trash or permanently delete a post | delete_post |
+| `get_toolkit_settings` | Read all DS Toolkit feature settings | manage_options |
+| `update_toolkit_settings` | Change feature toggles, CSS, JS, columns, etc. | manage_options |
+
+**Claude Desktop setup** (requires Node.js):
+```json
+{
+  "mcpServers": {
+    "ds-toolkit": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://yoursite.com/wp-json/ds-toolkit/v1/mcp",
+        "--header",
+        "Authorization:Basic <base64 of username:app_password>"
+      ]
+    }
+  }
+}
+```
+
+Use the **MCP tab** in Settings → DS Toolkit for a guided setup with an auto-generated config.
 
 ### Auto-Updates via GitHub
-Uses native WordPress update hooks to check GitHub releases every 12 hours.
-No external libraries or Composer required.
+Checks GitHub Releases every 12 hours via native WordPress update hooks. Update prompt appears in **WP Admin → Plugins** like any other plugin — no Composer, no external libraries.
 
 ---
 
