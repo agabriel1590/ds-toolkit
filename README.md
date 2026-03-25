@@ -49,6 +49,14 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.8.1 - 2026-03-26
+- Added [child_pages] shortcode — renders child pages of the current page as a responsive card grid using a Beaver Builder saved layout template
+- Added [get_parent_page_title] shortcode — outputs the title of the page where [child_pages] is placed; use inside the BB card template
+- Configurable defaults in Settings > DS Toolkit: BB template ID, desktop/tablet/mobile columns
+- All settings overridable per shortcode: [child_pages template="56369" columns="4" columns_tablet="2" columns_mobile="1"]
+- BB reads child page title and permalink dynamically via setup_postdata() per loop iteration
+- Responsive grid uses CSS custom properties (--dst-cols, --dst-cols-tablet, --dst-cols-mobile)
+
 ### v0.8.0 - 2026-03-26
 - Added Global CSS tab — edit and toggle site-wide CSS injected into <head> on every page
 - Added Global JS tab — edit and toggle site-wide JS injected before </body> on every page

@@ -145,6 +145,11 @@ class DS_Toolkit_Admin {
                 $forminator_email_partner_fallback  = ! empty( $opts['forminator_email_partner_fallback'] )
                     ? $opts['forminator_email_partner_fallback']
                     : 'designshop@leagueapps.com';
+                $child_pages_enabled         = ! empty( $opts['child_pages_enabled'] );
+                $child_pages_template_id     = ! empty( $opts['child_pages_template_id'] ) ? $opts['child_pages_template_id'] : '56369';
+                $child_pages_columns         = ! empty( $opts['child_pages_columns'] )        ? (int) $opts['child_pages_columns']        : 3;
+                $child_pages_columns_tablet  = ! empty( $opts['child_pages_columns_tablet'] ) ? (int) $opts['child_pages_columns_tablet'] : 2;
+                $child_pages_columns_mobile  = ! empty( $opts['child_pages_columns_mobile'] ) ? (int) $opts['child_pages_columns_mobile'] : 1;
                 require DS_TOOLKIT_PATH . 'admin/views/page-settings.php';
             }
             ?>

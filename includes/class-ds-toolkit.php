@@ -43,6 +43,10 @@ class DS_Toolkit {
             'file'  => 'features/class-ds-global-js.php',
             'class' => 'DS_Global_JS',
         ),
+        'child_pages_enabled' => array(
+            'file'  => 'features/class-ds-child-pages.php',
+            'class' => 'DS_Child_Pages',
+        ),
     );
 
     public static function activate() {
@@ -77,6 +81,11 @@ class DS_Toolkit {
             'global_css_content'                 => (string) file_get_contents( DS_TOOLKIT_PATH . 'includes/defaults/global-css.css' ),
             'global_js_enabled'                  => 1,
             'global_js_content'                  => (string) file_get_contents( DS_TOOLKIT_PATH . 'includes/defaults/global-js.js' ),
+            'child_pages_enabled'                => 1,
+            'child_pages_template_id'            => '56369',
+            'child_pages_columns'                => 3,
+            'child_pages_columns_tablet'         => 2,
+            'child_pages_columns_mobile'         => 1,
         );
     }
 

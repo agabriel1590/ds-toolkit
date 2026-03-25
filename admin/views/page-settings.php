@@ -5,7 +5,9 @@
  * Variables available: $enabled, $logo_id, $logo_url, $default_url, $hide_fl_assistant,
  *                      $acf_css_vars_enabled, $acf_css_vars_mappings, $getsubmenu_enabled,
  *                      $current_year_enabled, $forminator_email_partner_enabled,
- *                      $forminator_email_partner_fallback
+ *                      $forminator_email_partner_fallback, $child_pages_enabled,
+ *                      $child_pages_template_id, $child_pages_columns,
+ *                      $child_pages_columns_tablet, $child_pages_columns_mobile
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -178,6 +180,66 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <code>{email_partner}</code>
                 <p><strong>Fallback email</strong> — used when <code>partner_email</code> is empty in ACF:</p>
                 <input type="email" class="regular-text" name="ds_toolkit_settings[forminator_email_partner_fallback]" value="<?php echo esc_attr( $forminator_email_partner_fallback ); ?>" placeholder="designshop@leagueapps.com">
+            </div>
+        </div>
+    </div>
+
+    <!-- Child Pages Cards -->
+    <div class="dst-card">
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-grid-view"></span></div>
+            <div class="dst-card-info">
+                <strong>[child_pages] — List Pages Cards</strong>
+                <span>Outputs a responsive grid of child page cards using a Beaver Builder template. Also registers <code>[get_parent_page_title]</code> for use inside the card template.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="child_pages_enabled" name="ds_toolkit_settings[child_pages_enabled]" value="1" <?php checked( $child_pages_enabled ); ?>>
+                <label for="child_pages_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row dst-shortcode-docs">
+            <div class="dst-card-icon"><span class="dashicons dashicons-info-outline"></span></div>
+            <div class="dst-card-info">
+                <strong>How to use it</strong>
+                <p>Place <code>[child_pages]</code> on any parent page. It will automatically find and display all its child pages using the BB template below.</p>
+                <p>Each card in your Beaver Builder template can use <code>[get_parent_page_title]</code> to output the parent page's title (e.g. "Programs").</p>
+                <code>[child_pages]</code>
+                <p>Override any setting per shortcode:</p>
+                <code>[child_pages template="56369" columns="4" columns_tablet="2" columns_mobile="1"]</code>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
+            <div class="dst-card-info">
+                <strong>Default BB Template ID</strong>
+                <span>The Beaver Builder saved layout ID used as the card template. Find it in the URL when editing the template in BB.</span>
+            </div>
+            <div class="dst-field-inline">
+                <input type="number" class="small-text" name="ds_toolkit_settings[child_pages_template_id]" value="<?php echo esc_attr( $child_pages_template_id ); ?>" min="1" placeholder="56369">
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-smartphone"></span></div>
+            <div class="dst-card-info">
+                <strong>Default Columns</strong>
+                <span>Number of columns on each screen size. Can be overridden per shortcode.</span>
+            </div>
+            <div class="dst-columns-inputs">
+                <label>
+                    <span class="dst-col-label">Desktop</span>
+                    <input type="number" class="small-text" name="ds_toolkit_settings[child_pages_columns]" value="<?php echo esc_attr( $child_pages_columns ); ?>" min="1" max="6">
+                </label>
+                <label>
+                    <span class="dst-col-label">Tablet</span>
+                    <input type="number" class="small-text" name="ds_toolkit_settings[child_pages_columns_tablet]" value="<?php echo esc_attr( $child_pages_columns_tablet ); ?>" min="1" max="4">
+                </label>
+                <label>
+                    <span class="dst-col-label">Mobile</span>
+                    <input type="number" class="small-text" name="ds_toolkit_settings[child_pages_columns_mobile]" value="<?php echo esc_attr( $child_pages_columns_mobile ); ?>" min="1" max="2">
+                </label>
             </div>
         </div>
     </div>

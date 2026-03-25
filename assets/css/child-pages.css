@@ -1,0 +1,28 @@
+/* ─── Child Pages Grid ───────────────────────────────────────────────────── */
+
+.dst-child-pages {
+    display: grid;
+    grid-template-columns: repeat(var(--dst-cols, 3), 1fr);
+    gap: 24px;
+    width: 100%;
+}
+
+/* Prevent grid blowout from BB layout wrappers */
+.dst-child-page-item {
+    min-width: 0;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .dst-child-pages {
+        grid-template-columns: repeat(var(--dst-cols-tablet, 2), 1fr);
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .dst-child-pages {
+        grid-template-columns: repeat(var(--dst-cols-mobile, 1), 1fr);
+        gap: 16px;
+    }
+}
