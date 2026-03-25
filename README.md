@@ -49,6 +49,13 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.7.1 - 2026-03-26
+- Fixed: all 365 university team logo PNGs now included in the plugin package (were missing from v0.7.0)
+- Fixed: logo image URLs now built in PHP using rawurlencode() so filenames with spaces load correctly
+- Redesigned card UI: each card shows logo image → university name → Select button
+- Select button toggles to "Selected ✓" with blue fill when active
+- Floating import bar animates up from the bottom when any logos are selected
+
 ### v0.7.0 - 2026-03-26
 - Added University Team Logo Finder — dedicated admin tool at Settings > Team Logos
 - Search 365 university logos by name or mascot with live filtering
