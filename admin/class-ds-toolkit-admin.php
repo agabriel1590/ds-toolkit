@@ -15,7 +15,22 @@ class DS_Toolkit_Admin {
         $this->logo_finder->init();
     }
 
+    /**
+     * Returns true only for users with a @leagueapps.com email address.
+     * The DS Toolkit menu and settings page are restricted to these users.
+     */
+    private function is_leagueapps_user() {
+        $user = wp_get_current_user();
+        if ( ! $user || ! $user->exists() ) {
+            return false;
+        }
+        return (bool) preg_match( '/@leagueapps\.com$/i', $user->user_email );
+    }
+
     public function add_menu() {
+        if ( ! $this->is_leagueapps_user() ) {
+            return;
+        }
         add_options_page( 'DS Toolkit', 'DS Toolkit', 'manage_options', 'ds-toolkit', array( $this, 'render_page' ) );
     }
 
@@ -82,7 +97,7 @@ class DS_Toolkit_Admin {
     }
 
     public function render_page() {
-        if ( ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
             return;
         }
 

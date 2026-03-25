@@ -49,6 +49,10 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.8.2 - 2026-03-26
+- DS Toolkit menu (Settings > DS Toolkit) is now only visible to users with a @leagueapps.com email address
+- Non-LeagueApps users with manage_options capability will not see the menu or be able to access the settings page
+
 ### v0.8.1 - 2026-03-26
 - Added [child_pages] shortcode — renders child pages of the current page as a responsive card grid using a Beaver Builder saved layout template
 - Added [get_parent_page_title] shortcode — outputs the title of the page where [child_pages] is placed; use inside the BB card template
