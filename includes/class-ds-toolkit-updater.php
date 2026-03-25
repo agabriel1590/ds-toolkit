@@ -77,13 +77,14 @@ class DS_Toolkit_Updater {
 
     /**
      * Rename the extracted zip folder to ds-toolkit/ regardless of what it was called.
+     * Handles both fresh installs (Upload Plugin) and auto-updates.
      * Confirms it's our plugin by checking for ds-toolkit.php inside the extracted folder.
      */
     public function fix_source_dir( $source, $remote_source, $upgrader, $hook_extra = array() ) {
         global $wp_filesystem;
 
-        // Only act when this is a plugin upgrade
-        if ( ! isset( $hook_extra['plugin'] ) ) {
+        // Only act on plugin installs or updates, not themes or core
+        if ( ! isset( $hook_extra['type'] ) || $hook_extra['type'] !== 'plugin' ) {
             return $source;
         }
 

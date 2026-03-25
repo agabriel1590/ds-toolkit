@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.8 - 2026-03-25
+- Fixed folder rename to also apply on fresh installs via Upload Plugin, not just auto-updates
+
 ### v0.5.7 - 2026-03-25
 - Login Logo option is now hidden when LeagueApps Custom Login is disabled, and shown when enabled
 
