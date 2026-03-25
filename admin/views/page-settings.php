@@ -1,7 +1,7 @@
 <?php
 /**
  * Settings page view.
- * Variables available: $enabled, $logo_id, $logo_url, $default_url
+ * Variables available: $enabled, $logo_id, $logo_url, $default_url, $hide_fl_assistant
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -52,6 +52,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 </div>
             </div>
 
+        </div>
+
+        <div class="dst-card">
+            <div class="dst-card-row">
+                <div class="dst-card-icon"><span class="dashicons dashicons-cloud"></span></div>
+                <div class="dst-card-info">
+                    <strong>Hide Beaver Builder Cloud Icon for Non-LeagueApps Users</strong>
+                    <span>Hides the FL Assistant cloud button in the Beaver Builder toolbar for all users except @leagueapps.com accounts.</span>
+                </div>
+                <div class="dst-toggle">
+                    <input type="checkbox" id="hide_fl_assistant" name="ds_toolkit_settings[hide_fl_assistant]" value="1" <?php checked( $hide_fl_assistant ); ?>>
+                    <label for="hide_fl_assistant"></label>
+                </div>
+            </div>
         </div>
 
         <div class="dst-footer">

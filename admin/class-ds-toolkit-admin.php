@@ -44,11 +44,12 @@ class DS_Toolkit_Admin {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
-        $opts        = get_option( 'ds_toolkit_settings', array() );
-        $enabled     = ! empty( $opts['enable_login_branding'] );
-        $logo_id     = ! empty( $opts['login_logo_id'] ) ? absint( $opts['login_logo_id'] ) : 0;
-        $logo_url    = $logo_id ? wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
-        $default_url = DS_TOOLKIT_URL . 'assets/images/cropped-LA-circle-logo-1.png';
+        $opts              = get_option( 'ds_toolkit_settings', array() );
+        $enabled           = ! empty( $opts['enable_login_branding'] );
+        $logo_id           = ! empty( $opts['login_logo_id'] ) ? absint( $opts['login_logo_id'] ) : 0;
+        $logo_url          = $logo_id ? wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
+        $default_url       = DS_TOOLKIT_URL . 'assets/images/cropped-LA-circle-logo-1.png';
+        $hide_fl_assistant = ! empty( $opts['hide_fl_assistant'] );
 
         require DS_TOOLKIT_PATH . 'admin/views/page-settings.php';
     }

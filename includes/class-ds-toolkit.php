@@ -15,6 +15,10 @@ class DS_Toolkit {
             'file'  => 'features/class-ds-login-branding.php',
             'class' => 'DS_Login_Branding',
         ),
+        'hide_fl_assistant' => array(
+            'file'  => 'features/class-ds-hide-fl-assistant.php',
+            'class' => 'DS_Hide_FL_Assistant',
+        ),
     );
 
     public static function activate() {

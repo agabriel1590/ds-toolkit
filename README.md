@@ -49,6 +49,11 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.6.0 - 2026-03-26
+- Added "Hide Beaver Builder Cloud Icon for Non-LeagueApps Users" feature
+- Hides the FL Assistant button in the BB toolbar for all users except @leagueapps.com accounts
+- Toggleable via Settings > DS Toolkit
+
 ### v0.5.9 - 2026-03-26
 - Standardised plugin headers (added Requires at least, Tested up to, Requires PHP, License URI, Domain Path)
 - Removed function_exists() guards from main file — not needed for plugin-private functions
