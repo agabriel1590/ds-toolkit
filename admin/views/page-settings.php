@@ -130,21 +130,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <div class="dst-card-icon"><span class="dashicons dashicons-info-outline"></span></div>
                 <div class="dst-card-info">
                     <strong>How to use it</strong>
-                    <p>Place this shortcode inside any page or post where you want a list of sub-pages to appear.</p>
+                    <p>Use <code>listfrom</code> to name the parent page or menu item, and <code>mode</code> to choose where to look.</p>
 
-                    <p><strong>Show sub-pages of the current page</strong><br>
-                    Just drop this on any parent page and it will list its own children:</p>
-                    <code>[getsubmenu]</code>
+                    <p><strong>Mode: pages</strong> — lists the child pages of a parent page. You can use the page title, slug, or ID:</p>
+                    <code>[getsubmenu listfrom="Programs" mode="pages"]</code>
 
-                    <p><strong>Show sub-pages of a specific page (by ID)</strong><br>
-                    Find the page ID in the URL when editing it in WP Admin <em>(e.g. ?post=42)</em>:</p>
-                    <code>[getsubmenu id="42"]</code>
+                    <p><strong>Mode: menus</strong> — finds a nav menu item by title and lists its direct children from that menu:</p>
+                    <code>[getsubmenu listfrom="Programs" mode="menus"]</code>
 
-                    <p><strong>Show sub-pages of a specific page (by slug)</strong><br>
-                    Use the page slug (the URL-friendly name shown in the page URL):</p>
-                    <code>[getsubmenu parent="about-us"]</code>
-
-                    <p>The shortcode outputs a <code>&lt;ul class="ds-getsubmenu"&gt;</code> list you can style with CSS.</p>
+                    <p>The output is a <code>&lt;div class="submenu-text"&gt;</code> with links separated by line breaks, ready to style with CSS.</p>
                 </div>
             </div>
         </div>

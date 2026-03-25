@@ -49,6 +49,13 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.6.6 - 2026-03-26
+- Fixed [getsubmenu] shortcode — rewrote to match original functions.php implementation
+- Correct attributes: listfrom (page title/slug/ID) and mode (pages or menus)
+- pages mode: resolves parent by numeric ID, path, sanitized slug, or page title; lists published child pages
+- menus mode: scans all nav menus for a top-level item matching listfrom, lists its direct children
+- Output: <div class="submenu-text"> with <br /> between links (matching original behavior)
+
 ### v0.6.5 - 2026-03-26
 - Added [current_year] shortcode — outputs the current year, auto-updates every year, no maintenance needed
 - Added Forminator {email_partner} variable — replaces {email_partner} in Forminator forms with the ACF partner_email options field
