@@ -35,6 +35,14 @@ class DS_Toolkit {
             'file'  => 'features/class-ds-forminator-email-partner.php',
             'class' => 'DS_Forminator_Email_Partner',
         ),
+        'global_css_enabled' => array(
+            'file'  => 'features/class-ds-global-css.php',
+            'class' => 'DS_Global_CSS',
+        ),
+        'global_js_enabled' => array(
+            'file'  => 'features/class-ds-global-js.php',
+            'class' => 'DS_Global_JS',
+        ),
     );
 
     public static function activate() {
@@ -65,6 +73,10 @@ class DS_Toolkit {
             'current_year_enabled'               => 1,
             'forminator_email_partner_enabled'   => 1,
             'forminator_email_partner_fallback'  => 'designshop@leagueapps.com',
+            'global_css_enabled'                 => 1,
+            'global_css_content'                 => (string) file_get_contents( DS_TOOLKIT_PATH . 'includes/defaults/global-css.css' ),
+            'global_js_enabled'                  => 1,
+            'global_js_content'                  => (string) file_get_contents( DS_TOOLKIT_PATH . 'includes/defaults/global-js.js' ),
         );
     }
 

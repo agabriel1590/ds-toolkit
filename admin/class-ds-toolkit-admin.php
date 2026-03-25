@@ -30,7 +30,7 @@ class DS_Toolkit_Admin {
 
         $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'features';
 
-        // Always load admin styles (shared: header, tabs, cards)
+        // Shared admin styles (header, tabs, cards, toggles)
         wp_enqueue_style(
             'ds-toolkit-admin',
             DS_TOOLKIT_URL . 'assets/css/admin.css',
@@ -39,10 +39,34 @@ class DS_Toolkit_Admin {
         );
 
         if ( $active_tab === 'logos' ) {
-            // Logo finder tab — load logo finder assets only
             $this->logo_finder->enqueue_assets();
+
+        } elseif ( $active_tab === 'global-css' ) {
+            $settings = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
+            if ( $settings ) {
+                wp_add_inline_script(
+                    'code-editor',
+                    sprintf(
+                        'jQuery( function() { wp.codeEditor.initialize( "global_css_content", %s ); } );',
+                        wp_json_encode( $settings )
+                    )
+                );
+            }
+
+        } elseif ( $active_tab === 'global-js' ) {
+            $settings = wp_enqueue_code_editor( array( 'type' => 'text/javascript' ) );
+            if ( $settings ) {
+                wp_add_inline_script(
+                    'code-editor',
+                    sprintf(
+                        'jQuery( function() { wp.codeEditor.initialize( "global_js_content", %s ); } );',
+                        wp_json_encode( $settings )
+                    )
+                );
+            }
+
         } else {
-            // Features tab — load media picker and admin JS
+            // Features tab
             wp_enqueue_media();
             wp_enqueue_script(
                 'ds-toolkit-admin',
@@ -62,9 +86,8 @@ class DS_Toolkit_Admin {
             return;
         }
 
-        $active_tab   = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'features';
-        $features_url = admin_url( 'options-general.php?page=ds-toolkit' );
-        $logos_url    = admin_url( 'options-general.php?page=ds-toolkit&tab=logos' );
+        $active_tab    = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'features';
+        $base_url      = admin_url( 'options-general.php?page=ds-toolkit' );
         ?>
         <div class="wrap dst-wrap">
 
@@ -78,19 +101,37 @@ class DS_Toolkit_Admin {
             </div>
 
             <div class="dst-tabs">
-                <a href="<?php echo esc_url( $features_url ); ?>" class="dst-tab<?php echo $active_tab !== 'logos' ? ' is-active' : ''; ?>">
+                <a href="<?php echo esc_url( $base_url ); ?>" class="dst-tab<?php echo $active_tab === 'features' ? ' is-active' : ''; ?>">
                     Features
                 </a>
-                <a href="<?php echo esc_url( $logos_url ); ?>" class="dst-tab<?php echo $active_tab === 'logos' ? ' is-active' : ''; ?>">
+                <a href="<?php echo esc_url( $base_url . '&tab=logos' ); ?>" class="dst-tab<?php echo $active_tab === 'logos' ? ' is-active' : ''; ?>">
                     University Logo Finder
+                </a>
+                <a href="<?php echo esc_url( $base_url . '&tab=global-css' ); ?>" class="dst-tab<?php echo $active_tab === 'global-css' ? ' is-active' : ''; ?>">
+                    Global CSS
+                </a>
+                <a href="<?php echo esc_url( $base_url . '&tab=global-js' ); ?>" class="dst-tab<?php echo $active_tab === 'global-js' ? ' is-active' : ''; ?>">
+                    Global JS
                 </a>
             </div>
 
-            <?php if ( $active_tab === 'logos' ) : ?>
-                <?php require DS_TOOLKIT_PATH . 'admin/views/page-logo-finder.php'; ?>
-            <?php else : ?>
-                <?php
-                $opts                               = get_option( 'ds_toolkit_settings', array() );
+            <?php
+            $opts = get_option( 'ds_toolkit_settings', array() );
+
+            if ( $active_tab === 'logos' ) {
+                require DS_TOOLKIT_PATH . 'admin/views/page-logo-finder.php';
+
+            } elseif ( $active_tab === 'global-css' ) {
+                $global_css_enabled = ! empty( $opts['global_css_enabled'] );
+                $global_css_content = isset( $opts['global_css_content'] ) ? $opts['global_css_content'] : '';
+                require DS_TOOLKIT_PATH . 'admin/views/page-global-css.php';
+
+            } elseif ( $active_tab === 'global-js' ) {
+                $global_js_enabled = ! empty( $opts['global_js_enabled'] );
+                $global_js_content = isset( $opts['global_js_content'] ) ? $opts['global_js_content'] : '';
+                require DS_TOOLKIT_PATH . 'admin/views/page-global-js.php';
+
+            } else {
                 $enabled                            = ! empty( $opts['enable_login_branding'] );
                 $logo_id                            = ! empty( $opts['login_logo_id'] ) ? absint( $opts['login_logo_id'] ) : 0;
                 $logo_url                           = $logo_id ? wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
@@ -105,8 +146,8 @@ class DS_Toolkit_Admin {
                     ? $opts['forminator_email_partner_fallback']
                     : 'designshop@leagueapps.com';
                 require DS_TOOLKIT_PATH . 'admin/views/page-settings.php';
-                ?>
-            <?php endif; ?>
+            }
+            ?>
 
         </div>
         <?php

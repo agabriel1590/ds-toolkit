@@ -49,6 +49,14 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.8.0 - 2026-03-26
+- Added Global CSS tab — edit and toggle site-wide CSS injected into <head> on every page
+- Added Global JS tab — edit and toggle site-wide JS injected before </body> on every page
+- Both editors use WordPress CodeMirror with syntax highlighting (CSS/JS modes)
+- Default LaunchPad 4 CSS and JS pre-seeded on fresh activations and existing installs
+- Defaults stored in includes/defaults/ for easy maintenance
+- Tab structure is now: Features | University Logo Finder | Global CSS | Global JS
+
 ### v0.7.2 - 2026-03-26
 - Merged University Logo Finder into DS Toolkit settings page as a tab (Features | University Logo Finder)
 - Removed separate "Team Logos" submenu — everything lives under Settings > DS Toolkit

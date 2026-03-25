@@ -299,6 +299,31 @@
     padding: 0 12px;
 }
 
+/* Code editor */
+.dst-code-editor-wrap {
+    margin-bottom: 20px;
+}
+.dst-code-editor-wrap .CodeMirror {
+    height: 600px;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 0 8px 8px;
+}
+.dst-code-editor-wrap textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    box-sizing: border-box;
+    background: #1d2327;
+    color: #e2e8f0;
+    resize: vertical;
+}
+
 /* Shortcode docs sub-row */
 .dst-shortcode-docs {
     align-items: flex-start;

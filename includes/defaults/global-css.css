@@ -1,0 +1,623 @@
+/*─────────────────────────────────────────────────────────────────────────────
+  Typography, Headings, Text Utilities
+─────────────────────────────────────────────────────────────────────────────*/
+.uabb-content.uabb-tab-acc-content h1,
+.uabb-content.uabb-tab-acc-content h2,
+.uabb-content.uabb-tab-acc-content h3,
+.uabb-content.uabb-tab-acc-content h4,
+.uabb-content.uabb-tab-acc-content h5,
+.uabb-content.uabb-tab-acc-content h6 {
+    font-family: var(--bb-heading-font) !important;
+}
+
+.quote {
+    font-weight: 900 !important;
+    color: var(--fl-global-primary) !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  TablePress
+─────────────────────────────────────────────────────────────────────────────*/
+.tablepress thead .dt-orderable-asc:hover, .tablepress thead .dt-orderable-desc:hover, .tablepress thead .dt-ordering-asc, .tablepress thead .dt-ordering-desc {
+    background-color: var(--fl-global-accent) !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Images, Media Helpers
+─────────────────────────────────────────────────────────────────────────────*/
+.small-icon img{
+    max-height: 55px;
+    object-fit: contain;
+}
+
+.clip-photo img {
+    clip-path: polygon(15% 0, 100% 0, 100% 77%, 85% 100%, 0 100%, 0 21%);
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Layout Utilities
+─────────────────────────────────────────────────────────────────────────────*/
+.uabb-tabs .uabb-content ul li {
+    margin-left: 0px !important;
+}
+
+.overflow-hidden > div,
+.overflow-hidden {
+    overflow: hidden;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Blend Mode Utilities
+─────────────────────────────────────────────────────────────────────────────*/
+.text-mix-blend-difference {
+    mix-blend-mode: difference !important;
+}
+
+.mix-blend-multiply > :after,
+.mix-blend-multiply > :before {
+  mix-blend-mode: multiply;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Callout
+─────────────────────────────────────────────────────────────────────────────*/
+.fl-callout-title {
+    margin: 15px 15px -50px 15px !important;
+    padding: 0;
+    z-index: 10;
+    display: block;
+    position: relative;
+}
+
+div.fl-callout-text-wrap > .fl-callout-button {
+    flex: 0 0 auto;
+    margin-left: 1rem;
+    padding-top: 0px !important;
+}
+
+div.fl-callout-text-wrap > .fl-callout-button a.fl-button {
+    padding: 20px 30px !important;
+}
+
+.fl-callout.fl-callout-has-photo.fl-callout-photo-below-title {
+    position: relative;
+}
+
+.fl-callout .fl-callout-text-wrap {
+    position: absolute;
+    bottom: 0;
+    background: #000;
+    padding: 0px;
+    width: 100%;
+    border-top: 5px solid var(--fl-global-primary) !important;
+}
+
+/* target exactly the wrapper you showed */
+div.fl-callout-text-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+div.fl-callout-text-wrap > .fl-callout-text {
+  flex: 1 1 auto;
+  margin: 0; /* reset any extra spacing */
+}
+
+div.fl-callout-text-wrap > .fl-callout-button {
+  flex: 0 0 auto;
+}
+
+/* 1. Let the button-wrapper stretch to fill the container's cross-axis */
+div.fl-callout-button {
+  align-self: stretch !important;
+  display: flex;               /* establish a flex context for centering inside */
+}
+
+/* 2. Make the actual button fill its wrapper's height */
+div.fl-callout-button a.fl-button {
+  height: 100%;
+  display: flex;               /* so we can center the icon/text */
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;             /* adjust horizontal padding as needed */
+  border-radius: 0 !important;
+}
+
+div.fl-callout-text-wrap > .fl-callout-text {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 20px;
+}
+
+.fl-callout .fl-callout-text-wrap {
+    position: absolute;
+    bottom: 0;
+    background: rgb(0 0 0 / 41%);
+    padding: 0px;
+    width: 100%;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Clip Path
+─────────────────────────────────────────────────────────────────────────────*/
+/*.fl-button {*/ /*ENABLE THIS FOR CLIP Button*/
+/*    overflow: hidden;*/
+/*    clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);*/
+/*    --path: 0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%;*/
+/*    --path-radius: 5;*/
+/*    border-radius: 5px !important;*/
+/*}*/
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Menu Layout
+─────────────────────────────────────────────────────────────────────────────*/
+.menu-justify ul#menu-primary-menu {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+    align-items: stretch;
+}
+
+.menu-justify #menu-primary-menu > li {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid rgb(255, 255, 255, 0.5); /* adjust color as needed */
+    padding: 0 15px; /* optional spacing */
+    text-align: center;
+}
+
+#menu-right-menu,
+#menu-left-menu {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.justify-menu ul{
+    display: flex;
+    justify-content: space-evenly; /* Distributes items evenly */
+    width: 100%; /* Ensures full-width distribution */
+    padding: 0 ;
+    list-style: none;
+    margin: 0;
+    gap: 0px !important;
+}
+
+.justify-menu li{
+    flex-grow: 1; /* Allows each item to expand evenly */
+    text-align: left; /* Centers the text inside each item */
+    border: 1px solid #444444;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.justify-menu li a{
+    padding: 15px !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Default icon color for info list module
+─────────────────────────────────────────────────────────────────────────────*/
+.uabb-info-list-item:nth-child(even) .uabb-info-list-icon .uabb-icon-wrap .uabb-icon i,
+.uabb-info-list-item:nth-child(even) .uabb-info-list-icon .uabb-icon-wrap .uabb-icon i:before {
+  color: var(--fl-global-accent);
+}
+
+.uabb-info-list-item:nth-child(odd) .uabb-info-list-icon .uabb-icon-wrap .uabb-icon i,
+.uabb-info-list-item:nth-child(odd) .uabb-info-list-icon .uabb-icon-wrap .uabb-icon i:before {
+  color: var(--fl-global-accent);
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Global Text Colors
+─────────────────────────────────────────────────────────────────────────────*/
+.color-white, .color-white * {
+  color: var(--fl-global-white) !important;
+}
+.color-primary, .color-primary * {
+  color: var(--fl-global-primary) !important;
+}
+.color-accent, .color-accent * {
+  color: var(--fl-global-accent) !important;
+}
+.color-dark, .color-dark * {
+  color: var(--fl-global-dark-background) !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Border Radius Utility
+─────────────────────────────────────────────────────────────────────────────*/
+.border-radius, .border-radius * {
+  border-radius: 10px;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Sticky Header
+─────────────────────────────────────────────────────────────────────────────*/
+.sticky-row {
+  width: 100%;
+  top: 0;
+  transition: background-color 0.3s ease;
+}
+.sticky-row.scrolled {
+  position: fixed;
+}
+.sticky-row.scrolled .fl-row-content-wrap {
+  background-color: var(--header-scrolled-bar-color);
+  border-bottom: 1px solid var(--fl-global-primary);
+}
+.sticky-row .fl-row-content-wrap img {
+  transition: all 0.2s ease-in;
+}
+.sticky-row.scrolled .fl-row-content-wrap img {
+  max-width: 80px;
+  max-height: 60px;
+  margin: 10px;
+  object-fit: contain;
+}
+.sticky-row.scrolled .logo > div {
+  margin: 0 !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Outline Text Styles
+─────────────────────────────────────────────────────────────────────────────*/
+.outline-white-text {
+  -webkit-text-stroke: 2px var(--fl-global-white);
+  text-stroke: 2px var(--fl-global-white);
+  color: transparent!important;
+}
+.outline-primary-text {
+  -webkit-text-stroke: 2px var(--fl-global-primary);
+  text-stroke: 2px var(--fl-global-primary);
+  color: transparent!important;
+}
+.outline-accent-text {
+  -webkit-text-stroke: 2px var(--fl-global-accent);
+  text-stroke: 2px var(--fl-global-accent);
+  color: transparent!important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Customizer Overrides
+─────────────────────────────────────────────────────────────────────────────*/
+.uabb-bb-box h3.uabb-ib1-title,
+.uabb-bb-box h4.uabb-ib1-title,
+.uabb-bb-box h5.uabb-ib1-title,
+.uabb-bb-box h6.uabb-ib1-title {
+  background-color: var(--fl-global-primary);
+  color: #fff;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Image Heights
+─────────────────────────────────────────────────────────────────────────────*/
+.height-tall img,
+.height-tall .uabb-image-carousel img {
+  height: 65vh !important;
+  object-fit: cover !important;
+}
+.height-medium img,
+.height-medium .uabb-image-carousel img {
+  height: 45vh !important;
+  object-fit: cover;
+}
+.height-small img,
+.height-small .uabb-image-carousel img {
+  height: 35vh !important;
+  object-fit: cover;
+}
+
+.height-avatar img {
+    height: 300px;
+    object-fit: cover;
+    object-position: top center;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Grid List (Mel)
+─────────────────────────────────────────────────────────────────────────────*/
+.grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-content: center;
+}
+.grid-list .uabb-info-list-item {
+  background-color: #fafafa;
+  border-radius: 10px;
+  height: 100%;
+  padding: 25px !important;
+  width: 100%;
+}
+.grid-list .uabb-info-list-item:hover {
+  background-color: #efefef !important;
+}
+.grid-list .uabb-info-list-content-wrapper.uabb-info-list-left .uabb-info-list-content {
+  width: 100% !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Responsive Grid
+─────────────────────────────────────────────────────────────────────────────*/
+@media (max-width: 1200px) {
+  .grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .height-tall img,
+  .height-tall .uabb-image-carousel img {
+    height: 45vh !important;
+    object-fit: cover !important;
+  }
+  .height-medium img,
+  .height-medium .uabb-image-carousel img {
+    height: 40vh !important;
+    object-fit: cover;
+  }
+  .height-small img,
+  .height-small .uabb-image-carousel img {
+    height: 35vh !important;
+    object-fit: cover;
+  }
+}
+
+@media (max-width: 800px) {
+  .grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .h2-home h2,
+  h2.h2-home {
+    font-size: 46px !important;
+  }
+
+  /* Stack text and button */
+  div.fl-callout-text-wrap {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Remove the left margin and add a top margin on the button */
+  div.fl-callout-text-wrap > .fl-callout-button {
+    margin-left: 0 !important;
+    margin-top: 1rem !important;
+  }
+
+  .fl-button-wrap.fl-button-width-auto.fl-button-has-icon {
+    width: 100%;
+  }
+
+  .flex-socialicons .adv-icon-1 .uabb-icon-wrap .uabb-icon i,
+  .flex-socialicons .adv-icon-1 .uabb-icon-wrap .uabb-icon i::before {
+    width: 60px !important;
+    height: 60px !important;
+  }
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Headline Override
+─────────────────────────────────────────────────────────────────────────────*/
+.h2-home h2,
+h2.h2-home {
+  font-size: 76px !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Slick Slider Dots
+─────────────────────────────────────────────────────────────────────────────*/
+.slick-dots li {
+  margin-right: 5px !important;
+  opacity: 0.5;
+}
+.slick-dots li.slick-active {
+  opacity: 1;
+}
+.slick-dots button {
+  font-size: 0 !important;
+  height: 2px !important;
+}
+.slick-dots button:before {
+  width: 0 !important;
+  height: 0 !important;
+  color: transparent !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Logo Styles
+─────────────────────────────────────────────────────────────────────────────*/
+.logo img {
+  position: relative !important;
+  z-index: 4 !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  CTA Tiles
+─────────────────────────────────────────────────────────────────────────────*/
+.cta-tile .uabb-module-content {
+  border-radius: 10px;
+  position: relative;
+}
+.cta-tile .uabb-module-content.uabb-ib2-outter:before {
+  mix-blend-mode: multiply !important;
+}
+.cta-tile .uabb-module-content.uabb-ib2-outter:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #ffffff 10%, rgba(255,255,255,0) 50%);
+  transition: all 0.3s ease;
+}
+
+.border-cta .uabb-module-content {
+    border: 1px var(--fl-global-accent) solid;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Vertical Line Animation
+─────────────────────────────────────────────────────────────────────────────*/
+.v-line-container {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+}
+.v-line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -3px;
+  width: 6px;
+  height: 100px;
+  z-index: 10;
+  background: linear-gradient(0deg, rgba(255,255,255,0.095) 0%, var(--fl-global-primary) 100%);
+  background-size: 100% 200%;
+  animation: scrolldown 2.2s cubic-bezier(0.76,0,0.3,1) infinite forwards;
+}
+@keyframes scrolldown {
+  0%   { background-position: 0 -100px; }
+  75%  { background-position: 0    0; }
+  100% { background-position: 0  100px; }
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Z-Index Utilities
+─────────────────────────────────────────────────────────────────────────────*/
+.zindex-medium { position: relative; z-index: 100; }
+.zindex-high   { position: relative; z-index: 1000; }
+
+/*─────────────────────────────────────────────────────────────────────────────
+  White Background Helper
+─────────────────────────────────────────────────────────────────────────────*/
+.add-white-bg img {
+  background-color: #fff !important;
+  border-radius: 4px;
+  padding: 10px !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Top Social Icons
+─────────────────────────────────────────────────────────────────────────────*/
+.top-social .uabb-info-list-wrapper.uabb-info-list-top,
+.top-social .uabb-info-list-wrapper.uabb-info-list-left {
+  display: flex;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+.top-social .uabb-info-list-content,
+.top-social .uabb-info-list-icon {
+  margin: 0 !important;
+}
+.top-social .uabb-info-list-item {
+  padding: 0 5px !important;
+  width: auto !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Single Post Padding
+─────────────────────────────────────────────────────────────────────────────*/
+.single-post #content-base {
+  padding: 0 20px;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Button Icon Layout
+─────────────────────────────────────────────────────────────────────────────*/
+.fl-button {
+  position: relative;
+}
+.fl-button-right.fl-button-has-icon a {
+  padding-right: 80px !important;
+}
+i.fl-button-icon.fl-button-icon-after.ua-icon.ua-icon-arrow-right {
+  position: absolute;
+  top: 0;
+  right: 0 !important;
+  width: 60px;
+  height: 100%;
+  padding-top: 20px;
+  text-align: center;
+  background-color: var(--fl-global-accent);
+}
+
+.fl-button-has-icon .fl-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  text-decoration: none !important;
+}
+
+.fl-button-has-icon .fl-button i {
+  margin-left: 25px !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Image Carousel Flex
+─────────────────────────────────────────────────────────────────────────────*/
+.uabb-image-carousel .slick-track {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Sponsor Carousel
+─────────────────────────────────────────────────────────────────────────────*/
+.sponsor-carousel img,
+.sponsor-carousel a img {
+  display: flex !important;
+  align-items: center !important;
+  max-width: 250px !important;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #fff;
+  height: 90px !important;
+  max-height: 90px !important;
+  min-height: 90px !important;
+  object-fit: contain;
+  object-position: center;
+  border: 1px #ccc solid;
+  text-align: center;
+  margin: 0 auto;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Footer
+─────────────────────────────────────────────────────────────────────────────*/
+.footer-menu .fl-rich-text > p {
+    display: none;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Infobox CTA
+─────────────────────────────────────────────────────────────────────────────*/
+.info-box-cta:hover .uabb-infobox-title,
+.info-box-cta:hover .uabb-infobox-text {
+    color: var(--fl-global-white) !important;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Forminator
+─────────────────────────────────────────────────────────────────────────────*/
+label.forminator-label {
+    text-transform: uppercase;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+button.forminator-button.forminator-button-submit {
+    background-color: var(--fl-global-primary);
+    font-weight: 700 !important;
+}
