@@ -1,7 +1,8 @@
 <?php
 /**
  * Settings page view.
- * Variables available: $enabled, $logo_id, $logo_url, $default_url, $hide_fl_assistant
+ * Variables available: $enabled, $logo_id, $logo_url, $default_url, $hide_fl_assistant,
+ *                      $acf_css_vars_enabled, $acf_css_vars_mappings
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -64,6 +65,47 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <div class="dst-toggle">
                     <input type="checkbox" id="hide_fl_assistant" name="ds_toolkit_settings[hide_fl_assistant]" value="1" <?php checked( $hide_fl_assistant ); ?>>
                     <label for="hide_fl_assistant"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACF CSS Variables -->
+        <div class="dst-card">
+            <div class="dst-card-row">
+                <div class="dst-card-icon"><span class="dashicons dashicons-editor-code"></span></div>
+                <div class="dst-card-info">
+                    <strong>ACF Theme Options → CSS Variables</strong>
+                    <span>Map ACF option fields to CSS custom properties output in <code>:root</code> on every page.</span>
+                </div>
+                <div class="dst-toggle">
+                    <input type="checkbox" id="acf_css_vars_enabled" name="ds_toolkit_settings[acf_css_vars_enabled]" value="1" <?php checked( $acf_css_vars_enabled ); ?>>
+                    <label for="acf_css_vars_enabled"></label>
+                </div>
+            </div>
+
+            <div class="dst-card-row dst-mapping-wrap" id="dst-acf-mappings-row" <?php echo $acf_css_vars_enabled ? '' : 'style="display:none"'; ?>>
+                <div class="dst-mapping-container">
+                    <table class="dst-mapping-table" id="dst-mappings-table">
+                        <thead>
+                            <tr>
+                                <th>ACF Field Name</th>
+                                <th>CSS Variable</th>
+                                <th>Fallback Value</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dst-mappings-tbody">
+                            <?php foreach ( $acf_css_vars_mappings as $i => $mapping ) : ?>
+                            <tr class="dst-mapping-row">
+                                <td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][<?php echo $i; ?>][acf_field]" value="<?php echo esc_attr( $mapping['acf_field'] ?? '' ); ?>" placeholder="acf_field_name"></td>
+                                <td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][<?php echo $i; ?>][css_var]" value="<?php echo esc_attr( $mapping['css_var'] ?? '' ); ?>" placeholder="--css-variable-name"></td>
+                                <td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][<?php echo $i; ?>][fallback]" value="<?php echo esc_attr( $mapping['fallback'] ?? '' ); ?>" placeholder="optional"></td>
+                                <td><button type="button" class="button dst-remove-mapping" title="Remove">&#x2715;</button></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <button type="button" class="button dst-add-mapping" id="dst-add-mapping" data-count="<?php echo count( $acf_css_vars_mappings ); ?>">+ Add Mapping</button>
                 </div>
             </div>
         </div>

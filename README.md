@@ -49,6 +49,13 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.6.1 - 2026-03-26
+- Added "ACF Theme Options → CSS Variables" feature with dynamic mapping table UI
+- Map any ACF options field to a CSS custom property output in :root on every page
+- Supports optional fallback values per mapping
+- Pre-seeded with default mapping: header_scrolled_bar_color → --header-scrolled-bar-color (fallback: var(--fl-global-accent))
+- All new features (hide_fl_assistant, acf_css_vars) now default to enabled on activation
+
 ### v0.6.0 - 2026-03-26
 - Added "Hide Beaver Builder Cloud Icon for Non-LeagueApps Users" feature
 - Hides the FL Assistant button in the BB toolbar for all users except @leagueapps.com accounts

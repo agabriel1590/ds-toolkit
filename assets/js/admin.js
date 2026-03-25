@@ -43,4 +43,31 @@
         $(this).hide();
     });
 
+    // Show/hide ACF mapping table when toggle changes
+    $('#acf_css_vars_enabled').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('#dst-acf-mappings-row').slideDown(200);
+        } else {
+            $('#dst-acf-mappings-row').slideUp(200);
+        }
+    });
+
+    // Add new mapping row
+    $('#dst-add-mapping').on('click', function () {
+        var index = parseInt($(this).data('count'), 10);
+        var row = '<tr class="dst-mapping-row">' +
+            '<td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][' + index + '][acf_field]" placeholder="acf_field_name"></td>' +
+            '<td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][' + index + '][css_var]" placeholder="--css-variable-name"></td>' +
+            '<td><input type="text" class="regular-text" name="ds_toolkit_settings[acf_css_vars_mappings][' + index + '][fallback]" placeholder="optional"></td>' +
+            '<td><button type="button" class="button dst-remove-mapping" title="Remove">&#x2715;</button></td>' +
+            '</tr>';
+        $('#dst-mappings-tbody').append(row);
+        $(this).data('count', index + 1);
+    });
+
+    // Remove a mapping row
+    $('#dst-mappings-tbody').on('click', '.dst-remove-mapping', function () {
+        $(this).closest('tr').remove();
+    });
+
 }(jQuery));

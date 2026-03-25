@@ -19,14 +19,35 @@ class DS_Toolkit {
             'file'  => 'features/class-ds-hide-fl-assistant.php',
             'class' => 'DS_Hide_FL_Assistant',
         ),
+        'acf_css_vars_enabled' => array(
+            'file'  => 'features/class-ds-acf-css-vars.php',
+            'class' => 'DS_ACF_CSS_Vars',
+        ),
     );
 
     public static function activate() {
         $settings = get_option( 'ds_toolkit_settings', array() );
-        if ( ! isset( $settings['enable_login_branding'] ) ) {
-            $settings['enable_login_branding'] = 1;
-            update_option( 'ds_toolkit_settings', $settings );
+
+        $defaults = array(
+            'enable_login_branding' => 1,
+            'hide_fl_assistant'     => 1,
+            'acf_css_vars_enabled'  => 1,
+            'acf_css_vars_mappings' => array(
+                array(
+                    'acf_field' => 'header_scrolled_bar_color',
+                    'css_var'   => '--header-scrolled-bar-color',
+                    'fallback'  => 'var(--fl-global-accent)',
+                ),
+            ),
+        );
+
+        foreach ( $defaults as $key => $value ) {
+            if ( ! isset( $settings[ $key ] ) ) {
+                $settings[ $key ] = $value;
+            }
         }
+
+        update_option( 'ds_toolkit_settings', $settings );
     }
 
     public function run() {
