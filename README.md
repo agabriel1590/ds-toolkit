@@ -42,6 +42,9 @@ No external libraries or Composer required.
 
 ## Changelog
 
+### v0.5.7 - 2026-03-25
+- Login Logo option is now hidden when LeagueApps Custom Login is disabled, and shown when enabled
+
 ### v0.5.6 - 2026-03-25
 - Fixed updater to detect the plugin using its actual folder name via plugin_basename() — update button now shows regardless of folder name
 - Fixed fix_source_dir to confirm plugin identity by checking for ds-toolkit.php inside the zip, not by matching the folder name

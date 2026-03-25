@@ -243,8 +243,8 @@ class DS_Toolkit_Admin {
                         </div>
                     </div>
 
-                    <!-- Logo picker row -->
-                    <div class="dst-card-row">
+                    <!-- Logo picker row (visible only when branding is enabled) -->
+                    <div class="dst-card-row" id="dst-logo-row" <?php echo $enabled ? '' : 'style="display:none"'; ?>>
                         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
                         <div class="dst-logo-label">
                             <strong>Login Logo</strong>
@@ -279,6 +279,15 @@ class DS_Toolkit_Admin {
         (function($){
             var defaultSrc = <?php echo json_encode( $default_url ); ?>;
             var frame;
+
+            // Show/hide logo row based on branding toggle
+            $('#enable_login_branding').on('change', function(){
+                if ( $(this).is(':checked') ) {
+                    $('#dst-logo-row').slideDown( 200 );
+                } else {
+                    $('#dst-logo-row').slideUp( 200 );
+                }
+            });
 
             $('#dst-logo-select').on('click', function(e){
                 e.preventDefault();
