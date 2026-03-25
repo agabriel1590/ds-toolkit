@@ -1,0 +1,19 @@
+.ag-login-powered-by {
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0 0 18px;
+    opacity: 0.85;
+}
+
+.ag-login-support {
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-top: 14px;
+    opacity: 0.9;
+}
+
+.ag-login-support a {
+    text-decoration: underline;
+}

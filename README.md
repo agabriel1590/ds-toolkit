@@ -9,18 +9,25 @@ Alipio Gabriel
 ```
 ds-toolkit/
 ├── ds-toolkit.php
+├── uninstall.php
 ├── includes/
 │   ├── class-ds-toolkit.php
-│   ├── class-ds-toolkit-updater.php
+│   └── class-ds-toolkit-updater.php
 ├── admin/
-│   └── class-ds-toolkit-admin.php
+│   ├── class-ds-toolkit-admin.php
+│   └── views/
+│       └── page-settings.php
 ├── features/
 │   └── class-ds-login-branding.php
-├── assets/
-│   └── images/
-│       └── cropped-LA-circle-logo-1.png
-├── uninstall.php
-└── README.md
+└── assets/
+    ├── css/
+    │   ├── admin.css
+    │   └── login.css
+    ├── js/
+    │   ├── admin.js
+    │   └── login.js
+    └── images/
+        └── cropped-LA-circle-logo-1.png
 ```
 
 ## Features
@@ -41,6 +48,20 @@ No external libraries or Composer required.
 ---
 
 ## Changelog
+
+### v0.5.9 - 2026-03-26
+- Standardised plugin headers (added Requires at least, Tested up to, Requires PHP, License URI, Domain Path)
+- Removed function_exists() guards from main file — not needed for plugin-private functions
+- Moved activation logic to DS_Toolkit::activate() static method
+- Added is_admin() guard in core loader — admin class and updater no longer load on front end
+- Introduced feature registry pattern in DS_Toolkit — adding a new feature only requires a class file and one array entry
+- Extracted all admin CSS/JS from inline PHP into assets/css/admin.css and assets/js/admin.js
+- Extracted settings page HTML into admin/views/page-settings.php
+- Extracted login page CSS/JS into assets/css/login.css and assets/js/login.js
+- Settings are now read once in the core loader and passed to feature classes via constructor
+- Hardcoded Academy URL moved to DS_Login_Branding::ACADEMY_URL constant
+- Fixed uninstall.php — now fully removes ds_toolkit_settings and ds_toolkit_latest_release transient
+- Removed unused composer.json and vendor/ directory (PUC library replaced in v0.4.1)
 
 ### v0.5.8 - 2026-03-25
 - Fixed folder rename to also apply on fresh installs via Upload Plugin, not just auto-updates
