@@ -15,6 +15,10 @@ class DS_Toolkit_Admin {
         $this->logo_finder->init();
     }
 
+    private function get_mcp_url() {
+        return rest_url( 'ds-toolkit/v1/mcp' );
+    }
+
     /**
      * Returns true only for users with a @leagueapps.com email address.
      * The DS Toolkit menu and settings page are restricted to these users.
@@ -128,6 +132,9 @@ class DS_Toolkit_Admin {
                 <a href="<?php echo esc_url( $base_url . '&tab=global-js' ); ?>" class="dst-tab<?php echo $active_tab === 'global-js' ? ' is-active' : ''; ?>">
                     Global JS
                 </a>
+                <a href="<?php echo esc_url( $base_url . '&tab=mcp' ); ?>" class="dst-tab<?php echo $active_tab === 'mcp' ? ' is-active' : ''; ?>">
+                    MCP
+                </a>
             </div>
 
             <?php
@@ -145,6 +152,12 @@ class DS_Toolkit_Admin {
                 $global_js_enabled = ! empty( $opts['global_js_enabled'] );
                 $global_js_content = isset( $opts['global_js_content'] ) ? $opts['global_js_content'] : '';
                 require DS_TOOLKIT_PATH . 'admin/views/page-global-js.php';
+
+            } elseif ( $active_tab === 'mcp' ) {
+                $mcp_url          = $this->get_mcp_url();
+                $wp_version_ok    = version_compare( get_bloginfo( 'version' ), '5.6', '>=' );
+                $app_passwords_ok = $wp_version_ok && wp_is_application_passwords_available();
+                require DS_TOOLKIT_PATH . 'admin/views/page-mcp.php';
 
             } else {
                 $enabled                            = ! empty( $opts['enable_login_branding'] );

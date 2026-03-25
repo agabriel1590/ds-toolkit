@@ -15,8 +15,10 @@ ds-toolkit/
 │   └── class-ds-toolkit-updater.php
 ├── admin/
 │   ├── class-ds-toolkit-admin.php
+│   ├── class-ds-mcp-server.php
 │   └── views/
-│       └── page-settings.php
+│       ├── page-settings.php
+│       └── page-mcp.php
 ├── features/
 │   └── class-ds-login-branding.php
 └── assets/
@@ -48,6 +50,17 @@ No external libraries or Composer required.
 ---
 
 ## Changelog
+
+### v0.9.0 - 2026-03-26
+- Added DS Toolkit as a self-contained MCP (Model Context Protocol) server — no extra plugins required
+- Registers `/wp-json/ds-toolkit/v1/mcp` REST endpoint that speaks MCP JSON-RPC 2.0 (protocol `2024-11-05`)
+- Authenticated via WordPress Application Passwords (built into WP 5.6+) — no login password exposed
+- Exposed tools: `list_posts`, `get_post`, `create_post`, `update_post`, `delete_post`, `get_toolkit_settings`, `update_toolkit_settings`
+- Added **MCP tab** in DS Toolkit admin (Settings > DS Toolkit > MCP):
+  - Live status indicator showing whether the endpoint is active
+  - Step-by-step setup instructions with direct link to Application Passwords in profile
+  - Config generator — enter username + app password, get the exact JSON for Claude Desktop and CLI command for Claude Code
+  - Full list of available tools with required capability for each
 
 ### v0.8.2 - 2026-03-26
 - DS Toolkit menu (Settings > DS Toolkit) is now only visible to users with a @leagueapps.com email address

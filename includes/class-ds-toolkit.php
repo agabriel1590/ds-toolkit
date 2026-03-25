@@ -112,6 +112,11 @@ class DS_Toolkit {
     public function run() {
         $this->maybe_set_defaults();
 
+        // MCP server must be loaded on every request (registers REST routes)
+        require_once DS_TOOLKIT_PATH . 'admin/class-ds-mcp-server.php';
+        $mcp_server = new DS_MCP_Server();
+        $mcp_server->init();
+
         if ( is_admin() ) {
             require_once DS_TOOLKIT_PATH . 'admin/class-ds-toolkit-admin.php';
             $admin = new DS_Toolkit_Admin();
