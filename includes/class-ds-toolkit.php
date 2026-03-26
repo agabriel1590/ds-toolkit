@@ -76,7 +76,7 @@ class DS_Toolkit {
             'getsubmenu_enabled'                  => 1,
             'current_year_enabled'               => 1,
             'forminator_email_partner_enabled'   => 1,
-            'forminator_email_partner_fallback'  => 'designshop@leagueapps.com',
+            'forminator_email_partner_fallback'  => 'designshop' . DS_TOOLKIT_ADMIN_DOMAIN,
             'global_css_enabled'                 => 1,
             'global_css_content'                 => (string) file_get_contents( DS_TOOLKIT_PATH . 'includes/defaults/global-css.css' ),
             'global_js_enabled'                  => 1,
@@ -92,6 +92,8 @@ class DS_Toolkit {
             'mcp_taxonomies_enabled'             => 1,
             'mcp_acf_enabled'                    => 1,
             'mcp_toolkit_settings_enabled'       => 1,
+            'mcp_bb_enabled'                     => 1,
+            'mcp_acf_schema_enabled'             => 1,
         );
     }
 

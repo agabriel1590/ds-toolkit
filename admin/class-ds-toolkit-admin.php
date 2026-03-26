@@ -20,7 +20,7 @@ class DS_Toolkit_Admin {
     }
 
     /**
-     * Returns true only for users with a @leagueapps.com email address.
+     * Returns true only for users whose email matches DS_TOOLKIT_ADMIN_DOMAIN.
      * The DS Toolkit menu and settings page are restricted to these users.
      */
     private function is_leagueapps_user() {
@@ -28,7 +28,8 @@ class DS_Toolkit_Admin {
         if ( ! $user || ! $user->exists() ) {
             return false;
         }
-        return (bool) preg_match( '/@leagueapps\.com$/i', $user->user_email );
+        $domain = preg_quote( DS_TOOLKIT_ADMIN_DOMAIN, '/' );
+        return (bool) preg_match( '/' . $domain . '$/i', $user->user_email );
     }
 
     public function add_menu() {
@@ -166,6 +167,8 @@ class DS_Toolkit_Admin {
                 $mcp_taxonomies_enabled       = ! isset( $opts['mcp_taxonomies_enabled'] )       || ! empty( $opts['mcp_taxonomies_enabled'] );
                 $mcp_acf_enabled              = ! isset( $opts['mcp_acf_enabled'] )              || ! empty( $opts['mcp_acf_enabled'] );
                 $mcp_toolkit_settings_enabled = ! isset( $opts['mcp_toolkit_settings_enabled'] ) || ! empty( $opts['mcp_toolkit_settings_enabled'] );
+                $mcp_bb_enabled               = ! isset( $opts['mcp_bb_enabled'] )               || ! empty( $opts['mcp_bb_enabled'] );
+                $mcp_acf_schema_enabled       = ! isset( $opts['mcp_acf_schema_enabled'] )       || ! empty( $opts['mcp_acf_schema_enabled'] );
                 require DS_TOOLKIT_PATH . 'admin/views/page-mcp.php';
 
             } else {

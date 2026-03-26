@@ -4,6 +4,43 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9] - 2026-03-26
+### Added
+- `DS_TOOLKIT_ADMIN_DOMAIN` constant — single place to configure the email domain gate; overridable via `wp-config.php`
+- `bb_list_layout_templates` / `bb_apply_layout_template` MCP tools — switch Header Main, Footer Main or the front page to any DS Launchpad layout template
+- ACF Field Group MCP tools: `acf_list_field_groups`, `acf_get_field_group`, `acf_create_field_group`, `acf_update_field_group`, `acf_delete_field_group`
+- ACF Options Page MCP tools: `acf_list_options_pages`, `acf_create_options_page`, `acf_delete_options_page` (ACF Pro 6.2+)
+- ACF Post Type & Taxonomy MCP tools: full CRUD via ACF Pro API
+- LeagueApps email gate on all destructive/schema MCP tools
+
+### Fixed
+- `$is_beta` undefined variable in updater — beta-vs-stable comparison logic was silently never executing
+- Extracted `leagueapps_gate()` helper — eliminates duplicated auth check blocks across toolkit settings, BB colors, and ACF schema tools
+
+## [0.9.9-beta.4] - 2026-03-26
+### Added
+- `bb_list_layout_templates` MCP tool — list available DS Launchpad header/footer/home templates (Header Style 1–5, Footer Style 1–3, Home Page Layout 1–6)
+- `bb_apply_layout_template` MCP tool — replace "Header Main" or "Footer Main" Themer layouts, or the site front page, with a DS Launchpad template; requires `confirm: true` as a destructive-action safeguard
+
+## [0.9.9-beta.3] - 2026-03-26
+### Added
+- `acf_list_field_groups`, `acf_get_field_group`, `acf_create_field_group`, `acf_update_field_group`, `acf_delete_field_group` MCP tools — full CRUD for ACF Pro field groups (create with fields inline)
+- `acf_list_options_pages`, `acf_create_options_page`, `acf_delete_options_page` MCP tools — manage ACF Pro options pages (requires ACF Pro 6.2+)
+
+## [0.9.9-beta.2] - 2026-03-26
+### Added
+- `acf_list_post_types`, `acf_create_post_type`, `acf_update_post_type`, `acf_delete_post_type` MCP tools — full CRUD for ACF Pro post types
+- `acf_list_taxonomies`, `acf_create_taxonomy`, `acf_update_taxonomy`, `acf_delete_taxonomy` MCP tools — full CRUD for ACF Pro taxonomies
+- New **ACF Schema** toggle in MCP access controls (marked destructive, @leagueapps.com only)
+### Security
+- All destructive/schema tools (ACF Schema, BB colors, Toolkit Settings) now require `@leagueapps.com` email in addition to `manage_options`
+
+## [0.9.9-beta.1] - 2026-03-26
+### Added
+- `get_bb_global_colors` MCP tool — read all Beaver Builder Global Style colors as a label → hex map
+- `update_bb_global_colors` MCP tool — update named BB colors by label, flushes BB CSS cache automatically
+- New **Beaver Builder** toggle in MCP access controls
+
 ## [0.9.8] - 2026-03-26
 ### Added
 - `set_post_terms` MCP tool — assign or replace taxonomy terms on any post without editing content

@@ -3,7 +3,7 @@
  * MCP tab content.
  * Variables: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local,
  *            $mcp_posts_pages_enabled, $mcp_cpt_enabled, $mcp_taxonomies_enabled,
- *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled
+ *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled, $mcp_bb_enabled, $mcp_acf_schema_enabled
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -93,6 +93,30 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <div class="dst-toggle">
                 <input type="checkbox" id="mcp_toolkit_settings_enabled" name="ds_toolkit_settings[mcp_toolkit_settings_enabled]" value="1" <?php checked( $mcp_toolkit_settings_enabled ); ?>>
                 <label for="mcp_toolkit_settings_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-art"></span></div>
+            <div class="dst-card-info">
+                <strong>Beaver Builder</strong>
+                <span>Allow Claude to read and update Beaver Builder Global Style colors — Primary, Accent, Headings, Body, and all other named colors.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_bb_enabled" name="ds_toolkit_settings[mcp_bb_enabled]" value="1" <?php checked( $mcp_bb_enabled ); ?>>
+                <label for="mcp_bb_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-networking"></span></div>
+            <div class="dst-card-info">
+                <strong>ACF Schema <span style="color:#b32d2e;font-size:11px;font-weight:600;background:#fce8e8;padding:1px 6px;border-radius:3px;margin-left:4px;">&#9888; Destructive</span></strong>
+                <span>Allow Claude to create, update, and delete ACF Post Types and Taxonomies. <strong>Restricted to @leagueapps.com accounts only</strong> — even if enabled, non-LeagueApps users cannot use these tools.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_acf_schema_enabled" name="ds_toolkit_settings[mcp_acf_schema_enabled]" value="1" <?php checked( $mcp_acf_schema_enabled ); ?>>
+                <label for="mcp_acf_schema_enabled"></label>
             </div>
         </div>
 
@@ -317,6 +341,122 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-hammer"></span></div>
         <div class="dst-card-info"><strong>update_toolkit_settings</strong><span>Update feature toggles, Global CSS/JS, column counts, and other settings.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">ACF Schema <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only</span></p>
+<div class="dst-card" style="<?php echo $mcp_acf_schema_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_post_types</strong><span>List all ACF-managed post types — returns key, slug, labels, and settings.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_post_type</strong><span>Create a new CPT via ACF — slug, labels, supports, taxonomies, visibility.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>acf_update_post_type</strong><span>Update an existing ACF post type by key. Only provided fields are changed.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_post_type</strong><span>Permanently delete an ACF post type by key. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_taxonomies</strong><span>List all ACF-managed taxonomies — returns key, slug, labels, and associated post types.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_taxonomy</strong><span>Create a new taxonomy via ACF — slug, labels, hierarchical, associated post types.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>acf_update_taxonomy</strong><span>Update an existing ACF taxonomy by key. Only provided fields are changed.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_taxonomy</strong><span>Permanently delete an ACF taxonomy by key. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">ACF Field Groups <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only</span></p>
+<div class="dst-card" style="<?php echo $mcp_acf_schema_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_field_groups</strong><span>List all ACF field groups — returns key, title, active status, and location rules.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-search"></span></div>
+        <div class="dst-card-info"><strong>acf_get_field_group</strong><span>Get a single field group by key, including all its fields (key, label, name, type).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_field_group</strong><span>Create a new ACF field group with optional location rules and fields in a single call.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>acf_update_field_group</strong><span>Update an existing field group — title, location, position, label placement, or active state.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_field_group</strong><span>Permanently delete a field group and all its fields. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">ACF Options Pages <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only &bull; ACF Pro 6.2+</span></p>
+<div class="dst-card" style="<?php echo $mcp_acf_schema_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_options_pages</strong><span>List all ACF Pro options pages — returns key, title, menu_slug, and parent_slug.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_options_page</strong><span>Create a new ACF Pro options page with title, menu slug, parent, capability, and optional redirect.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_options_page</strong><span>Permanently delete an ACF Pro options page. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Beaver Builder</p>
+<div class="dst-card" style="<?php echo $mcp_bb_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-art"></span></div>
+        <div class="dst-card-info"><strong>get_bb_global_colors</strong><span>Read all BB Global Style colors — returns a label → hex map (e.g. Primary, Accent, Headings).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-color-picker"></span></div>
+        <div class="dst-card-info"><strong>update_bb_global_colors</strong><span>Update named BB Global Style colors by label. Flushes BB CSS cache automatically so changes are live immediately.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
+        <div class="dst-card-info"><strong>bb_list_layout_templates</strong><span>List available DS Launchpad layout templates — Header Style 1–5, Footer Style 1–3, Home Page Layout 1–6. Filter by type (header/footer/home).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-image-rotate"></span></div>
+        <div class="dst-card-info"><strong>bb_apply_layout_template</strong><span>Replace "Header Main" or "Footer Main" (Themer layouts) or the site front page with a DS Launchpad template. Requires <code>confirm: true</code> — replaces current content.</span></div>
         <span class="dst-mcp-cap">manage_options</span>
     </div>
 </div>
