@@ -47,13 +47,22 @@ class DS_Toolkit_Updater {
 
         $is_beta  = $this->is_beta_channel();
         $is_newer = version_compare( $latest_version, $current_version, '>' );
-        // On the beta channel, a beta of the same base version as the current stable
-        // is also an update — e.g. 0.9.8-beta.2 should be offered to someone on 0.9.8.
-        // PHP's version_compare treats 0.9.8-beta.2 < 0.9.8, so we handle it explicitly.
-        if ( ! $is_newer && $is_beta && strpos( $latest_version, '-beta.' ) !== false && strpos( $current_version, '-beta.' ) === false ) {
+
+        if ( ! $is_newer && $is_beta && strpos( $latest_version, '-beta.' ) !== false ) {
             $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest_version );
             $current_base = preg_replace( '/-beta\.\d+$/', '', $current_version );
-            if ( version_compare( $latest_base, $current_base, '>=' ) ) {
+
+            if ( $latest_base === $current_base && strpos( $current_version, '-beta.' ) !== false ) {
+                // Same base version, both beta — compare the beta number explicitly
+                // e.g. 0.9.9.2-beta.3 > 0.9.9.2-beta.2
+                $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest_version );
+                $current_n = (int) preg_replace( '/^.*-beta\./', '', $current_version );
+                if ( $latest_n > $current_n ) {
+                    $is_newer = true;
+                }
+            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
+                // Beta of a newer-or-equal base vs current stable — always an upgrade
+                // e.g. 0.9.8-beta.2 offered to someone on 0.9.8
                 $is_newer = true;
             }
         }

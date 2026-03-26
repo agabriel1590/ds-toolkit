@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9.2-beta.4] - 2026-03-26
+### Fixed
+- Beta updater now correctly detects beta.N → beta.N+1 upgrades (same base version, higher beta number) — PHP's `version_compare` is unreliable for this case
+
 ## [0.9.9.2-beta.3] - 2026-03-26
 ### Added
 - `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management (list, inspect, rebuild structure, assign to location)
