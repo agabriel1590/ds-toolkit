@@ -4,6 +4,14 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9-beta.2] - 2026-03-26
+### Added
+- `acf_list_post_types`, `acf_create_post_type`, `acf_update_post_type`, `acf_delete_post_type` MCP tools — full CRUD for ACF Pro post types
+- `acf_list_taxonomies`, `acf_create_taxonomy`, `acf_update_taxonomy`, `acf_delete_taxonomy` MCP tools — full CRUD for ACF Pro taxonomies
+- New **ACF Schema** toggle in MCP access controls (marked destructive, @leagueapps.com only)
+### Security
+- All destructive/schema tools (ACF Schema, BB colors, Toolkit Settings) now require `@leagueapps.com` email in addition to `manage_options`
+
 ## [0.9.9-beta.1] - 2026-03-26
 ### Added
 - `get_bb_global_colors` MCP tool — read all Beaver Builder Global Style colors as a label → hex map

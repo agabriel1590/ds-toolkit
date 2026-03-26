@@ -83,6 +83,18 @@ class DS_MCP_Server {
     }
 
     /**
+     * Returns true only for users with a @leagueapps.com email address.
+     * Required for all destructive / schema-level MCP tools.
+     */
+    private function is_leagueapps_user() {
+        $user = wp_get_current_user();
+        if ( ! $user || ! $user->exists() ) {
+            return false;
+        }
+        return (bool) preg_match( '/@leagueapps\.com$/i', $user->user_email );
+    }
+
+    /**
      * Returns the group key for a given post type slug.
      */
     private function group_for_post_type( $post_type ) {
@@ -139,6 +151,14 @@ class DS_MCP_Server {
             'update_toolkit_settings' => 'mcp_toolkit_settings_enabled',
             'get_bb_global_colors'    => 'mcp_bb_enabled',
             'update_bb_global_colors' => 'mcp_bb_enabled',
+            'acf_list_post_types'     => 'mcp_acf_schema_enabled',
+            'acf_create_post_type'    => 'mcp_acf_schema_enabled',
+            'acf_update_post_type'    => 'mcp_acf_schema_enabled',
+            'acf_delete_post_type'    => 'mcp_acf_schema_enabled',
+            'acf_list_taxonomies'     => 'mcp_acf_schema_enabled',
+            'acf_create_taxonomy'     => 'mcp_acf_schema_enabled',
+            'acf_update_taxonomy'     => 'mcp_acf_schema_enabled',
+            'acf_delete_taxonomy'     => 'mcp_acf_schema_enabled',
         );
         return isset( $map[ $name ] ) ? $this->is_group_enabled( $map[ $name ] ) : true;
     }
@@ -173,6 +193,16 @@ class DS_MCP_Server {
             // Beaver Builder
             case 'get_bb_global_colors':    return $this->tool_get_bb_global_colors( $id );
             case 'update_bb_global_colors': return $this->tool_update_bb_global_colors( $id, $arguments );
+            // ACF Schema — Post Types
+            case 'acf_list_post_types':   return $this->tool_acf_list_post_types( $id );
+            case 'acf_create_post_type':  return $this->tool_acf_create_post_type( $id, $arguments );
+            case 'acf_update_post_type':  return $this->tool_acf_update_post_type( $id, $arguments );
+            case 'acf_delete_post_type':  return $this->tool_acf_delete_post_type( $id, $arguments );
+            // ACF Schema — Taxonomies
+            case 'acf_list_taxonomies':   return $this->tool_acf_list_taxonomies( $id );
+            case 'acf_create_taxonomy':   return $this->tool_acf_create_taxonomy( $id, $arguments );
+            case 'acf_update_taxonomy':   return $this->tool_acf_update_taxonomy( $id, $arguments );
+            case 'acf_delete_taxonomy':   return $this->tool_acf_delete_taxonomy( $id, $arguments );
             default:
                 return $this->rpc_error( $id, -32602, 'Unknown tool: ' . $name );
         }
@@ -603,8 +633,8 @@ class DS_MCP_Server {
         if ( ! $this->is_group_enabled( 'mcp_toolkit_settings_enabled' ) ) {
             return $this->group_disabled_error( $id, 'mcp_toolkit_settings_enabled' );
         }
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
         }
         $settings = get_option( 'ds_toolkit_settings', array() );
         $summary  = $settings;
@@ -619,8 +649,8 @@ class DS_MCP_Server {
         if ( ! $this->is_group_enabled( 'mcp_toolkit_settings_enabled' ) ) {
             return $this->group_disabled_error( $id, 'mcp_toolkit_settings_enabled' );
         }
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
         }
         if ( empty( $args['settings'] ) || ! is_array( $args['settings'] ) ) {
             return $this->rpc_error( $id, -32602, 'Missing or invalid argument: settings (must be an object)' );
@@ -656,8 +686,8 @@ class DS_MCP_Server {
         if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
             return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
         }
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
         }
         $settings = get_option( '_fl_builder_styles' );
         if ( empty( $settings ) || empty( $settings->colors ) ) {
@@ -676,8 +706,8 @@ class DS_MCP_Server {
         if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
             return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
         }
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
         }
         if ( empty( $args['colors'] ) || ! is_array( $args['colors'] ) ) {
             return $this->rpc_error( $id, -32602, 'Missing required argument: colors (object of label => hex)' );
@@ -715,6 +745,197 @@ class DS_MCP_Server {
             'rejected_labels' => $rejected,
             'note' => empty( $rejected ) ? '' : 'Rejected labels did not match any existing color name. Use get_bb_global_colors to see available names.',
         ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // ACF Schema Tools — Post Types
+    // -------------------------------------------------------------------------
+
+    private function acf_schema_gate( $id, $group_key ) {
+        if ( ! $this->is_group_enabled( $group_key ) ) {
+            return $this->group_disabled_error( $id, $group_key );
+        }
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
+        }
+        if ( ! function_exists( 'acf_get_acf_post_types' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF Pro 6.1+ is required for this tool' );
+        }
+        return null; // no error
+    }
+
+    private function tool_acf_list_post_types( $id ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        $post_types = acf_get_acf_post_types();
+        $result     = array();
+        foreach ( $post_types as $pt ) {
+            $result[] = array(
+                'key'            => $pt['key'],
+                'post_type'      => $pt['post_type'],
+                'label'          => $pt['label'],
+                'singular_label' => $pt['singular_label'],
+                'description'    => $pt['description'],
+                'public'         => $pt['public'],
+                'hierarchical'   => $pt['hierarchical'],
+                'supports'       => $pt['supports'],
+                'taxonomies'     => $pt['taxonomies'],
+            );
+        }
+        return $this->tool_result( $id, array( 'post_types' => $result ) );
+    }
+
+    private function tool_acf_create_post_type( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['post_type'] ) || empty( $args['label'] ) || empty( $args['singular_label'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required arguments: post_type, label, singular_label' );
+        }
+        $data = array(
+            'post_type'      => sanitize_key( $args['post_type'] ),
+            'label'          => sanitize_text_field( $args['label'] ),
+            'singular_label' => sanitize_text_field( $args['singular_label'] ),
+            'description'    => isset( $args['description'] ) ? sanitize_textarea_field( $args['description'] ) : '',
+            'public'         => isset( $args['public'] ) ? (bool) $args['public'] : true,
+            'hierarchical'   => isset( $args['hierarchical'] ) ? (bool) $args['hierarchical'] : false,
+            'supports'       => isset( $args['supports'] ) && is_array( $args['supports'] ) ? $args['supports'] : array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
+            'taxonomies'     => isset( $args['taxonomies'] ) && is_array( $args['taxonomies'] ) ? $args['taxonomies'] : array(),
+        );
+        $result = acf_update_post_type( $data );
+        if ( empty( $result['key'] ) ) {
+            return $this->rpc_error( $id, -32603, 'Failed to create post type. The post_type slug may already be in use.' );
+        }
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'post_type' => $result['post_type'], 'created' => true ) );
+    }
+
+    private function tool_acf_update_post_type( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_post_types to get it)' );
+        }
+        $existing = acf_get_post_type( sanitize_text_field( $args['key'] ) );
+        if ( empty( $existing ) ) {
+            return $this->rpc_error( $id, -32602, 'Post type not found for key: ' . $args['key'] );
+        }
+        $allowed = array( 'label', 'singular_label', 'description', 'public', 'hierarchical', 'supports', 'taxonomies' );
+        foreach ( $allowed as $field ) {
+            if ( isset( $args[ $field ] ) ) {
+                $existing[ $field ] = $args[ $field ];
+            }
+        }
+        $result = acf_update_post_type( $existing );
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'post_type' => $result['post_type'], 'updated' => true ) );
+    }
+
+    private function tool_acf_delete_post_type( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_post_types to get it)' );
+        }
+        $existing = acf_get_post_type( sanitize_text_field( $args['key'] ) );
+        if ( empty( $existing ) ) {
+            return $this->rpc_error( $id, -32602, 'Post type not found for key: ' . $args['key'] );
+        }
+        $post = acf_get_post_type_post( sanitize_text_field( $args['key'] ) );
+        if ( empty( $post ) ) {
+            return $this->rpc_error( $id, -32603, 'Could not locate the internal post for this ACF post type.' );
+        }
+        $deleted = acf_delete_post_type( $post->ID );
+        return $this->tool_result( $id, array( 'key' => $args['key'], 'deleted' => (bool) $deleted ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // ACF Schema Tools — Taxonomies
+    // -------------------------------------------------------------------------
+
+    private function tool_acf_list_taxonomies( $id ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        $taxonomies = acf_get_acf_taxonomies();
+        $result     = array();
+        foreach ( $taxonomies as $tax ) {
+            $result[] = array(
+                'key'            => $tax['key'],
+                'taxonomy'       => $tax['taxonomy'],
+                'label'          => $tax['label'],
+                'singular_label' => $tax['singular_label'],
+                'description'    => $tax['description'],
+                'public'         => $tax['public'],
+                'hierarchical'   => $tax['hierarchical'],
+                'object_type'    => $tax['object_type'],
+            );
+        }
+        return $this->tool_result( $id, array( 'taxonomies' => $result ) );
+    }
+
+    private function tool_acf_create_taxonomy( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['taxonomy'] ) || empty( $args['label'] ) || empty( $args['singular_label'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required arguments: taxonomy, label, singular_label' );
+        }
+        $data = array(
+            'taxonomy'       => sanitize_key( $args['taxonomy'] ),
+            'label'          => sanitize_text_field( $args['label'] ),
+            'singular_label' => sanitize_text_field( $args['singular_label'] ),
+            'description'    => isset( $args['description'] ) ? sanitize_textarea_field( $args['description'] ) : '',
+            'public'         => isset( $args['public'] ) ? (bool) $args['public'] : true,
+            'hierarchical'   => isset( $args['hierarchical'] ) ? (bool) $args['hierarchical'] : false,
+            'object_type'    => isset( $args['object_type'] ) && is_array( $args['object_type'] ) ? $args['object_type'] : array(),
+        );
+        $result = acf_update_taxonomy( $data );
+        if ( empty( $result['key'] ) ) {
+            return $this->rpc_error( $id, -32603, 'Failed to create taxonomy. The taxonomy slug may already be in use.' );
+        }
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'taxonomy' => $result['taxonomy'], 'created' => true ) );
+    }
+
+    private function tool_acf_update_taxonomy( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_taxonomies to get it)' );
+        }
+        $existing = acf_get_taxonomy( sanitize_text_field( $args['key'] ) );
+        if ( empty( $existing ) ) {
+            return $this->rpc_error( $id, -32602, 'Taxonomy not found for key: ' . $args['key'] );
+        }
+        $allowed = array( 'label', 'singular_label', 'description', 'public', 'hierarchical', 'object_type' );
+        foreach ( $allowed as $field ) {
+            if ( isset( $args[ $field ] ) ) {
+                $existing[ $field ] = $args[ $field ];
+            }
+        }
+        $result = acf_update_taxonomy( $existing );
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'taxonomy' => $result['taxonomy'], 'updated' => true ) );
+    }
+
+    private function tool_acf_delete_taxonomy( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_taxonomies to get it)' );
+        }
+        $existing = acf_get_taxonomy( sanitize_text_field( $args['key'] ) );
+        if ( empty( $existing ) ) {
+            return $this->rpc_error( $id, -32602, 'Taxonomy not found for key: ' . $args['key'] );
+        }
+        $post = acf_get_taxonomy_post( sanitize_text_field( $args['key'] ) );
+        if ( empty( $post ) ) {
+            return $this->rpc_error( $id, -32603, 'Could not locate the internal post for this ACF taxonomy.' );
+        }
+        $deleted = acf_delete_taxonomy( $post->ID );
+        return $this->tool_result( $id, array( 'key' => $args['key'], 'deleted' => (bool) $deleted ) );
     }
 
     // -------------------------------------------------------------------------
@@ -931,6 +1152,110 @@ class DS_MCP_Server {
                     ),
                 ),
             ),
+            // ACF Schema — Post Types
+            array(
+                'name'        => 'acf_list_post_types',
+                'description' => 'List all custom post types registered via ACF Pro. Returns key, slug, labels, and settings. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'acf_create_post_type',
+                'description' => 'Create a new custom post type via ACF Pro. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'post_type', 'label', 'singular_label' ),
+                    'properties' => array(
+                        'post_type'      => array( 'type' => 'string',  'description' => 'Post type slug — lowercase, max 20 chars, alphanumeric/underscores/dashes only (e.g. "athletes")' ),
+                        'label'          => array( 'type' => 'string',  'description' => 'Plural label (e.g. "Athletes")' ),
+                        'singular_label' => array( 'type' => 'string',  'description' => 'Singular label (e.g. "Athlete")' ),
+                        'description'    => array( 'type' => 'string',  'description' => 'Optional description' ),
+                        'public'         => array( 'type' => 'boolean', 'description' => 'Whether the post type is publicly accessible. Default: true' ),
+                        'hierarchical'   => array( 'type' => 'boolean', 'description' => 'Whether the post type is hierarchical like pages. Default: false' ),
+                        'supports'       => array( 'type' => 'array',   'description' => 'Features supported: title, editor, thumbnail, excerpt, custom-fields, revisions, etc. Default: [title, editor, thumbnail, custom-fields]' ),
+                        'taxonomies'     => array( 'type' => 'array',   'description' => 'Array of taxonomy slugs to associate with this post type' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_update_post_type',
+                'description' => 'Update an existing ACF Pro post type by its ACF key. Only provided fields are changed. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key'            => array( 'type' => 'string',  'description' => 'ACF post type key — get from acf_list_post_types' ),
+                        'label'          => array( 'type' => 'string',  'description' => 'New plural label' ),
+                        'singular_label' => array( 'type' => 'string',  'description' => 'New singular label' ),
+                        'description'    => array( 'type' => 'string',  'description' => 'New description' ),
+                        'public'         => array( 'type' => 'boolean', 'description' => 'Public visibility' ),
+                        'hierarchical'   => array( 'type' => 'boolean', 'description' => 'Hierarchical structure' ),
+                        'supports'       => array( 'type' => 'array',   'description' => 'Supported features array' ),
+                        'taxonomies'     => array( 'type' => 'array',   'description' => 'Associated taxonomy slugs' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_delete_post_type',
+                'description' => 'Permanently delete an ACF Pro post type by its ACF key. WARNING: This is irreversible. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'ACF post type key — get from acf_list_post_types' ),
+                    ),
+                ),
+            ),
+            // ACF Schema — Taxonomies
+            array(
+                'name'        => 'acf_list_taxonomies',
+                'description' => 'List all taxonomies registered via ACF Pro. Returns key, slug, labels, and associated post types. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'acf_create_taxonomy',
+                'description' => 'Create a new taxonomy via ACF Pro. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'taxonomy', 'label', 'singular_label' ),
+                    'properties' => array(
+                        'taxonomy'       => array( 'type' => 'string',  'description' => 'Taxonomy slug — lowercase, max 32 chars, alphanumeric/underscores/dashes (e.g. "athlete-category")' ),
+                        'label'          => array( 'type' => 'string',  'description' => 'Plural label (e.g. "Athlete Categories")' ),
+                        'singular_label' => array( 'type' => 'string',  'description' => 'Singular label (e.g. "Athlete Category")' ),
+                        'description'    => array( 'type' => 'string',  'description' => 'Optional description' ),
+                        'public'         => array( 'type' => 'boolean', 'description' => 'Whether publicly accessible. Default: true' ),
+                        'hierarchical'   => array( 'type' => 'boolean', 'description' => 'Whether hierarchical like categories (true) or flat like tags (false). Default: false' ),
+                        'object_type'    => array( 'type' => 'array',   'description' => 'Post type slugs to associate this taxonomy with (e.g. ["athletes", "teams"])' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_update_taxonomy',
+                'description' => 'Update an existing ACF Pro taxonomy by its ACF key. Only provided fields are changed. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key'            => array( 'type' => 'string',  'description' => 'ACF taxonomy key — get from acf_list_taxonomies' ),
+                        'label'          => array( 'type' => 'string',  'description' => 'New plural label' ),
+                        'singular_label' => array( 'type' => 'string',  'description' => 'New singular label' ),
+                        'description'    => array( 'type' => 'string',  'description' => 'New description' ),
+                        'public'         => array( 'type' => 'boolean', 'description' => 'Public visibility' ),
+                        'hierarchical'   => array( 'type' => 'boolean', 'description' => 'Hierarchical structure' ),
+                        'object_type'    => array( 'type' => 'array',   'description' => 'Associated post type slugs' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_delete_taxonomy',
+                'description' => 'Permanently delete an ACF Pro taxonomy by its ACF key. WARNING: This is irreversible. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'ACF taxonomy key — get from acf_list_taxonomies' ),
+                    ),
+                ),
+            ),
             // Beaver Builder
             array(
                 'name'        => 'get_bb_global_colors',
@@ -966,6 +1291,7 @@ class DS_MCP_Server {
             'mcp_acf_enabled'              => 'ACF / Custom Fields',
             'mcp_toolkit_settings_enabled' => 'Toolkit Settings',
             'mcp_bb_enabled'               => 'Beaver Builder',
+            'mcp_acf_schema_enabled'       => 'ACF Schema (Post Types & Taxonomies)',
         );
         $label = isset( $labels[ $group_key ] ) ? $labels[ $group_key ] : $group_key;
         return $this->rpc_error( $id, -32603, '"' . $label . '" tools are disabled. Enable them in DS Toolkit → Settings → MCP tab.' );

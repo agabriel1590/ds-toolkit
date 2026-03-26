@@ -93,6 +93,7 @@ class DS_Toolkit {
             'mcp_acf_enabled'                    => 1,
             'mcp_toolkit_settings_enabled'       => 1,
             'mcp_bb_enabled'                     => 1,
+            'mcp_acf_schema_enabled'             => 1,
         );
     }
 
