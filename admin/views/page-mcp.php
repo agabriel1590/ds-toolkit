@@ -1,7 +1,7 @@
 <?php
 /**
  * MCP tab content.
- * Variables available: $mcp_url, $wp_version_ok, $app_passwords_ok
+ * Variables available: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -10,9 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-mcp-status">
     <?php if ( $wp_version_ok && $app_passwords_ok ) : ?>
         <span class="dst-mcp-dot dst-mcp-dot--on"></span>
-        <strong>MCP Endpoint Active</strong>
+        <strong>MCP Endpoint Active<?php echo $is_local ? ' — Local' : ''; ?></strong>
         <code class="dst-mcp-endpoint"><?php echo esc_html( $mcp_url ); ?></code>
         <button type="button" class="button dst-copy-url-btn" data-url="<?php echo esc_attr( $mcp_url ); ?>">Copy URL</button>
+        <?php if ( $is_local ) : ?>
+        <span class="dst-mcp-note" style="width:100%;margin-top:6px;">&#9432; LocalWP detected — using <strong>http://</strong> to avoid Node.js SSL issues with local certificates. Application Passwords work because <code>WP_ENVIRONMENT_TYPE=local</code> is set in wp-config.php.</span>
+        <?php endif; ?>
     <?php elseif ( ! $wp_version_ok ) : ?>
         <span class="dst-mcp-dot dst-mcp-dot--off"></span>
         <strong>Requires WordPress 5.6+</strong>

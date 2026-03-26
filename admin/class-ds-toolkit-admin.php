@@ -154,7 +154,10 @@ class DS_Toolkit_Admin {
                 require DS_TOOLKIT_PATH . 'admin/views/page-global-js.php';
 
             } elseif ( $active_tab === 'mcp' ) {
-                $mcp_url          = $this->get_mcp_url();
+                $is_local         = ( 'local' === wp_get_environment_type() );
+                $mcp_url          = $is_local
+                    ? preg_replace( '/^https:/i', 'http:', $this->get_mcp_url() )
+                    : $this->get_mcp_url();
                 $wp_version_ok    = version_compare( get_bloginfo( 'version' ), '5.6', '>=' );
                 $app_passwords_ok = $wp_version_ok && wp_is_application_passwords_available();
                 require DS_TOOLKIT_PATH . 'admin/views/page-mcp.php';
