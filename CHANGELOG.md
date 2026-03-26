@@ -4,6 +4,18 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9.2] - 2026-03-26
+### Added
+- `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management
+- `flush_rewrite_rules`, `flush_cache`, `delete_transients`, `search_replace` MCP tools — maintenance operations
+- `get_option`, `update_option` MCP tools — read/write wp_options (leagueapps-gated)
+- `list_users`, `get_user`, `regenerate_thumbnails` MCP tools — user lookup and media
+- `create_post`/`update_post` now accept `post_parent`, `slug`, `menu_order`, `page_template`, `post_author`, `comment_status`
+- `get_post`/`list_posts` return `slug`, `post_parent`, `menu_order`; `list_posts` accepts `post_parent`, `orderby`, `order` filters
+- Four new MCP access-control groups: Menus, Maintenance, Options, Users & Media
+### Fixed
+- Beta updater now correctly detects beta.N → beta.N+1 upgrades
+
 ## [0.9.9.2-beta.4] - 2026-03-26
 ### Fixed
 - Beta updater now correctly detects beta.N → beta.N+1 upgrades (same base version, higher beta number) — PHP's `version_compare` is unreliable for this case
