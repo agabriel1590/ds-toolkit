@@ -45,6 +45,7 @@ class DS_Toolkit_Updater {
         $current_version = DS_TOOLKIT_VERSION;
         $plugin_file     = $this->plugin_file();
 
+        $is_beta  = $this->is_beta_channel();
         $is_newer = version_compare( $latest_version, $current_version, '>' );
         // On the beta channel, a beta of the same base version as the current stable
         // is also an update — e.g. 0.9.8-beta.2 should be offered to someone on 0.9.8.

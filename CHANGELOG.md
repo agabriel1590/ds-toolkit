@@ -4,6 +4,19 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9] - 2026-03-26
+### Added
+- `DS_TOOLKIT_ADMIN_DOMAIN` constant — single place to configure the email domain gate; overridable via `wp-config.php`
+- `bb_list_layout_templates` / `bb_apply_layout_template` MCP tools — switch Header Main, Footer Main or the front page to any DS Launchpad layout template
+- ACF Field Group MCP tools: `acf_list_field_groups`, `acf_get_field_group`, `acf_create_field_group`, `acf_update_field_group`, `acf_delete_field_group`
+- ACF Options Page MCP tools: `acf_list_options_pages`, `acf_create_options_page`, `acf_delete_options_page` (ACF Pro 6.2+)
+- ACF Post Type & Taxonomy MCP tools: full CRUD via ACF Pro API
+- LeagueApps email gate on all destructive/schema MCP tools
+
+### Fixed
+- `$is_beta` undefined variable in updater — beta-vs-stable comparison logic was silently never executing
+- Extracted `leagueapps_gate()` helper — eliminates duplicated auth check blocks across toolkit settings, BB colors, and ACF schema tools
+
 ## [0.9.9-beta.4] - 2026-03-26
 ### Added
 - `bb_list_layout_templates` MCP tool — list available DS Launchpad header/footer/home templates (Header Style 1–5, Footer Style 1–3, Home Page Layout 1–6)

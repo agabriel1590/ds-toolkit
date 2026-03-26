@@ -83,7 +83,7 @@ class DS_MCP_Server {
     }
 
     /**
-     * Returns true only for users with a @leagueapps.com email address.
+     * Returns true only for users whose email matches DS_TOOLKIT_ADMIN_DOMAIN.
      * Required for all destructive / schema-level MCP tools.
      */
     private function is_leagueapps_user() {
@@ -91,7 +91,22 @@ class DS_MCP_Server {
         if ( ! $user || ! $user->exists() ) {
             return false;
         }
-        return (bool) preg_match( '/@leagueapps\.com$/i', $user->user_email );
+        $domain  = preg_quote( DS_TOOLKIT_ADMIN_DOMAIN, '/' );
+        return (bool) preg_match( '/' . $domain . '$/i', $user->user_email );
+    }
+
+    /**
+     * Gate helper for tools that require manage_options + DS_TOOLKIT_ADMIN_DOMAIN email.
+     * Also enforces the group toggle. Returns an error response or null on pass.
+     */
+    private function leagueapps_gate( $id, $group_key ) {
+        if ( ! $this->is_group_enabled( $group_key ) ) {
+            return $this->group_disabled_error( $id, $group_key );
+        }
+        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + ' . DS_TOOLKIT_ADMIN_DOMAIN . ' account required' );
+        }
+        return null;
     }
 
     /**
@@ -652,12 +667,8 @@ class DS_MCP_Server {
     // -------------------------------------------------------------------------
 
     private function tool_get_toolkit_settings( $id ) {
-        if ( ! $this->is_group_enabled( 'mcp_toolkit_settings_enabled' ) ) {
-            return $this->group_disabled_error( $id, 'mcp_toolkit_settings_enabled' );
-        }
-        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
-        }
+        $err = $this->leagueapps_gate( $id, 'mcp_toolkit_settings_enabled' );
+        if ( $err ) return $err;
         $settings = get_option( 'ds_toolkit_settings', array() );
         $summary  = $settings;
         unset( $summary['global_css_content'], $summary['global_js_content'] );
@@ -668,12 +679,8 @@ class DS_MCP_Server {
     }
 
     private function tool_update_toolkit_settings( $id, $args ) {
-        if ( ! $this->is_group_enabled( 'mcp_toolkit_settings_enabled' ) ) {
-            return $this->group_disabled_error( $id, 'mcp_toolkit_settings_enabled' );
-        }
-        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
-        }
+        $err = $this->leagueapps_gate( $id, 'mcp_toolkit_settings_enabled' );
+        if ( $err ) return $err;
         if ( empty( $args['settings'] ) || ! is_array( $args['settings'] ) ) {
             return $this->rpc_error( $id, -32602, 'Missing or invalid argument: settings (must be an object)' );
         }
@@ -705,12 +712,8 @@ class DS_MCP_Server {
     // -------------------------------------------------------------------------
 
     private function tool_get_bb_global_colors( $id ) {
-        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
-            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
-        }
-        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
-        }
+        $err = $this->leagueapps_gate( $id, 'mcp_bb_enabled' );
+        if ( $err ) return $err;
         $settings = get_option( '_fl_builder_styles' );
         if ( empty( $settings ) || empty( $settings->colors ) ) {
             return $this->tool_result( $id, array( 'colors' => new stdClass() ) );
@@ -725,12 +728,8 @@ class DS_MCP_Server {
     }
 
     private function tool_update_bb_global_colors( $id, $args ) {
-        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
-            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
-        }
-        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
-        }
+        $err = $this->leagueapps_gate( $id, 'mcp_bb_enabled' );
+        if ( $err ) return $err;
         if ( empty( $args['colors'] ) || ! is_array( $args['colors'] ) ) {
             return $this->rpc_error( $id, -32602, 'Missing required argument: colors (object of label => hex)' );
         }
@@ -923,16 +922,12 @@ class DS_MCP_Server {
     // -------------------------------------------------------------------------
 
     private function acf_schema_gate( $id, $group_key ) {
-        if ( ! $this->is_group_enabled( $group_key ) ) {
-            return $this->group_disabled_error( $id, $group_key );
-        }
-        if ( ! current_user_can( 'manage_options' ) || ! $this->is_leagueapps_user() ) {
-            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options + @leagueapps.com account required' );
-        }
+        $err = $this->leagueapps_gate( $id, $group_key );
+        if ( $err ) return $err;
         if ( ! function_exists( 'acf_get_acf_post_types' ) ) {
             return $this->rpc_error( $id, -32603, 'ACF Pro 6.1+ is required for this tool' );
         }
-        return null; // no error
+        return null;
     }
 
     private function tool_acf_list_post_types( $id ) {

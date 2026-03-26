@@ -3,7 +3,7 @@
  * Plugin Name:       DS Toolkit
  * Plugin URI:        https://github.com/agabriel1590/ds-toolkit
  * Description:       Design Shop custom features and build toolkit.
- * Version:           0.9.9-beta.4
+ * Version:           0.9.9
  * Author:            Alipio Gabriel
  * Author URI:        https://github.com/agabriel1590
  * Text Domain:       ds-toolkit
@@ -17,9 +17,18 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'DS_TOOLKIT_VERSION', '0.9.9-beta.4' );
+define( 'DS_TOOLKIT_VERSION', '0.9.9' );
 define( 'DS_TOOLKIT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DS_TOOLKIT_URL', plugin_dir_url( __FILE__ ) );
+
+/**
+ * The email domain that gates access to destructive / schema-level MCP tools
+ * and the DS Toolkit admin menu. Override in wp-config.php if needed:
+ *   define( 'DS_TOOLKIT_ADMIN_DOMAIN', '@yourdomain.com' );
+ */
+if ( ! defined( 'DS_TOOLKIT_ADMIN_DOMAIN' ) ) {
+    define( 'DS_TOOLKIT_ADMIN_DOMAIN', '@leagueapps.com' );
+}
 
 require_once DS_TOOLKIT_PATH . 'includes/class-ds-toolkit.php';
 

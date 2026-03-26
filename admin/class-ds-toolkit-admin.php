@@ -20,7 +20,7 @@ class DS_Toolkit_Admin {
     }
 
     /**
-     * Returns true only for users with a @leagueapps.com email address.
+     * Returns true only for users whose email matches DS_TOOLKIT_ADMIN_DOMAIN.
      * The DS Toolkit menu and settings page are restricted to these users.
      */
     private function is_leagueapps_user() {
@@ -28,7 +28,8 @@ class DS_Toolkit_Admin {
         if ( ! $user || ! $user->exists() ) {
             return false;
         }
-        return (bool) preg_match( '/@leagueapps\.com$/i', $user->user_email );
+        $domain = preg_quote( DS_TOOLKIT_ADMIN_DOMAIN, '/' );
+        return (bool) preg_match( '/' . $domain . '$/i', $user->user_email );
     }
 
     public function add_menu() {
