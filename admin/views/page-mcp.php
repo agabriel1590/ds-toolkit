@@ -3,7 +3,7 @@
  * MCP tab content.
  * Variables: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local,
  *            $mcp_posts_pages_enabled, $mcp_cpt_enabled, $mcp_taxonomies_enabled,
- *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled
+ *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled, $mcp_bb_enabled
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -93,6 +93,18 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <div class="dst-toggle">
                 <input type="checkbox" id="mcp_toolkit_settings_enabled" name="ds_toolkit_settings[mcp_toolkit_settings_enabled]" value="1" <?php checked( $mcp_toolkit_settings_enabled ); ?>>
                 <label for="mcp_toolkit_settings_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-art"></span></div>
+            <div class="dst-card-info">
+                <strong>Beaver Builder</strong>
+                <span>Allow Claude to read and update Beaver Builder Global Style colors — Primary, Accent, Headings, Body, and all other named colors.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_bb_enabled" name="ds_toolkit_settings[mcp_bb_enabled]" value="1" <?php checked( $mcp_bb_enabled ); ?>>
+                <label for="mcp_bb_enabled"></label>
             </div>
         </div>
 
@@ -317,6 +329,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-hammer"></span></div>
         <div class="dst-card-info"><strong>update_toolkit_settings</strong><span>Update feature toggles, Global CSS/JS, column counts, and other settings.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Beaver Builder</p>
+<div class="dst-card" style="<?php echo $mcp_bb_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-art"></span></div>
+        <div class="dst-card-info"><strong>get_bb_global_colors</strong><span>Read all BB Global Style colors — returns a label → hex map (e.g. Primary, Accent, Headings).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-color-picker"></span></div>
+        <div class="dst-card-info"><strong>update_bb_global_colors</strong><span>Update named BB Global Style colors by label. Flushes BB CSS cache automatically so changes are live immediately.</span></div>
         <span class="dst-mcp-cap">manage_options</span>
     </div>
 </div>

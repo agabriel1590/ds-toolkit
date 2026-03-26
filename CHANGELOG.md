@@ -4,6 +4,12 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.8-beta.2] - 2026-03-26
+### Added
+- `get_bb_global_colors` MCP tool — read all Beaver Builder Global Style colors as a label → hex map
+- `update_bb_global_colors` MCP tool — update named BB colors by label, flushes BB CSS cache automatically
+- New **Beaver Builder** toggle in MCP access controls
+
 ## [0.9.8] - 2026-03-26
 ### Added
 - `set_post_terms` MCP tool — assign or replace taxonomy terms on any post without editing content

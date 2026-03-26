@@ -166,6 +166,7 @@ class DS_Toolkit_Admin {
                 $mcp_taxonomies_enabled       = ! isset( $opts['mcp_taxonomies_enabled'] )       || ! empty( $opts['mcp_taxonomies_enabled'] );
                 $mcp_acf_enabled              = ! isset( $opts['mcp_acf_enabled'] )              || ! empty( $opts['mcp_acf_enabled'] );
                 $mcp_toolkit_settings_enabled = ! isset( $opts['mcp_toolkit_settings_enabled'] ) || ! empty( $opts['mcp_toolkit_settings_enabled'] );
+                $mcp_bb_enabled               = ! isset( $opts['mcp_bb_enabled'] )               || ! empty( $opts['mcp_bb_enabled'] );
                 require DS_TOOLKIT_PATH . 'admin/views/page-mcp.php';
 
             } else {

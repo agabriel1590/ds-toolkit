@@ -92,6 +92,7 @@ class DS_Toolkit {
             'mcp_taxonomies_enabled'             => 1,
             'mcp_acf_enabled'                    => 1,
             'mcp_toolkit_settings_enabled'       => 1,
+            'mcp_bb_enabled'                     => 1,
         );
     }
 

@@ -137,6 +137,8 @@ class DS_MCP_Server {
             'update_post_fields'      => 'mcp_acf_enabled',
             'get_toolkit_settings'    => 'mcp_toolkit_settings_enabled',
             'update_toolkit_settings' => 'mcp_toolkit_settings_enabled',
+            'get_bb_global_colors'    => 'mcp_bb_enabled',
+            'update_bb_global_colors' => 'mcp_bb_enabled',
         );
         return isset( $map[ $name ] ) ? $this->is_group_enabled( $map[ $name ] ) : true;
     }
@@ -168,6 +170,9 @@ class DS_MCP_Server {
             // Toolkit Settings
             case 'get_toolkit_settings':    return $this->tool_get_toolkit_settings( $id );
             case 'update_toolkit_settings': return $this->tool_update_toolkit_settings( $id, $arguments );
+            // Beaver Builder
+            case 'get_bb_global_colors':    return $this->tool_get_bb_global_colors( $id );
+            case 'update_bb_global_colors': return $this->tool_update_bb_global_colors( $id, $arguments );
             default:
                 return $this->rpc_error( $id, -32602, 'Unknown tool: ' . $name );
         }
@@ -644,6 +649,75 @@ class DS_MCP_Server {
     }
 
     // -------------------------------------------------------------------------
+    // Beaver Builder Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_get_bb_global_colors( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        }
+        $settings = get_option( '_fl_builder_styles' );
+        if ( empty( $settings ) || empty( $settings->colors ) ) {
+            return $this->tool_result( $id, array( 'colors' => new stdClass() ) );
+        }
+        $colors = array();
+        foreach ( $settings->colors as $color ) {
+            if ( ! empty( $color['label'] ) && isset( $color['color'] ) ) {
+                $colors[ $color['label'] ] = $color['color'];
+            }
+        }
+        return $this->tool_result( $id, array( 'colors' => $colors ) );
+    }
+
+    private function tool_update_bb_global_colors( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — manage_options required' );
+        }
+        if ( empty( $args['colors'] ) || ! is_array( $args['colors'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: colors (object of label => hex)' );
+        }
+        if ( ! class_exists( 'FLBuilderModel' ) ) {
+            return $this->rpc_error( $id, -32603, 'Beaver Builder is not active on this site' );
+        }
+        $settings = get_option( '_fl_builder_styles' );
+        if ( empty( $settings ) || ! isset( $settings->colors ) ) {
+            return $this->rpc_error( $id, -32603, 'No Beaver Builder global colors found. Set them up in BB > Global Styles first.' );
+        }
+        $updated  = array();
+        $rejected = array();
+        foreach ( $args['colors'] as $label => $hex ) {
+            $matched = false;
+            foreach ( $settings->colors as &$color ) {
+                if ( isset( $color['label'] ) && $color['label'] === $label ) {
+                    $color['color'] = sanitize_hex_color_no_hash( ltrim( $hex, '#' ) );
+                    $updated[]      = $label;
+                    $matched        = true;
+                    break;
+                }
+            }
+            unset( $color );
+            if ( ! $matched ) {
+                $rejected[] = $label;
+            }
+        }
+        if ( ! empty( $updated ) ) {
+            update_option( '_fl_builder_styles', $settings );
+            FLBuilderModel::delete_asset_cache_for_all_posts();
+        }
+        return $this->tool_result( $id, array(
+            'updated_colors' => $updated,
+            'rejected_labels' => $rejected,
+            'note' => empty( $rejected ) ? '' : 'Rejected labels did not match any existing color name. Use get_bb_global_colors to see available names.',
+        ) );
+    }
+
+    // -------------------------------------------------------------------------
     // Tool Schema
     // -------------------------------------------------------------------------
 
@@ -857,6 +931,26 @@ class DS_MCP_Server {
                     ),
                 ),
             ),
+            // Beaver Builder
+            array(
+                'name'        => 'get_bb_global_colors',
+                'description' => 'Get all Beaver Builder Global Style colors. Returns a label → hex map (e.g. "Primary": "e63946"). Requires manage_options.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'update_bb_global_colors',
+                'description' => 'Update one or more Beaver Builder Global Style colors by label. Flushes BB CSS cache automatically. Requires manage_options.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'colors' ),
+                    'properties' => array(
+                        'colors' => array(
+                            'type'        => 'object',
+                            'description' => 'Object of label → hex pairs. Label must match exactly (e.g. "Primary", "Accent", "Headings"). Hex with or without #. Example: {"Primary":"e63946","Accent":"457b9d"}',
+                        ),
+                    ),
+                ),
+            ),
         );
     }
 
@@ -871,6 +965,7 @@ class DS_MCP_Server {
             'mcp_taxonomies_enabled'       => 'Taxonomies',
             'mcp_acf_enabled'              => 'ACF / Custom Fields',
             'mcp_toolkit_settings_enabled' => 'Toolkit Settings',
+            'mcp_bb_enabled'               => 'Beaver Builder',
         );
         $label = isset( $labels[ $group_key ] ) ? $labels[ $group_key ] : $group_key;
         return $this->rpc_error( $id, -32603, '"' . $label . '" tools are disabled. Enable them in DS Toolkit → Settings → MCP tab.' );
