@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9.2-beta.1] - 2026-03-26
+### Changed
+- Updated MCP example prompts to showcase current feature set — content editing, taxonomy terms, BB layout switching, global colors, CSS editing, ACF field groups, ACF post types, and settings
+
 ## [0.9.9.1] - 2026-03-26
 ### Fixed
 - WordPress "View version details" changelog tab now shows the full CHANGELOG.md history instead of only the latest GitHub release body
