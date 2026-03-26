@@ -4,7 +4,7 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
-## [0.9.8-beta.1] - 2026-03-26
+## [0.9.8] - 2026-03-26
 ### Added
 - `set_post_terms` MCP tool — assign or replace taxonomy terms on any post without editing content
 - `terms` parameter on `create_post` and `update_post` — assign taxonomy terms in the same call as creating/updating a post
