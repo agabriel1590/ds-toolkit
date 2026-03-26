@@ -4,6 +4,12 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.8-beta.1] - 2026-03-26
+### Added
+- `set_post_terms` MCP tool — assign or replace taxonomy terms on any post without editing content
+- `terms` parameter on `create_post` and `update_post` — assign taxonomy terms in the same call as creating/updating a post
+- `get_post` now returns current assigned terms grouped by taxonomy
+
 ## [0.9.7] - 2026-03-26
 ### Added
 - Beta update channel — set `define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' )` in `wp-config.php` to receive pre-releases

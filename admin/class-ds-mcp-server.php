@@ -132,6 +132,7 @@ class DS_MCP_Server {
             'create_term'             => 'mcp_taxonomies_enabled',
             'update_term'             => 'mcp_taxonomies_enabled',
             'delete_term'             => 'mcp_taxonomies_enabled',
+            'set_post_terms'          => 'mcp_taxonomies_enabled',
             'get_post_fields'         => 'mcp_acf_enabled',
             'update_post_fields'      => 'mcp_acf_enabled',
             'get_toolkit_settings'    => 'mcp_toolkit_settings_enabled',
@@ -160,6 +161,7 @@ class DS_MCP_Server {
             case 'create_term':         return $this->tool_create_term( $id, $arguments );
             case 'update_term':         return $this->tool_update_term( $id, $arguments );
             case 'delete_term':         return $this->tool_delete_term( $id, $arguments );
+            case 'set_post_terms':      return $this->tool_set_post_terms( $id, $arguments );
             // ACF / Custom Fields
             case 'get_post_fields':     return $this->tool_get_post_fields( $id, $arguments );
             case 'update_post_fields':  return $this->tool_update_post_fields( $id, $arguments );
@@ -217,6 +219,16 @@ class DS_MCP_Server {
         if ( ! $this->is_group_enabled( $this->group_for_post_type( $post->post_type ) ) ) {
             return $this->group_disabled_error( $id, $this->group_for_post_type( $post->post_type ) );
         }
+        $taxonomies  = get_object_taxonomies( $post->post_type );
+        $terms_data  = array();
+        foreach ( $taxonomies as $taxonomy ) {
+            $terms = wp_get_object_terms( $post->ID, $taxonomy, array( 'fields' => 'all' ) );
+            if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+                $terms_data[ $taxonomy ] = array_map( function( $t ) {
+                    return array( 'id' => $t->term_id, 'name' => $t->name, 'slug' => $t->slug );
+                }, $terms );
+            }
+        }
         return $this->tool_result( $id, array(
             'id'       => $post->ID,
             'title'    => $post->post_title,
@@ -228,6 +240,7 @@ class DS_MCP_Server {
             'date'     => $post->post_date,
             'modified' => $post->post_modified,
             'author'   => get_the_author_meta( 'display_name', $post->post_author ),
+            'terms'    => $terms_data,
         ) );
     }
 
@@ -252,7 +265,16 @@ class DS_MCP_Server {
         if ( is_wp_error( $post_id ) ) {
             return $this->rpc_error( $id, -32603, $post_id->get_error_message() );
         }
-        return $this->tool_result( $id, array( 'id' => $post_id, 'url' => get_permalink( $post_id ), 'created' => true ) );
+        $terms_assigned = array();
+        if ( ! empty( $args['terms'] ) && is_array( $args['terms'] ) ) {
+            foreach ( $args['terms'] as $taxonomy => $terms ) {
+                $result = wp_set_object_terms( $post_id, $terms, sanitize_key( $taxonomy ) );
+                if ( ! is_wp_error( $result ) ) {
+                    $terms_assigned[] = $taxonomy;
+                }
+            }
+        }
+        return $this->tool_result( $id, array( 'id' => $post_id, 'url' => get_permalink( $post_id ), 'created' => true, 'terms_assigned' => $terms_assigned ) );
     }
 
     private function tool_update_post( $id, $args ) {
@@ -278,7 +300,16 @@ class DS_MCP_Server {
         if ( is_wp_error( $result ) ) {
             return $this->rpc_error( $id, -32603, $result->get_error_message() );
         }
-        return $this->tool_result( $id, array( 'id' => $post->ID, 'updated' => true, 'url' => get_permalink( $post->ID ) ) );
+        $terms_assigned = array();
+        if ( ! empty( $args['terms'] ) && is_array( $args['terms'] ) ) {
+            foreach ( $args['terms'] as $taxonomy => $terms ) {
+                $r = wp_set_object_terms( $post->ID, $terms, sanitize_key( $taxonomy ) );
+                if ( ! is_wp_error( $r ) ) {
+                    $terms_assigned[] = $taxonomy;
+                }
+            }
+        }
+        return $this->tool_result( $id, array( 'id' => $post->ID, 'updated' => true, 'url' => get_permalink( $post->ID ), 'terms_assigned' => $terms_assigned ) );
     }
 
     private function tool_delete_post( $id, $args ) {
@@ -461,6 +492,36 @@ class DS_MCP_Server {
         return $this->tool_result( $id, array( 'id' => (int) $args['id'], 'deleted' => true ) );
     }
 
+    private function tool_set_post_terms( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_taxonomies_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_taxonomies_enabled' );
+        }
+        if ( empty( $args['id'] ) || empty( $args['taxonomy'] ) || ! isset( $args['terms'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required arguments: id, taxonomy, terms' );
+        }
+        $post = get_post( (int) $args['id'] );
+        if ( ! $post ) {
+            return $this->rpc_error( $id, -32602, 'Post not found: ID ' . (int) $args['id'] );
+        }
+        if ( ! current_user_can( 'edit_post', $post->ID ) ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions to edit post ' . $post->ID );
+        }
+        $taxonomy = sanitize_key( $args['taxonomy'] );
+        $terms    = is_array( $args['terms'] ) ? $args['terms'] : array( $args['terms'] );
+        $append   = ! empty( $args['append'] );
+        $result   = wp_set_object_terms( $post->ID, $terms, $taxonomy, $append );
+        if ( is_wp_error( $result ) ) {
+            return $this->rpc_error( $id, -32603, $result->get_error_message() );
+        }
+        return $this->tool_result( $id, array(
+            'post_id'  => $post->ID,
+            'taxonomy' => $taxonomy,
+            'term_ids' => $result,
+            'append'   => $append,
+            'updated'  => true,
+        ) );
+    }
+
     // -------------------------------------------------------------------------
     // ACF / Custom Fields Tools
     // -------------------------------------------------------------------------
@@ -615,7 +676,7 @@ class DS_MCP_Server {
             ),
             array(
                 'name'        => 'create_post',
-                'description' => 'Create a new post, page, or CPT entry.',
+                'description' => 'Create a new post, page, or CPT entry. Optionally assign taxonomy terms in the same call.',
                 'inputSchema' => array(
                     'type'       => 'object',
                     'required'   => array( 'title' ),
@@ -625,12 +686,13 @@ class DS_MCP_Server {
                         'excerpt'   => array( 'type' => 'string', 'description' => 'Excerpt' ),
                         'status'    => array( 'type' => 'string', 'description' => 'draft, publish, private. Default: draft' ),
                         'post_type' => array( 'type' => 'string', 'description' => 'Post type slug. Default: post' ),
+                        'terms'     => array( 'type' => 'object', 'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
                     ),
                 ),
             ),
             array(
                 'name'        => 'update_post',
-                'description' => 'Update an existing post, page, or CPT entry. Only provided fields are changed.',
+                'description' => 'Update an existing post, page, or CPT entry. Only provided fields are changed. Optionally assign taxonomy terms.',
                 'inputSchema' => array(
                     'type'       => 'object',
                     'required'   => array( 'id' ),
@@ -640,6 +702,7 @@ class DS_MCP_Server {
                         'content' => array( 'type' => 'string',  'description' => 'New content (HTML allowed)' ),
                         'excerpt' => array( 'type' => 'string',  'description' => 'New excerpt' ),
                         'status'  => array( 'type' => 'string',  'description' => 'New status: draft, publish, private' ),
+                        'terms'   => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
                     ),
                 ),
             ),
@@ -721,6 +784,20 @@ class DS_MCP_Server {
                         'name'        => array( 'type' => 'string',  'description' => 'New name' ),
                         'slug'        => array( 'type' => 'string',  'description' => 'New slug' ),
                         'description' => array( 'type' => 'string',  'description' => 'New description' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'set_post_terms',
+                'description' => 'Assign or replace taxonomy terms on a post. Use append=true to add without removing existing terms.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'id', 'taxonomy', 'terms' ),
+                    'properties' => array(
+                        'id'       => array( 'type' => 'integer', 'description' => 'Post ID' ),
+                        'taxonomy' => array( 'type' => 'string',  'description' => 'Taxonomy slug (e.g. category, event_category, athlete-category)' ),
+                        'terms'    => array( 'type' => 'array',   'description' => 'Array of term IDs (integers) or slugs (strings)' ),
+                        'append'   => array( 'type' => 'boolean', 'description' => 'true = add to existing terms, false = replace all (default: false)' ),
                     ),
                 ),
             ),
