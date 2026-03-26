@@ -331,6 +331,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 </div>
 
+<p class="dst-section-title dst-section-subtitle">Partner Settings</p>
+<div class="dst-card" style="<?php echo $mcp_acf_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-site"></span></div>
+        <div class="dst-card-info"><strong>get_partner_settings</strong><span>Read all ACF Partner Settings — logo, email, phone, address, and social links (Facebook, Instagram, X, YouTube, LinkedIn, TikTok, LeagueApps).</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>update_partner_settings</strong><span>Update any partner fields by name. URL fields expect full URLs. <code>partner_logo</code> expects a Media Library attachment ID.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
 <p class="dst-section-title dst-section-subtitle">DS Toolkit Settings</p>
 <div class="dst-card" style="<?php echo $mcp_toolkit_settings_enabled ? '' : 'opacity:.5;'; ?>">
     <div class="dst-card-row">

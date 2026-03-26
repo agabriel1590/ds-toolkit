@@ -160,8 +160,10 @@ class DS_MCP_Server {
             'update_term'             => 'mcp_taxonomies_enabled',
             'delete_term'             => 'mcp_taxonomies_enabled',
             'set_post_terms'          => 'mcp_taxonomies_enabled',
-            'get_post_fields'         => 'mcp_acf_enabled',
-            'update_post_fields'      => 'mcp_acf_enabled',
+            'get_post_fields'          => 'mcp_acf_enabled',
+            'update_post_fields'       => 'mcp_acf_enabled',
+            'get_partner_settings'     => 'mcp_acf_enabled',
+            'update_partner_settings'  => 'mcp_acf_enabled',
             'get_toolkit_settings'    => 'mcp_toolkit_settings_enabled',
             'update_toolkit_settings' => 'mcp_toolkit_settings_enabled',
             'get_bb_global_colors'      => 'mcp_bb_enabled',
@@ -210,8 +212,11 @@ class DS_MCP_Server {
             case 'delete_term':         return $this->tool_delete_term( $id, $arguments );
             case 'set_post_terms':      return $this->tool_set_post_terms( $id, $arguments );
             // ACF / Custom Fields
-            case 'get_post_fields':     return $this->tool_get_post_fields( $id, $arguments );
-            case 'update_post_fields':  return $this->tool_update_post_fields( $id, $arguments );
+            case 'get_post_fields':          return $this->tool_get_post_fields( $id, $arguments );
+            case 'update_post_fields':       return $this->tool_update_post_fields( $id, $arguments );
+            // Partner Settings
+            case 'get_partner_settings':     return $this->tool_get_partner_settings( $id );
+            case 'update_partner_settings':  return $this->tool_update_partner_settings( $id, $arguments );
             // Toolkit Settings
             case 'get_toolkit_settings':    return $this->tool_get_toolkit_settings( $id );
             case 'update_toolkit_settings': return $this->tool_update_toolkit_settings( $id, $arguments );
@@ -659,6 +664,105 @@ class DS_MCP_Server {
             'post_id'      => $post_id,
             'updated_keys' => $updated,
             'source'       => function_exists( 'update_field' ) ? 'acf' : 'post_meta',
+        ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Partner Settings Tools
+    // -------------------------------------------------------------------------
+
+    /** All known partner settings fields and their sanitization type. */
+    private function partner_fields_map() {
+        return array(
+            'partner_logo'        => 'image',
+            'partner_email'       => 'email',
+            'partner_phone'       => 'text',
+            'partner_address'     => 'textarea',
+            'partner_fb'          => 'url',
+            'partner_instagram'   => 'url',
+            'partner_x'           => 'url',
+            'partner_youtube'     => 'url',
+            'partner_linkedin'    => 'url',
+            'partner_tiktok'      => 'url',
+            'partner_leagueapps'  => 'url',
+        );
+    }
+
+    private function tool_get_partner_settings( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_acf_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_acf_enabled' );
+        }
+        if ( ! function_exists( 'get_field' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF is required for partner settings.' );
+        }
+
+        $result = array();
+        foreach ( $this->partner_fields_map() as $field => $type ) {
+            $value = get_field( $field, 'option' );
+            if ( $type === 'image' ) {
+                // ACF image field returns an array or attachment ID depending on field settings
+                if ( is_array( $value ) && isset( $value['url'] ) ) {
+                    $result[ $field ] = array( 'id' => $value['ID'], 'url' => $value['url'] );
+                } elseif ( is_numeric( $value ) && $value ) {
+                    $result[ $field ] = array( 'id' => (int) $value, 'url' => wp_get_attachment_url( $value ) );
+                } else {
+                    $result[ $field ] = null;
+                }
+            } else {
+                $result[ $field ] = $value;
+            }
+        }
+
+        return $this->tool_result( $id, array( 'partner_settings' => $result ) );
+    }
+
+    private function tool_update_partner_settings( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_acf_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_acf_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'manage_options capability required.' );
+        }
+        if ( ! function_exists( 'update_field' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF is required for partner settings.' );
+        }
+        if ( empty( $args['fields'] ) || ! is_array( $args['fields'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: fields (object of field_name => value)' );
+        }
+
+        $allowed  = $this->partner_fields_map();
+        $updated  = array();
+        $rejected = array();
+
+        foreach ( $args['fields'] as $field => $value ) {
+            if ( ! isset( $allowed[ $field ] ) ) {
+                $rejected[] = $field;
+                continue;
+            }
+            switch ( $allowed[ $field ] ) {
+                case 'image':
+                    $value = absint( $value ); // expect Media Library attachment ID
+                    break;
+                case 'email':
+                    $value = sanitize_email( $value );
+                    break;
+                case 'url':
+                    $value = esc_url_raw( $value );
+                    break;
+                case 'textarea':
+                    $value = sanitize_textarea_field( $value );
+                    break;
+                default:
+                    $value = sanitize_text_field( $value );
+            }
+            update_field( $field, $value, 'option' );
+            $updated[] = $field;
+        }
+
+        return $this->tool_result( $id, array(
+            'updated'  => $updated,
+            'rejected' => $rejected,
+            'note'     => empty( $rejected ) ? '' : 'Unrecognised fields were skipped. Use get_partner_settings to see valid field names.',
         ) );
     }
 
@@ -1521,6 +1625,39 @@ class DS_MCP_Server {
                     'properties' => array(
                         'id'     => array( 'type' => 'integer', 'description' => 'Post ID' ),
                         'fields' => array( 'type' => 'object',  'description' => 'Object of field_name → value pairs to update' ),
+                    ),
+                ),
+            ),
+            // Partner Settings
+            array(
+                'name'        => 'get_partner_settings',
+                'description' => 'Read all ACF Partner Settings (logo, email, phone, address, and social links). Requires ACF.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'update_partner_settings',
+                'description' => 'Update one or more ACF Partner Settings fields. Accepts any combination of: partner_logo (attachment ID), partner_email, partner_phone, partner_address, partner_fb, partner_instagram, partner_x, partner_youtube, partner_linkedin, partner_tiktok, partner_leagueapps. Requires manage_options.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'fields' ),
+                    'properties' => array(
+                        'fields' => array(
+                            'type'        => 'object',
+                            'description' => 'Object of field_name → value pairs. Social/URL fields expect full URLs. partner_logo expects a Media Library attachment ID.',
+                            'properties'  => array(
+                                'partner_logo'       => array( 'type' => 'integer', 'description' => 'Media Library attachment ID for the partner logo' ),
+                                'partner_email'      => array( 'type' => 'string',  'description' => 'Partner contact email address' ),
+                                'partner_phone'      => array( 'type' => 'string',  'description' => 'Partner phone number' ),
+                                'partner_address'    => array( 'type' => 'string',  'description' => 'Partner mailing address' ),
+                                'partner_fb'         => array( 'type' => 'string',  'description' => 'Facebook page URL' ),
+                                'partner_instagram'  => array( 'type' => 'string',  'description' => 'Instagram profile URL' ),
+                                'partner_x'          => array( 'type' => 'string',  'description' => 'X (Twitter) profile URL' ),
+                                'partner_youtube'    => array( 'type' => 'string',  'description' => 'YouTube channel URL' ),
+                                'partner_linkedin'   => array( 'type' => 'string',  'description' => 'LinkedIn page URL' ),
+                                'partner_tiktok'     => array( 'type' => 'string',  'description' => 'TikTok profile URL' ),
+                                'partner_leagueapps' => array( 'type' => 'string',  'description' => 'LeagueApps site URL' ),
+                            ),
+                        ),
                     ),
                 ),
             ),
