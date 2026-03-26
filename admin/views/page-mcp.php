@@ -248,16 +248,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         var encoded     = btoa( unescape( encodeURIComponent( credentials ) ) );
         var authHeader  = 'Basic ' + encoded;
 
+        var isLocal  = mcpUrl.indexOf('http://') === 0;
+        var mcpArgs  = [ 'mcp-remote', mcpUrl ];
+        if ( isLocal ) mcpArgs.push( '--allow-http' );
+        mcpArgs.push( '--header', 'Authorization:' + authHeader );
+
         var desktopConfig = JSON.stringify({
             "mcpServers": {
                 "ds-toolkit": {
                     "command": "npx",
-                    "args": [
-                        "mcp-remote",
-                        mcpUrl,
-                        "--header",
-                        "Authorization:" + authHeader
-                    ]
+                    "args": mcpArgs
                 }
             }
         }, null, 2);
