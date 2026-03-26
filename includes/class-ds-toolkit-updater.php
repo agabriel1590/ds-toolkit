@@ -138,7 +138,9 @@ class DS_Toolkit_Updater {
             return;
         }
         delete_transient( 'ds_toolkit_latest_release' );
+        delete_transient( 'ds_toolkit_latest_release_beta' );
         delete_site_transient( 'update_plugins' );
+        wp_update_plugins();
         wp_safe_redirect( admin_url( 'plugins.php' ) );
         exit;
     }
