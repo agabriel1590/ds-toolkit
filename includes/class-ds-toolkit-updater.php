@@ -91,6 +91,26 @@ class DS_Toolkit_Updater {
             return $result;
         }
 
+        $changelog_file = DS_TOOLKIT_PATH . 'CHANGELOG.md';
+        $changelog_raw  = file_exists( $changelog_file ) ? file_get_contents( $changelog_file ) : '';
+
+        // Convert Markdown headings/bullets to basic HTML for the WP plugin info popup
+        $changelog_html = '';
+        if ( $changelog_raw ) {
+            $lines = explode( "\n", $changelog_raw );
+            foreach ( $lines as $line ) {
+                if ( preg_match( '/^## (.+)/', $line, $m ) ) {
+                    $changelog_html .= '<h4>' . esc_html( $m[1] ) . '</h4>';
+                } elseif ( preg_match( '/^### (.+)/', $line, $m ) ) {
+                    $changelog_html .= '<strong>' . esc_html( $m[1] ) . '</strong><br>';
+                } elseif ( preg_match( '/^[-*] (.+)/', $line, $m ) ) {
+                    $changelog_html .= '&bull; ' . esc_html( $m[1] ) . '<br>';
+                } elseif ( trim( $line ) === '---' || trim( $line ) === '' ) {
+                    $changelog_html .= '<br>';
+                }
+            }
+        }
+
         return (object) array(
             'name'          => 'DS Toolkit',
             'slug'          => $this->slug,
@@ -99,7 +119,7 @@ class DS_Toolkit_Updater {
             'homepage'      => 'https://github.com/' . $this->repo,
             'sections'      => array(
                 'description' => 'Design Shop custom features and build toolkit.',
-                'changelog'   => isset( $release['body'] ) ? $release['body'] : '',
+                'changelog'   => $changelog_html,
             ),
             'download_link' => $this->get_download_url( $release ),
         );
