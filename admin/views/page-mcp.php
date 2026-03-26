@@ -449,6 +449,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="dst-card-info"><strong>update_bb_global_colors</strong><span>Update named BB Global Style colors by label. Flushes BB CSS cache automatically so changes are live immediately.</span></div>
         <span class="dst-mcp-cap">manage_options</span>
     </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
+        <div class="dst-card-info"><strong>bb_list_layout_templates</strong><span>List available DS Launchpad layout templates — Header Style 1–5, Footer Style 1–3, Home Page Layout 1–6. Filter by type (header/footer/home).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-image-rotate"></span></div>
+        <div class="dst-card-info"><strong>bb_apply_layout_template</strong><span>Replace "Header Main" or "Footer Main" (Themer layouts) or the site front page with a DS Launchpad template. Requires <code>confirm: true</code> — replaces current content.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
 </div>
 
 <!-- Example prompts -->

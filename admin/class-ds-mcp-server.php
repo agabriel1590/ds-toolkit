@@ -149,8 +149,10 @@ class DS_MCP_Server {
             'update_post_fields'      => 'mcp_acf_enabled',
             'get_toolkit_settings'    => 'mcp_toolkit_settings_enabled',
             'update_toolkit_settings' => 'mcp_toolkit_settings_enabled',
-            'get_bb_global_colors'    => 'mcp_bb_enabled',
-            'update_bb_global_colors' => 'mcp_bb_enabled',
+            'get_bb_global_colors'      => 'mcp_bb_enabled',
+            'update_bb_global_colors'   => 'mcp_bb_enabled',
+            'bb_list_layout_templates'  => 'mcp_bb_enabled',
+            'bb_apply_layout_template'  => 'mcp_bb_enabled',
             'acf_list_post_types'     => 'mcp_acf_schema_enabled',
             'acf_create_post_type'    => 'mcp_acf_schema_enabled',
             'acf_update_post_type'    => 'mcp_acf_schema_enabled',
@@ -199,8 +201,10 @@ class DS_MCP_Server {
             case 'get_toolkit_settings':    return $this->tool_get_toolkit_settings( $id );
             case 'update_toolkit_settings': return $this->tool_update_toolkit_settings( $id, $arguments );
             // Beaver Builder
-            case 'get_bb_global_colors':    return $this->tool_get_bb_global_colors( $id );
-            case 'update_bb_global_colors': return $this->tool_update_bb_global_colors( $id, $arguments );
+            case 'get_bb_global_colors':        return $this->tool_get_bb_global_colors( $id );
+            case 'update_bb_global_colors':     return $this->tool_update_bb_global_colors( $id, $arguments );
+            case 'bb_list_layout_templates':    return $this->tool_bb_list_layout_templates( $id, $arguments );
+            case 'bb_apply_layout_template':    return $this->tool_bb_apply_layout_template( $id, $arguments );
             // ACF Schema — Post Types
             case 'acf_list_post_types':   return $this->tool_acf_list_post_types( $id );
             case 'acf_create_post_type':  return $this->tool_acf_create_post_type( $id, $arguments );
@@ -762,6 +766,155 @@ class DS_MCP_Server {
             'updated_colors' => $updated,
             'rejected_labels' => $rejected,
             'note' => empty( $rejected ) ? '' : 'Rejected labels did not match any existing color name. Use get_bb_global_colors to see available names.',
+        ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Beaver Builder — Layout Template Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_bb_list_layout_templates( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'manage_options capability required.' );
+        }
+
+        $filter_type = ! empty( $args['type'] ) ? sanitize_key( $args['type'] ) : '';
+
+        $templates = get_posts( array(
+            'post_type'      => 'fl-builder-template',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ) );
+
+        $patterns = array(
+            'header' => '/^Header Style (\d+)$/i',
+            'footer' => '/^Footer Style (\d+)$/i',
+            'home'   => '/^Home Page Layout (\d+)$/i',
+        );
+
+        $result = array( 'header' => array(), 'footer' => array(), 'home' => array() );
+
+        foreach ( $templates as $post ) {
+            foreach ( $patterns as $type => $pattern ) {
+                if ( preg_match( $pattern, $post->post_title, $m ) ) {
+                    $result[ $type ][] = array(
+                        'id'           => $post->ID,
+                        'title'        => $post->post_title,
+                        'style_number' => (int) $m[1],
+                    );
+                }
+            }
+        }
+
+        if ( $filter_type && isset( $result[ $filter_type ] ) ) {
+            return $this->tool_result( $id, array( 'type' => $filter_type, 'templates' => $result[ $filter_type ] ) );
+        }
+
+        return $this->tool_result( $id, array( 'templates' => $result ) );
+    }
+
+    private function tool_bb_apply_layout_template( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_bb_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_bb_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'manage_options capability required.' );
+        }
+        if ( empty( $args['type'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: type (header, footer, or home)' );
+        }
+        if ( empty( $args['style_number'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: style_number' );
+        }
+        if ( empty( $args['confirm'] ) ) {
+            return $this->rpc_error( $id, -32602, 'WARNING: This will permanently replace the current layout content. Pass confirm: true to proceed.' );
+        }
+
+        $type         = sanitize_key( $args['type'] );
+        $style_number = absint( $args['style_number'] );
+
+        $title_map = array(
+            'header' => 'Header Style ' . $style_number,
+            'footer' => 'Footer Style ' . $style_number,
+            'home'   => 'Home Page Layout ' . $style_number,
+        );
+
+        if ( ! isset( $title_map[ $type ] ) ) {
+            return $this->rpc_error( $id, -32602, 'Invalid type. Must be: header, footer, or home.' );
+        }
+
+        $template_title = $title_map[ $type ];
+
+        // Find source template by exact title
+        global $wpdb;
+        $template_id = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts} WHERE post_title = %s AND post_type = 'fl-builder-template' AND post_status = 'publish' LIMIT 1",
+            $template_title
+        ) );
+
+        if ( ! $template_id ) {
+            return $this->rpc_error( $id, -32602, 'Template not found: "' . $template_title . '". Use bb_list_layout_templates to see available templates.' );
+        }
+
+        // Find target layout/page
+        $target_id          = 0;
+        $target_description = '';
+
+        if ( $type === 'header' || $type === 'footer' ) {
+            $target_title = ( $type === 'header' ) ? 'Header Main' : 'Footer Main';
+            $target_id    = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT ID FROM {$wpdb->posts} WHERE post_title = %s AND post_type = 'fl-theme-layout' AND post_status != 'trash' LIMIT 1",
+                $target_title
+            ) );
+            $target_description = '"' . $target_title . '" (BB Themer Layout)';
+        } else {
+            $target_id = (int) get_option( 'page_on_front' );
+            if ( ! $target_id ) {
+                return $this->rpc_error( $id, -32603, 'No static front page is set. Go to Settings > Reading and assign a static front page first.' );
+            }
+            $front_page         = get_post( $target_id );
+            $target_description = '"' . ( $front_page ? $front_page->post_title : 'Front Page' ) . '" (Front Page, ID ' . $target_id . ')';
+        }
+
+        if ( ! $target_id ) {
+            $missing = ( $type === 'header' ) ? 'Header Main' : 'Footer Main';
+            return $this->rpc_error( $id, -32603, '"' . $missing . '" Themer layout not found on this site.' );
+        }
+
+        // Get BB layout data from template
+        $builder_data = get_post_meta( $template_id, '_fl_builder_data', true );
+        if ( empty( $builder_data ) ) {
+            return $this->rpc_error( $id, -32603, '"' . $template_title . '" has no Beaver Builder content to apply.' );
+        }
+
+        // Write to target — both the published and draft copies
+        update_post_meta( $target_id, '_fl_builder_data',  $builder_data );
+        update_post_meta( $target_id, '_fl_builder_draft', $builder_data );
+
+        $data_settings = get_post_meta( $template_id, '_fl_builder_data_settings', true );
+        if ( $data_settings ) {
+            update_post_meta( $target_id, '_fl_builder_data_settings',  $data_settings );
+            update_post_meta( $target_id, '_fl_builder_draft_settings', $data_settings );
+        }
+
+        // Touch post modified date so BB picks up the change
+        wp_update_post( array( 'ID' => $target_id ) );
+
+        // Flush BB CSS cache
+        if ( class_exists( 'FLBuilderModel' ) ) {
+            FLBuilderModel::delete_asset_cache_for_all_posts();
+        }
+
+        return $this->tool_result( $id, array(
+            'applied'   => true,
+            'template'  => $template_title,
+            'target'    => $target_description,
+            'message'   => 'Layout replaced successfully. BB CSS cache flushed — changes are live.',
         ) );
     }
 
@@ -1625,6 +1778,29 @@ class DS_MCP_Server {
                             'type'        => 'object',
                             'description' => 'Object of label → hex pairs. Label must match exactly (e.g. "Primary", "Accent", "Headings"). Hex with or without #. Example: {"Primary":"e63946","Accent":"457b9d"}',
                         ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'bb_list_layout_templates',
+                'description' => 'List available DS Launchpad layout templates by type (header/footer/home). Returns template titles and style numbers.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'type' => array( 'type' => 'string', 'description' => 'Filter by type: header, footer, or home. Omit to return all types.' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'bb_apply_layout_template',
+                'description' => 'Replace the Beaver Builder content of "Header Main", "Footer Main" (Themer layouts), or the site front page with a DS Launchpad layout template. WARNING: replaces current content — requires confirm: true.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'type', 'style_number', 'confirm' ),
+                    'properties' => array(
+                        'type'         => array( 'type' => 'string',  'description' => 'Target to replace: header (→ Header Main themer layout), footer (→ Footer Main themer layout), or home (→ site front page).' ),
+                        'style_number' => array( 'type' => 'integer', 'description' => 'Template number to apply. Header: 1–5, Footer: 1–3, Home: 1–6. Use bb_list_layout_templates to see what is available.' ),
+                        'confirm'      => array( 'type' => 'boolean', 'description' => 'Must be true to proceed. Confirms the user understands the current layout content will be replaced.' ),
                     ),
                 ),
             ),
