@@ -86,6 +86,12 @@ class DS_Toolkit {
             'child_pages_columns'                => 3,
             'child_pages_columns_tablet'         => 2,
             'child_pages_columns_mobile'         => 1,
+            // MCP tool group access controls (all enabled by default)
+            'mcp_posts_pages_enabled'            => 1,
+            'mcp_cpt_enabled'                    => 1,
+            'mcp_taxonomies_enabled'             => 1,
+            'mcp_acf_enabled'                    => 1,
+            'mcp_toolkit_settings_enabled'       => 1,
         );
     }
 

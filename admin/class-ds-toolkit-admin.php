@@ -160,6 +160,12 @@ class DS_Toolkit_Admin {
                     : $this->get_mcp_url();
                 $wp_version_ok    = version_compare( get_bloginfo( 'version' ), '5.6', '>=' );
                 $app_passwords_ok = $wp_version_ok && wp_is_application_passwords_available();
+                // Tool group toggles — default to enabled (true) if key not yet set
+                $mcp_posts_pages_enabled      = ! isset( $opts['mcp_posts_pages_enabled'] )      || ! empty( $opts['mcp_posts_pages_enabled'] );
+                $mcp_cpt_enabled              = ! isset( $opts['mcp_cpt_enabled'] )              || ! empty( $opts['mcp_cpt_enabled'] );
+                $mcp_taxonomies_enabled       = ! isset( $opts['mcp_taxonomies_enabled'] )       || ! empty( $opts['mcp_taxonomies_enabled'] );
+                $mcp_acf_enabled              = ! isset( $opts['mcp_acf_enabled'] )              || ! empty( $opts['mcp_acf_enabled'] );
+                $mcp_toolkit_settings_enabled = ! isset( $opts['mcp_toolkit_settings_enabled'] ) || ! empty( $opts['mcp_toolkit_settings_enabled'] );
                 require DS_TOOLKIT_PATH . 'admin/views/page-mcp.php';
 
             } else {

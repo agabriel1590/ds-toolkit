@@ -1,7 +1,9 @@
 <?php
 /**
  * MCP tab content.
- * Variables available: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local
+ * Variables: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local,
+ *            $mcp_posts_pages_enabled, $mcp_cpt_enabled, $mcp_taxonomies_enabled,
+ *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -26,6 +28,78 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <span class="dst-mcp-note">Application Passwords are disabled on this site. Enable them to use MCP.</span>
     <?php endif; ?>
 </div>
+
+<!-- Claude Access Controls -->
+<form method="post" action="options.php">
+    <?php settings_fields( 'ds_toolkit_options' ); ?>
+
+    <p class="dst-section-title" style="margin-top:24px;">Claude Access Controls</p>
+    <div class="dst-card">
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-admin-page"></span></div>
+            <div class="dst-card-info">
+                <strong>Posts &amp; Pages</strong>
+                <span>Allow Claude to list, read, create, edit, and delete standard WordPress posts and pages.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_posts_pages_enabled" name="ds_toolkit_settings[mcp_posts_pages_enabled]" value="1" <?php checked( $mcp_posts_pages_enabled ); ?>>
+                <label for="mcp_posts_pages_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-database"></span></div>
+            <div class="dst-card-info">
+                <strong>Custom Post Types</strong>
+                <span>Allow Claude to access CPTs — Events, Athletes, Staff, Teams, and any future custom post types registered on this site.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_cpt_enabled" name="ds_toolkit_settings[mcp_cpt_enabled]" value="1" <?php checked( $mcp_cpt_enabled ); ?>>
+                <label for="mcp_cpt_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-tag"></span></div>
+            <div class="dst-card-info">
+                <strong>Taxonomies</strong>
+                <span>Allow Claude to list, create, edit, and delete taxonomy terms — Athlete Categories, Staff Categories, Team Categories, and any other taxonomies.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_taxonomies_enabled" name="ds_toolkit_settings[mcp_taxonomies_enabled]" value="1" <?php checked( $mcp_taxonomies_enabled ); ?>>
+                <label for="mcp_taxonomies_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-forms"></span></div>
+            <div class="dst-card-info">
+                <strong>ACF / Custom Fields</strong>
+                <span>Allow Claude to read and update ACF field values on posts and CPT entries. Uses ACF's <code>get_fields()</code> / <code>update_field()</code> if ACF is active.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_acf_enabled" name="ds_toolkit_settings[mcp_acf_enabled]" value="1" <?php checked( $mcp_acf_enabled ); ?>>
+                <label for="mcp_acf_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-admin-settings"></span></div>
+            <div class="dst-card-info">
+                <strong>DS Toolkit Settings</strong>
+                <span>Allow Claude to read and update DS Toolkit feature settings — toggles, column counts, Global CSS/JS, template IDs, etc.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_toolkit_settings_enabled" name="ds_toolkit_settings[mcp_toolkit_settings_enabled]" value="1" <?php checked( $mcp_toolkit_settings_enabled ); ?>>
+                <label for="mcp_toolkit_settings_enabled"></label>
+            </div>
+        </div>
+
+    </div>
+
+    <?php submit_button( 'Save Access Controls' ); ?>
+</form>
 
 <!-- What is this -->
 <p class="dst-section-title" style="margin-top:24px;">What is this?</p>
@@ -136,71 +210,115 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 <!-- Available tools -->
 <p class="dst-section-title" style="margin-top:24px;">Available Tools</p>
-<div class="dst-card">
 
+<p class="dst-section-title dst-section-subtitle">Posts &amp; Pages</p>
+<div class="dst-card" style="<?php echo $mcp_posts_pages_enabled ? '' : 'opacity:.5;'; ?>">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
-        <div class="dst-card-info">
-            <strong>list_posts</strong>
-            <span>List posts or pages. Filter by type, status, or keyword. Returns ID, title, status, URL, and dates.</span>
-        </div>
+        <div class="dst-card-info"><strong>list_posts</strong><span>List posts or pages. Filter by status or keyword.</span></div>
         <span class="dst-mcp-cap">edit_posts</span>
     </div>
-
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-visibility"></span></div>
-        <div class="dst-card-info">
-            <strong>get_post</strong>
-            <span>Get the full content of a post or page by ID — including title, content, excerpt, status, and author.</span>
-        </div>
+        <div class="dst-card-info"><strong>get_post</strong><span>Get full content of a post by ID — title, content, excerpt, status, author.</span></div>
         <span class="dst-mcp-cap">edit_posts</span>
     </div>
-
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
-        <div class="dst-card-info">
-            <strong>create_post</strong>
-            <span>Create a new post or page. Specify title, content, excerpt, status (draft/publish), and type.</span>
-        </div>
+        <div class="dst-card-info"><strong>create_post</strong><span>Create a new post or page with title, content, status.</span></div>
         <span class="dst-mcp-cap">publish_posts</span>
     </div>
-
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
-        <div class="dst-card-info">
-            <strong>update_post</strong>
-            <span>Edit an existing post or page. Only the fields you provide are changed — title, content, excerpt, or status.</span>
-        </div>
+        <div class="dst-card-info"><strong>update_post</strong><span>Edit title, content, excerpt, or status of an existing post.</span></div>
         <span class="dst-mcp-cap">edit_post</span>
     </div>
-
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
-        <div class="dst-card-info">
-            <strong>delete_post</strong>
-            <span>Move a post to trash, or permanently delete it (with <code>force: true</code>).</span>
-        </div>
+        <div class="dst-card-info"><strong>delete_post</strong><span>Trash or permanently delete a post.</span></div>
         <span class="dst-mcp-cap">delete_post</span>
     </div>
+</div>
 
+<p class="dst-section-title dst-section-subtitle">Custom Post Types</p>
+<div class="dst-card" style="<?php echo $mcp_cpt_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-database"></span></div>
+        <div class="dst-card-info"><strong>list_post_types</strong><span>Discover all registered CPTs — Events, Athletes, Staff, Teams, and any future types.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>list_posts</strong><span>Same tool as above — pass <code>post_type: "athletes"</code> (or any CPT slug) to query CPT entries.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>create_post / update_post / delete_post</strong><span>Same tools as above — pass the CPT slug as <code>post_type</code> to create/edit/delete CPT entries.</span></div>
+        <span class="dst-mcp-cap">publish_posts</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Taxonomies</p>
+<div class="dst-card" style="<?php echo $mcp_taxonomies_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-tag"></span></div>
+        <div class="dst-card-info"><strong>list_taxonomies</strong><span>List all public taxonomies and which post types they belong to.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>list_terms</strong><span>List terms in a taxonomy (e.g. athlete-category). Supports search and pagination.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-visibility"></span></div>
+        <div class="dst-card-info"><strong>get_term</strong><span>Get a single term by ID or slug.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>create_term</strong><span>Add a new term to a taxonomy with optional slug, description, and parent.</span></div>
+        <span class="dst-mcp-cap">manage_categories</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>update_term</strong><span>Edit a term's name, slug, or description.</span></div>
+        <span class="dst-mcp-cap">manage_categories</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>delete_term</strong><span>Remove a term from a taxonomy.</span></div>
+        <span class="dst-mcp-cap">manage_categories</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">ACF / Custom Fields</p>
+<div class="dst-card" style="<?php echo $mcp_acf_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-forms"></span></div>
+        <div class="dst-card-info"><strong>get_post_fields</strong><span>Read all ACF fields on a post or CPT entry. Falls back to post meta if ACF is not active.</span></div>
+        <span class="dst-mcp-cap">edit_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>update_post_fields</strong><span>Update ACF field values by passing a <code>field_name → value</code> map. Uses <code>update_field()</code> if ACF active.</span></div>
+        <span class="dst-mcp-cap">edit_post</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">DS Toolkit Settings</p>
+<div class="dst-card" style="<?php echo $mcp_toolkit_settings_enabled ? '' : 'opacity:.5;'; ?>">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-admin-settings"></span></div>
-        <div class="dst-card-info">
-            <strong>get_toolkit_settings</strong>
-            <span>Read all current DS Toolkit settings — feature toggles, column counts, template IDs, etc.</span>
-        </div>
+        <div class="dst-card-info"><strong>get_toolkit_settings</strong><span>Read all DS Toolkit settings — feature toggles, column counts, template IDs, etc.</span></div>
         <span class="dst-mcp-cap">manage_options</span>
     </div>
-
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-hammer"></span></div>
-        <div class="dst-card-info">
-            <strong>update_toolkit_settings</strong>
-            <span>Change one or more DS Toolkit settings by passing a key-value map. Only allowed keys are accepted.</span>
-        </div>
+        <div class="dst-card-info"><strong>update_toolkit_settings</strong><span>Update feature toggles, Global CSS/JS, column counts, and other settings.</span></div>
         <span class="dst-mcp-cap">manage_options</span>
     </div>
-
 </div>
 
 <!-- Example prompts -->
