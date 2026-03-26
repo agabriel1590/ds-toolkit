@@ -3,7 +3,8 @@
  * MCP tab content.
  * Variables: $mcp_url, $wp_version_ok, $app_passwords_ok, $is_local,
  *            $mcp_posts_pages_enabled, $mcp_cpt_enabled, $mcp_taxonomies_enabled,
- *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled, $mcp_bb_enabled, $mcp_acf_schema_enabled
+ *            $mcp_acf_enabled, $mcp_toolkit_settings_enabled, $mcp_bb_enabled, $mcp_acf_schema_enabled,
+ *            $mcp_menus_enabled, $mcp_maintenance_enabled, $mcp_options_enabled, $mcp_users_enabled
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -117,6 +118,54 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <div class="dst-toggle">
                 <input type="checkbox" id="mcp_acf_schema_enabled" name="ds_toolkit_settings[mcp_acf_schema_enabled]" value="1" <?php checked( $mcp_acf_schema_enabled ); ?>>
                 <label for="mcp_acf_schema_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
+            <div class="dst-card-info">
+                <strong>Menus</strong>
+                <span>Allow Claude to list menus, read menu structure, replace all menu items, and assign menus to theme locations.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_menus_enabled" name="ds_toolkit_settings[mcp_menus_enabled]" value="1" <?php checked( $mcp_menus_enabled ); ?>>
+                <label for="mcp_menus_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-admin-tools"></span></div>
+            <div class="dst-card-info">
+                <strong>Maintenance</strong>
+                <span>Allow Claude to flush rewrite rules, flush object cache, delete transients, and run search &amp; replace on the database. <strong>search_replace restricted to @leagueapps.com accounts.</strong></span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_maintenance_enabled" name="ds_toolkit_settings[mcp_maintenance_enabled]" value="1" <?php checked( $mcp_maintenance_enabled ); ?>>
+                <label for="mcp_maintenance_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-database"></span></div>
+            <div class="dst-card-info">
+                <strong>Options <span style="color:#b32d2e;font-size:11px;font-weight:600;background:#fce8e8;padding:1px 6px;border-radius:3px;margin-left:4px;">&#9888; Destructive</span></strong>
+                <span>Allow Claude to read and write WordPress options (wp_options). <strong>Restricted to @leagueapps.com accounts only.</strong></span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_options_enabled" name="ds_toolkit_settings[mcp_options_enabled]" value="1" <?php checked( $mcp_options_enabled ); ?>>
+                <label for="mcp_options_enabled"></label>
+            </div>
+        </div>
+
+        <div class="dst-card-row">
+            <div class="dst-card-icon"><span class="dashicons dashicons-admin-users"></span></div>
+            <div class="dst-card-info">
+                <strong>Users &amp; Media</strong>
+                <span>Allow Claude to list and read WordPress users and regenerate image thumbnails.</span>
+            </div>
+            <div class="dst-toggle">
+                <input type="checkbox" id="mcp_users_enabled" name="ds_toolkit_settings[mcp_users_enabled]" value="1" <?php checked( $mcp_users_enabled ); ?>>
+                <label for="mcp_users_enabled"></label>
             </div>
         </div>
 
@@ -475,6 +524,77 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 </div>
 
+<p class="dst-section-title dst-section-subtitle">Menus</p>
+<div class="dst-card" style="<?php echo $mcp_menus_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
+        <div class="dst-card-info"><strong>list_menus</strong><span>List all nav menus with their IDs, slugs, item counts, and assigned theme locations.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
+        <div class="dst-card-info"><strong>get_menu</strong><span>Get the full item list for a menu — title, URL, parent, order, and object type for each item.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
+        <div class="dst-card-info"><strong>set_menu_items</strong><span>Replace all items in a menu with a new structure. Supports nested items via <code>parent_index</code>. Requires <code>confirm: true</code>.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
+        <div class="dst-card-info"><strong>assign_menu_to_location</strong><span>Assign a menu to a registered theme location (e.g. primary-menu, header-menu).</span></div>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Maintenance</p>
+<div class="dst-card" style="<?php echo $mcp_maintenance_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-tools"></span></div>
+        <div class="dst-card-info"><strong>flush_rewrite_rules</strong><span>Flush WordPress rewrite rules — fixes 404s after adding CPTs or changing permalink structure.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-tools"></span></div>
+        <div class="dst-card-info"><strong>flush_cache</strong><span>Flush the WordPress object cache.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-tools"></span></div>
+        <div class="dst-card-info"><strong>delete_transients</strong><span>Delete all transients from the options table.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-tools"></span></div>
+        <div class="dst-card-info"><strong>search_replace</strong><span>Search and replace text in the database (posts, postmeta, options). Requires <code>confirm: true</code>.</span></div>
+        <span class="dst-mcp-cap"><?php echo esc_html( DS_TOOLKIT_ADMIN_DOMAIN ); ?> only</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Options <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only</span></p>
+<div class="dst-card" style="<?php echo $mcp_options_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-database"></span></div>
+        <div class="dst-card-info"><strong>get_option</strong><span>Read any WordPress option by key (e.g. blogname, siteurl, blogdescription).</span></div>
+        <span class="dst-mcp-cap"><?php echo esc_html( DS_TOOLKIT_ADMIN_DOMAIN ); ?> only</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-database"></span></div>
+        <div class="dst-card-info"><strong>update_option</strong><span>Update any WordPress option by key and value.</span></div>
+        <span class="dst-mcp-cap"><?php echo esc_html( DS_TOOLKIT_ADMIN_DOMAIN ); ?> only</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">Users &amp; Media</p>
+<div class="dst-card" style="<?php echo $mcp_users_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-users"></span></div>
+        <div class="dst-card-info"><strong>list_users</strong><span>List users filtered by role, search keyword, with pagination.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-admin-users"></span></div>
+        <div class="dst-card-info"><strong>get_user</strong><span>Get a user's profile by ID or email — name, roles, capabilities, registration date.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
+        <div class="dst-card-info"><strong>regenerate_thumbnails</strong><span>Regenerate image thumbnail sizes for Media Library images. Optionally pass specific attachment IDs.</span></div>
+    </div>
+</div>
+
 <!-- Example prompts -->
 <p class="dst-section-title" style="margin-top:24px;">Example Claude Prompts</p>
 <div class="dst-card">
@@ -505,9 +625,23 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <p>Manage post types</p>
             <code>List all ACF post types and show me the settings for the "athletes" one</code>
 
+            <strong style="margin-top:12px;display:block;">Menus</strong>
+            <p>Rebuild a menu</p>
+            <code>Replace the Primary Menu with these items: Home (page ID 2), About (page ID 14), Programs (custom link /programs/), Contact (page ID 22)</code>
+            <p>Assign a menu</p>
+            <code>Assign the "Main Menu" to the primary-menu location</code>
+
+            <strong style="margin-top:12px;display:block;">Maintenance</strong>
+            <p>Flush everything</p>
+            <code>Flush the rewrite rules, object cache, and delete all transients</code>
+            <p>Fix a URL after migration</p>
+            <code>Search and replace "https://old-domain.com" with "https://new-domain.com" in the database</code>
+
             <strong style="margin-top:12px;display:block;">Settings</strong>
             <p>Toggle a feature</p>
             <code>Disable the [current_year] shortcode in DS Toolkit settings</code>
+            <p>Read a WP option</p>
+            <code>What is the current site title and tagline?</code>
         </div>
     </div>
 </div>

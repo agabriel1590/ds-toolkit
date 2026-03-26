@@ -4,6 +4,19 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9.2-beta.3] - 2026-03-26
+### Added
+- `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management (list, inspect, rebuild structure, assign to location)
+- `flush_rewrite_rules`, `flush_cache`, `delete_transients`, `search_replace` MCP tools — maintenance operations; `search_replace` requires @leagueapps.com + `confirm: true`
+- `get_option`, `update_option` MCP tools — read/write wp_options; restricted to @leagueapps.com
+- `list_users`, `get_user` MCP tools — user lookup with role/search filters
+- `regenerate_thumbnails` MCP tool — regenerate image sizes for Media Library attachments
+- Four new MCP access-control groups: **Menus**, **Maintenance**, **Options**, **Users & Media** (all enabled by default)
+### Changed
+- `create_post`, `update_post` — now accept `post_parent`, `slug`, `menu_order`, `page_template`, `post_author`, `comment_status`
+- `get_post` — now returns `slug`, `post_parent`, `menu_order`, `page_template`, `comment_status`, `author_id`
+- `list_posts` — now returns `slug`, `post_parent`, `menu_order`; accepts `post_parent`, `orderby`, `order` filters
+
 ## [0.9.9.2-beta.2] - 2026-03-26
 ### Added
 - `get_partner_settings` MCP tool — read all ACF Partner Settings (logo, email, phone, address, Facebook, Instagram, X, YouTube, LinkedIn, TikTok, LeagueApps)
