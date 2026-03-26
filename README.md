@@ -182,6 +182,9 @@ Checks GitHub Releases every 12 hours via native WordPress update hooks. Update 
 
 ## Changelog
 
+### v0.9.3 - 2026-03-26
+- Fixed MCP local connection: `mcp-remote` blocks non-HTTPS URLs unless `--allow-http` is passed. Config generator now automatically adds `--allow-http` when the endpoint URL is `http://` (LocalWP)
+
 ### v0.9.2 - 2026-03-26
 - Fixed MCP on LocalWP: Node.js does not trust LocalWP's local SSL certs so `mcp-remote` would fail with an SSL error on `https://`. When `WP_ENVIRONMENT_TYPE=local` is detected, the MCP tab now shows and generates the config using `http://` instead, which works because Application Passwords are already unlocked for local environments
 - MCP tab status bar shows "Local" badge and explains the http/https switch when on a local environment
