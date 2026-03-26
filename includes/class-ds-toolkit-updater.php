@@ -3,9 +3,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class DS_Toolkit_Updater {
 
-    private $slug    = 'ds-toolkit';
-    private $repo    = 'agabriel1590/ds-toolkit';
-    private $api_url = 'https://api.github.com/repos/agabriel1590/ds-toolkit/releases/latest';
+    private $slug = 'ds-toolkit';
+    private $repo = 'agabriel1590/ds-toolkit';
+
+    /**
+     * Returns true if the site is opted into the beta update channel.
+     * Set define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' ) in wp-config.php to enable.
+     */
+    private function is_beta_channel() {
+        return defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) && DS_TOOLKIT_UPDATE_CHANNEL === 'beta';
+    }
 
     public function init() {
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
@@ -113,11 +120,12 @@ class DS_Toolkit_Updater {
     }
 
     public function add_check_update_link( $links ) {
-        $url = wp_nonce_url(
+        $url     = wp_nonce_url(
             add_query_arg( 'ds_toolkit_check_update', '1', admin_url( 'plugins.php' ) ),
             'ds_toolkit_check_update'
         );
-        $links[] = '<a href="' . esc_url( $url ) . '">Check for Updates</a>';
+        $channel = $this->is_beta_channel() ? ' (beta channel)' : '';
+        $links[] = '<a href="' . esc_url( $url ) . '">Check for Updates' . esc_html( $channel ) . '</a>';
         return $links;
     }
 
@@ -151,13 +159,20 @@ class DS_Toolkit_Updater {
     }
 
     private function get_latest_release() {
-        $cache_key = 'ds_toolkit_latest_release';
+        $is_beta   = $this->is_beta_channel();
+        $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
         $cached    = get_transient( $cache_key );
         if ( $cached ) {
             return $cached;
         }
 
-        $response = wp_remote_get( $this->api_url, array(
+        // Beta channel: fetch all releases (includes pre-releases), pick the most recent.
+        // Stable channel: fetch /releases/latest which skips pre-releases automatically.
+        $url = $is_beta
+            ? 'https://api.github.com/repos/' . $this->repo . '/releases'
+            : 'https://api.github.com/repos/' . $this->repo . '/releases/latest';
+
+        $response = wp_remote_get( $url, array(
             'headers' => array( 'Accept' => 'application/vnd.github+json' ),
             'timeout' => 10,
         ) );
@@ -167,8 +182,17 @@ class DS_Toolkit_Updater {
         }
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
-        if ( empty( $data['tag_name'] ) ) {
-            return false;
+
+        if ( $is_beta ) {
+            // /releases returns an array — take the first (most recent) entry
+            if ( empty( $data ) || ! isset( $data[0]['tag_name'] ) ) {
+                return false;
+            }
+            $data = $data[0];
+        } else {
+            if ( empty( $data['tag_name'] ) ) {
+                return false;
+            }
         }
 
         set_transient( $cache_key, $data, 12 * HOUR_IN_SECONDS );
