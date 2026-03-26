@@ -184,6 +184,35 @@ Each tool group can be independently enabled/disabled from **Settings → DS Too
 | `get_toolkit_settings` | Read all DS Toolkit feature settings |
 | `update_toolkit_settings` | Change feature toggles, CSS, JS, columns, etc. |
 
+#### Menus
+| Tool | Description |
+|---|---|
+| `list_menus` | List all nav menus with their IDs, slugs, item counts, and assigned theme locations |
+| `get_menu` | Get a menu and its full item list (title, URL, parent, order, object type) |
+| `set_menu_items` | Replace all items in a menu with a new structure. Requires `confirm: true` |
+| `assign_menu_to_location` | Assign a menu to a registered theme location |
+
+#### Maintenance
+| Tool | Description |
+|---|---|
+| `flush_rewrite_rules` | Flush WordPress rewrite rules — fixes 404s after adding CPTs |
+| `flush_cache` | Flush the WordPress object cache |
+| `delete_transients` | Delete all transients from the options table |
+| `search_replace` | Search and replace text in the database. Requires `confirm: true` + `DS_TOOLKIT_ADMIN_DOMAIN` |
+
+#### Options — `manage_options` + `DS_TOOLKIT_ADMIN_DOMAIN`
+| Tool | Description |
+|---|---|
+| `get_option` | Read a WordPress option by key |
+| `update_option` | Update a WordPress option by key |
+
+#### Users & Media
+| Tool | Description |
+|---|---|
+| `list_users` | List users filtered by role, search, with pagination |
+| `get_user` | Get a user's profile by ID or email |
+| `regenerate_thumbnails` | Regenerate image thumbnail sizes for Media Library images |
+
 #### Beaver Builder — `manage_options`
 | Tool | Description |
 |---|---|

@@ -160,8 +160,10 @@ class DS_MCP_Server {
             'update_term'             => 'mcp_taxonomies_enabled',
             'delete_term'             => 'mcp_taxonomies_enabled',
             'set_post_terms'          => 'mcp_taxonomies_enabled',
-            'get_post_fields'         => 'mcp_acf_enabled',
-            'update_post_fields'      => 'mcp_acf_enabled',
+            'get_post_fields'          => 'mcp_acf_enabled',
+            'update_post_fields'       => 'mcp_acf_enabled',
+            'get_partner_settings'     => 'mcp_acf_enabled',
+            'update_partner_settings'  => 'mcp_acf_enabled',
             'get_toolkit_settings'    => 'mcp_toolkit_settings_enabled',
             'update_toolkit_settings' => 'mcp_toolkit_settings_enabled',
             'get_bb_global_colors'      => 'mcp_bb_enabled',
@@ -184,6 +186,19 @@ class DS_MCP_Server {
             'acf_list_options_pages'  => 'mcp_acf_schema_enabled',
             'acf_create_options_page' => 'mcp_acf_schema_enabled',
             'acf_delete_options_page' => 'mcp_acf_schema_enabled',
+            'list_menus'              => 'mcp_menus_enabled',
+            'get_menu'                => 'mcp_menus_enabled',
+            'set_menu_items'          => 'mcp_menus_enabled',
+            'assign_menu_to_location' => 'mcp_menus_enabled',
+            'flush_rewrite_rules'     => 'mcp_maintenance_enabled',
+            'flush_cache'             => 'mcp_maintenance_enabled',
+            'delete_transients'       => 'mcp_maintenance_enabled',
+            'search_replace'          => 'mcp_maintenance_enabled',
+            'get_option'              => 'mcp_options_enabled',
+            'update_option'           => 'mcp_options_enabled',
+            'list_users'              => 'mcp_users_enabled',
+            'get_user'                => 'mcp_users_enabled',
+            'regenerate_thumbnails'   => 'mcp_users_enabled',
         );
         return isset( $map[ $name ] ) ? $this->is_group_enabled( $map[ $name ] ) : true;
     }
@@ -210,8 +225,11 @@ class DS_MCP_Server {
             case 'delete_term':         return $this->tool_delete_term( $id, $arguments );
             case 'set_post_terms':      return $this->tool_set_post_terms( $id, $arguments );
             // ACF / Custom Fields
-            case 'get_post_fields':     return $this->tool_get_post_fields( $id, $arguments );
-            case 'update_post_fields':  return $this->tool_update_post_fields( $id, $arguments );
+            case 'get_post_fields':          return $this->tool_get_post_fields( $id, $arguments );
+            case 'update_post_fields':       return $this->tool_update_post_fields( $id, $arguments );
+            // Partner Settings
+            case 'get_partner_settings':     return $this->tool_get_partner_settings( $id );
+            case 'update_partner_settings':  return $this->tool_update_partner_settings( $id, $arguments );
             // Toolkit Settings
             case 'get_toolkit_settings':    return $this->tool_get_toolkit_settings( $id );
             case 'update_toolkit_settings': return $this->tool_update_toolkit_settings( $id, $arguments );
@@ -240,6 +258,24 @@ class DS_MCP_Server {
             case 'acf_list_options_pages':   return $this->tool_acf_list_options_pages( $id );
             case 'acf_create_options_page':  return $this->tool_acf_create_options_page( $id, $arguments );
             case 'acf_delete_options_page':  return $this->tool_acf_delete_options_page( $id, $arguments );
+            // Menus
+            case 'list_menus':             return $this->tool_list_menus( $id );
+            case 'get_menu':               return $this->tool_get_menu( $id, $arguments );
+            case 'set_menu_items':         return $this->tool_set_menu_items( $id, $arguments );
+            case 'assign_menu_to_location': return $this->tool_assign_menu_to_location( $id, $arguments );
+            // Maintenance
+            case 'flush_rewrite_rules':    return $this->tool_flush_rewrite_rules( $id );
+            case 'flush_cache':            return $this->tool_flush_cache( $id );
+            case 'delete_transients':      return $this->tool_delete_transients( $id );
+            case 'search_replace':         return $this->tool_search_replace( $id, $arguments );
+            // Options
+            case 'get_option':             return $this->tool_get_option( $id, $arguments );
+            case 'update_option':          return $this->tool_update_option( $id, $arguments );
+            // Users
+            case 'list_users':             return $this->tool_list_users( $id, $arguments );
+            case 'get_user':               return $this->tool_get_user( $id, $arguments );
+            // Media
+            case 'regenerate_thumbnails':  return $this->tool_regenerate_thumbnails( $id, $arguments );
             default:
                 return $this->rpc_error( $id, -32602, 'Unknown tool: ' . $name );
         }
@@ -261,20 +297,24 @@ class DS_MCP_Server {
             'orderby'        => 'date',
             'order'          => 'DESC',
         );
-        if ( ! empty( $args['search'] ) ) {
-            $query_args['s'] = sanitize_text_field( $args['search'] );
-        }
+        if ( ! empty( $args['search'] ) )      $query_args['s']           = sanitize_text_field( $args['search'] );
+        if ( isset( $args['post_parent'] ) )   $query_args['post_parent'] = absint( $args['post_parent'] );
+        if ( ! empty( $args['orderby'] ) )     $query_args['orderby']     = sanitize_key( $args['orderby'] );
+        if ( ! empty( $args['order'] ) )       $query_args['order']       = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
         $query = new WP_Query( $query_args );
         $posts = array();
         foreach ( $query->posts as $post ) {
             $posts[] = array(
-                'id'       => $post->ID,
-                'title'    => $post->post_title,
-                'status'   => $post->post_status,
-                'type'     => $post->post_type,
-                'url'      => get_permalink( $post->ID ),
-                'date'     => $post->post_date,
-                'modified' => $post->post_modified,
+                'id'          => $post->ID,
+                'title'       => $post->post_title,
+                'slug'        => $post->post_name,
+                'status'      => $post->post_status,
+                'type'        => $post->post_type,
+                'post_parent' => $post->post_parent,
+                'menu_order'  => $post->menu_order,
+                'url'         => get_permalink( $post->ID ),
+                'date'        => $post->post_date,
+                'modified'    => $post->post_modified,
             );
         }
         return $this->tool_result( $id, array( 'total' => $query->found_posts, 'posts' => $posts ) );
@@ -302,17 +342,23 @@ class DS_MCP_Server {
             }
         }
         return $this->tool_result( $id, array(
-            'id'       => $post->ID,
-            'title'    => $post->post_title,
-            'content'  => $post->post_content,
-            'excerpt'  => $post->post_excerpt,
-            'status'   => $post->post_status,
-            'type'     => $post->post_type,
-            'url'      => get_permalink( $post->ID ),
-            'date'     => $post->post_date,
-            'modified' => $post->post_modified,
-            'author'   => get_the_author_meta( 'display_name', $post->post_author ),
-            'terms'    => $terms_data,
+            'id'             => $post->ID,
+            'title'          => $post->post_title,
+            'slug'           => $post->post_name,
+            'content'        => $post->post_content,
+            'excerpt'        => $post->post_excerpt,
+            'status'         => $post->post_status,
+            'type'           => $post->post_type,
+            'post_parent'    => $post->post_parent,
+            'menu_order'     => $post->menu_order,
+            'page_template'  => get_page_template_slug( $post->ID ),
+            'comment_status' => $post->comment_status,
+            'author_id'      => (int) $post->post_author,
+            'author'         => get_the_author_meta( 'display_name', $post->post_author ),
+            'url'            => get_permalink( $post->ID ),
+            'date'           => $post->post_date,
+            'modified'       => $post->post_modified,
+            'terms'          => $terms_data,
         ) );
     }
 
@@ -330,9 +376,13 @@ class DS_MCP_Server {
             'post_status'  => sanitize_key( isset( $args['status'] ) ? $args['status'] : 'draft' ),
             'post_type'    => $post_type,
         );
-        if ( ! empty( $args['excerpt'] ) ) {
-            $post_data['post_excerpt'] = sanitize_textarea_field( $args['excerpt'] );
-        }
+        if ( ! empty( $args['excerpt'] ) )       $post_data['post_excerpt']   = sanitize_textarea_field( $args['excerpt'] );
+        if ( isset( $args['post_parent'] ) )     $post_data['post_parent']    = absint( $args['post_parent'] );
+        if ( ! empty( $args['slug'] ) )          $post_data['post_name']      = sanitize_title( $args['slug'] );
+        if ( isset( $args['menu_order'] ) )      $post_data['menu_order']     = (int) $args['menu_order'];
+        if ( ! empty( $args['page_template'] ) ) $post_data['page_template']  = sanitize_text_field( $args['page_template'] );
+        if ( ! empty( $args['post_author'] ) )   $post_data['post_author']    = absint( $args['post_author'] );
+        if ( isset( $args['comment_status'] ) )  $post_data['comment_status'] = in_array( $args['comment_status'], array( 'open', 'closed' ), true ) ? $args['comment_status'] : 'closed';
         $post_id = wp_insert_post( $post_data, true );
         if ( is_wp_error( $post_id ) ) {
             return $this->rpc_error( $id, -32603, $post_id->get_error_message() );
@@ -364,10 +414,16 @@ class DS_MCP_Server {
             return $this->rpc_error( $id, -32603, 'Insufficient permissions to edit post ' . $post->ID );
         }
         $post_data = array( 'ID' => $post->ID );
-        if ( isset( $args['title'] ) )   $post_data['post_title']   = sanitize_text_field( $args['title'] );
-        if ( isset( $args['content'] ) ) $post_data['post_content'] = wp_kses_post( $args['content'] );
-        if ( isset( $args['excerpt'] ) ) $post_data['post_excerpt'] = sanitize_textarea_field( $args['excerpt'] );
-        if ( isset( $args['status'] ) )  $post_data['post_status']  = sanitize_key( $args['status'] );
+        if ( isset( $args['title'] ) )         $post_data['post_title']   = sanitize_text_field( $args['title'] );
+        if ( isset( $args['content'] ) )       $post_data['post_content'] = wp_kses_post( $args['content'] );
+        if ( isset( $args['excerpt'] ) )       $post_data['post_excerpt'] = sanitize_textarea_field( $args['excerpt'] );
+        if ( isset( $args['status'] ) )        $post_data['post_status']  = sanitize_key( $args['status'] );
+        if ( isset( $args['post_parent'] ) )   $post_data['post_parent']    = absint( $args['post_parent'] );
+        if ( isset( $args['slug'] ) )          $post_data['post_name']      = sanitize_title( $args['slug'] );
+        if ( isset( $args['menu_order'] ) )    $post_data['menu_order']     = (int) $args['menu_order'];
+        if ( isset( $args['page_template'] ) ) $post_data['page_template']  = sanitize_text_field( $args['page_template'] );
+        if ( isset( $args['post_author'] ) )   $post_data['post_author']    = absint( $args['post_author'] );
+        if ( isset( $args['comment_status'] ) ) $post_data['comment_status'] = in_array( $args['comment_status'], array( 'open', 'closed' ), true ) ? $args['comment_status'] : 'closed';
         $result = wp_update_post( $post_data, true );
         if ( is_wp_error( $result ) ) {
             return $this->rpc_error( $id, -32603, $result->get_error_message() );
@@ -659,6 +715,105 @@ class DS_MCP_Server {
             'post_id'      => $post_id,
             'updated_keys' => $updated,
             'source'       => function_exists( 'update_field' ) ? 'acf' : 'post_meta',
+        ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Partner Settings Tools
+    // -------------------------------------------------------------------------
+
+    /** All known partner settings fields and their sanitization type. */
+    private function partner_fields_map() {
+        return array(
+            'partner_logo'        => 'image',
+            'partner_email'       => 'email',
+            'partner_phone'       => 'text',
+            'partner_address'     => 'textarea',
+            'partner_fb'          => 'url',
+            'partner_instagram'   => 'url',
+            'partner_x'           => 'url',
+            'partner_youtube'     => 'url',
+            'partner_linkedin'    => 'url',
+            'partner_tiktok'      => 'url',
+            'partner_leagueapps'  => 'url',
+        );
+    }
+
+    private function tool_get_partner_settings( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_acf_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_acf_enabled' );
+        }
+        if ( ! function_exists( 'get_field' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF is required for partner settings.' );
+        }
+
+        $result = array();
+        foreach ( $this->partner_fields_map() as $field => $type ) {
+            $value = get_field( $field, 'option' );
+            if ( $type === 'image' ) {
+                // ACF image field returns an array or attachment ID depending on field settings
+                if ( is_array( $value ) && isset( $value['url'] ) ) {
+                    $result[ $field ] = array( 'id' => $value['ID'], 'url' => $value['url'] );
+                } elseif ( is_numeric( $value ) && $value ) {
+                    $result[ $field ] = array( 'id' => (int) $value, 'url' => wp_get_attachment_url( $value ) );
+                } else {
+                    $result[ $field ] = null;
+                }
+            } else {
+                $result[ $field ] = $value;
+            }
+        }
+
+        return $this->tool_result( $id, array( 'partner_settings' => $result ) );
+    }
+
+    private function tool_update_partner_settings( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_acf_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_acf_enabled' );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return $this->rpc_error( $id, -32603, 'manage_options capability required.' );
+        }
+        if ( ! function_exists( 'update_field' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF is required for partner settings.' );
+        }
+        if ( empty( $args['fields'] ) || ! is_array( $args['fields'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: fields (object of field_name => value)' );
+        }
+
+        $allowed  = $this->partner_fields_map();
+        $updated  = array();
+        $rejected = array();
+
+        foreach ( $args['fields'] as $field => $value ) {
+            if ( ! isset( $allowed[ $field ] ) ) {
+                $rejected[] = $field;
+                continue;
+            }
+            switch ( $allowed[ $field ] ) {
+                case 'image':
+                    $value = absint( $value ); // expect Media Library attachment ID
+                    break;
+                case 'email':
+                    $value = sanitize_email( $value );
+                    break;
+                case 'url':
+                    $value = esc_url_raw( $value );
+                    break;
+                case 'textarea':
+                    $value = sanitize_textarea_field( $value );
+                    break;
+                default:
+                    $value = sanitize_text_field( $value );
+            }
+            update_field( $field, $value, 'option' );
+            $updated[] = $field;
+        }
+
+        return $this->tool_result( $id, array(
+            'updated'  => $updated,
+            'rejected' => $rejected,
+            'note'     => empty( $rejected ) ? '' : 'Unrecognised fields were skipped. Use get_partner_settings to see valid field names.',
         ) );
     }
 
@@ -1343,10 +1498,13 @@ class DS_MCP_Server {
                 'inputSchema' => array(
                     'type'       => 'object',
                     'properties' => array(
-                        'post_type' => array( 'type' => 'string',  'description' => 'Post type slug: post, page, events, athletes, staff, teams, or any CPT. Default: post' ),
-                        'per_page'  => array( 'type' => 'integer', 'description' => 'Number of results (max 100). Default: 20' ),
-                        'search'    => array( 'type' => 'string',  'description' => 'Keyword search' ),
-                        'status'    => array( 'type' => 'string',  'description' => 'Filter by status: publish, draft, private, any. Default: any' ),
+                        'post_type'   => array( 'type' => 'string',  'description' => 'Post type slug: post, page, events, athletes, staff, teams, or any CPT. Default: post' ),
+                        'per_page'    => array( 'type' => 'integer', 'description' => 'Number of results (max 100). Default: 20' ),
+                        'search'      => array( 'type' => 'string',  'description' => 'Keyword search' ),
+                        'status'      => array( 'type' => 'string',  'description' => 'Filter by status: publish, draft, private, any. Default: any' ),
+                        'post_parent' => array( 'type' => 'integer', 'description' => 'Filter by parent post ID. Use 0 for top-level posts.' ),
+                        'orderby'     => array( 'type' => 'string',  'description' => 'Sort field: date, title, menu_order, ID, modified. Default: date' ),
+                        'order'       => array( 'type' => 'string',  'description' => 'Sort direction: ASC or DESC. Default: DESC' ),
                     ),
                 ),
             ),
@@ -1368,12 +1526,18 @@ class DS_MCP_Server {
                     'type'       => 'object',
                     'required'   => array( 'title' ),
                     'properties' => array(
-                        'title'     => array( 'type' => 'string', 'description' => 'Title' ),
-                        'content'   => array( 'type' => 'string', 'description' => 'Content (HTML allowed)' ),
-                        'excerpt'   => array( 'type' => 'string', 'description' => 'Excerpt' ),
-                        'status'    => array( 'type' => 'string', 'description' => 'draft, publish, private. Default: draft' ),
-                        'post_type' => array( 'type' => 'string', 'description' => 'Post type slug. Default: post' ),
-                        'terms'     => array( 'type' => 'object', 'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
+                        'title'          => array( 'type' => 'string',  'description' => 'Title' ),
+                        'content'        => array( 'type' => 'string',  'description' => 'Content (HTML allowed)' ),
+                        'excerpt'        => array( 'type' => 'string',  'description' => 'Excerpt' ),
+                        'status'         => array( 'type' => 'string',  'description' => 'draft, publish, private. Default: draft' ),
+                        'post_type'      => array( 'type' => 'string',  'description' => 'Post type slug. Default: post' ),
+                        'post_parent'    => array( 'type' => 'integer', 'description' => 'Parent post ID (for page hierarchy)' ),
+                        'slug'           => array( 'type' => 'string',  'description' => 'URL slug (post_name). Auto-generated from title if omitted.' ),
+                        'menu_order'     => array( 'type' => 'integer', 'description' => 'Menu/page order. Default: 0' ),
+                        'page_template'  => array( 'type' => 'string',  'description' => 'Page template filename, e.g. "template-full-width.php"' ),
+                        'post_author'    => array( 'type' => 'integer', 'description' => 'Author user ID. Defaults to current user.' ),
+                        'comment_status' => array( 'type' => 'string',  'description' => 'open or closed. Default: closed' ),
+                        'terms'          => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
                     ),
                 ),
             ),
@@ -1384,12 +1548,18 @@ class DS_MCP_Server {
                     'type'       => 'object',
                     'required'   => array( 'id' ),
                     'properties' => array(
-                        'id'      => array( 'type' => 'integer', 'description' => 'Post ID' ),
-                        'title'   => array( 'type' => 'string',  'description' => 'New title' ),
-                        'content' => array( 'type' => 'string',  'description' => 'New content (HTML allowed)' ),
-                        'excerpt' => array( 'type' => 'string',  'description' => 'New excerpt' ),
-                        'status'  => array( 'type' => 'string',  'description' => 'New status: draft, publish, private' ),
-                        'terms'   => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
+                        'id'             => array( 'type' => 'integer', 'description' => 'Post ID' ),
+                        'title'          => array( 'type' => 'string',  'description' => 'New title' ),
+                        'content'        => array( 'type' => 'string',  'description' => 'New content (HTML allowed)' ),
+                        'excerpt'        => array( 'type' => 'string',  'description' => 'New excerpt' ),
+                        'status'         => array( 'type' => 'string',  'description' => 'New status: draft, publish, private' ),
+                        'post_parent'    => array( 'type' => 'integer', 'description' => 'Parent post ID. Set to 0 to remove parent.' ),
+                        'slug'           => array( 'type' => 'string',  'description' => 'New URL slug (post_name)' ),
+                        'menu_order'     => array( 'type' => 'integer', 'description' => 'Menu/page order' ),
+                        'page_template'  => array( 'type' => 'string',  'description' => 'Page template filename' ),
+                        'post_author'    => array( 'type' => 'integer', 'description' => 'New author user ID' ),
+                        'comment_status' => array( 'type' => 'string',  'description' => 'open or closed' ),
+                        'terms'          => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs.' ),
                     ),
                 ),
             ),
@@ -1521,6 +1691,39 @@ class DS_MCP_Server {
                     'properties' => array(
                         'id'     => array( 'type' => 'integer', 'description' => 'Post ID' ),
                         'fields' => array( 'type' => 'object',  'description' => 'Object of field_name → value pairs to update' ),
+                    ),
+                ),
+            ),
+            // Partner Settings
+            array(
+                'name'        => 'get_partner_settings',
+                'description' => 'Read all ACF Partner Settings (logo, email, phone, address, and social links). Requires ACF.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'update_partner_settings',
+                'description' => 'Update one or more ACF Partner Settings fields. Accepts any combination of: partner_logo (attachment ID), partner_email, partner_phone, partner_address, partner_fb, partner_instagram, partner_x, partner_youtube, partner_linkedin, partner_tiktok, partner_leagueapps. Requires manage_options.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'fields' ),
+                    'properties' => array(
+                        'fields' => array(
+                            'type'        => 'object',
+                            'description' => 'Object of field_name → value pairs. Social/URL fields expect full URLs. partner_logo expects a Media Library attachment ID.',
+                            'properties'  => array(
+                                'partner_logo'       => array( 'type' => 'integer', 'description' => 'Media Library attachment ID for the partner logo' ),
+                                'partner_email'      => array( 'type' => 'string',  'description' => 'Partner contact email address' ),
+                                'partner_phone'      => array( 'type' => 'string',  'description' => 'Partner phone number' ),
+                                'partner_address'    => array( 'type' => 'string',  'description' => 'Partner mailing address' ),
+                                'partner_fb'         => array( 'type' => 'string',  'description' => 'Facebook page URL' ),
+                                'partner_instagram'  => array( 'type' => 'string',  'description' => 'Instagram profile URL' ),
+                                'partner_x'          => array( 'type' => 'string',  'description' => 'X (Twitter) profile URL' ),
+                                'partner_youtube'    => array( 'type' => 'string',  'description' => 'YouTube channel URL' ),
+                                'partner_linkedin'   => array( 'type' => 'string',  'description' => 'LinkedIn page URL' ),
+                                'partner_tiktok'     => array( 'type' => 'string',  'description' => 'TikTok profile URL' ),
+                                'partner_leagueapps' => array( 'type' => 'string',  'description' => 'LeagueApps site URL' ),
+                            ),
+                        ),
                     ),
                 ),
             ),
@@ -1799,7 +2002,502 @@ class DS_MCP_Server {
                     ),
                 ),
             ),
+            // Menus
+            array(
+                'name'        => 'list_menus',
+                'description' => 'List all WordPress nav menus with their registered theme locations.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'get_menu',
+                'description' => 'Get a nav menu and its full item list (title, URL, parent, order, object type).',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'id'   => array( 'type' => 'integer', 'description' => 'Menu ID (use id or slug)' ),
+                        'slug' => array( 'type' => 'string',  'description' => 'Menu slug (use id or slug)' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'set_menu_items',
+                'description' => 'Replace all items in a nav menu with a new structure. WARNING: deletes existing items — requires confirm: true. Items are 0-indexed; use parent_index to reference a parent item by its position in the items array.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'items', 'confirm' ),
+                    'properties' => array(
+                        'id'      => array( 'type' => 'integer', 'description' => 'Menu ID (use id or slug)' ),
+                        'slug'    => array( 'type' => 'string',  'description' => 'Menu slug (use id or slug)' ),
+                        'confirm' => array( 'type' => 'boolean', 'description' => 'Must be true. All existing items will be removed.' ),
+                        'items'   => array(
+                            'type'        => 'array',
+                            'description' => 'Ordered array of menu items to create.',
+                            'items'       => array(
+                                'type'       => 'object',
+                                'properties' => array(
+                                    'title'        => array( 'type' => 'string',  'description' => 'Menu item label' ),
+                                    'url'          => array( 'type' => 'string',  'description' => 'URL for custom links' ),
+                                    'object_id'    => array( 'type' => 'integer', 'description' => 'Post/page/CPT ID for post_type items' ),
+                                    'object_type'  => array( 'type' => 'string',  'description' => 'Post type slug (e.g. page, post). Required if object_id is set.' ),
+                                    'parent_index' => array( 'type' => 'integer', 'description' => '0-based index of the parent item in this items array (for nested menus)' ),
+                                    'target'       => array( 'type' => 'string',  'description' => 'Link target, e.g. _blank' ),
+                                    'classes'      => array( 'type' => 'string',  'description' => 'CSS class(es)' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'assign_menu_to_location',
+                'description' => 'Assign an existing menu to a registered theme location (e.g. primary-menu, header-menu).',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'menu_id', 'location' ),
+                    'properties' => array(
+                        'menu_id'  => array( 'type' => 'integer', 'description' => 'Menu ID — get from list_menus' ),
+                        'location' => array( 'type' => 'string',  'description' => 'Theme location slug — get from list_menus registered_locations' ),
+                    ),
+                ),
+            ),
+            // Maintenance
+            array(
+                'name'        => 'flush_rewrite_rules',
+                'description' => 'Flush WordPress rewrite rules (equivalent to saving Permalinks settings). Fixes 404s after adding/changing CPTs or taxonomies.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'flush_cache',
+                'description' => 'Flush the WordPress object cache.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'delete_transients',
+                'description' => 'Delete all WordPress transients (both regular and site transients) from the options table.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'search_replace',
+                'description' => 'Search and replace text in the WordPress database. Searches posts, postmeta, and options tables by default. WARNING: direct DB modification — requires confirm: true and manage_options + ' . DS_TOOLKIT_ADMIN_DOMAIN . '.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'search', 'replace', 'confirm' ),
+                    'properties' => array(
+                        'search'  => array( 'type' => 'string',  'description' => 'Text to search for' ),
+                        'replace' => array( 'type' => 'string',  'description' => 'Replacement text' ),
+                        'confirm' => array( 'type' => 'boolean', 'description' => 'Must be true. This operation cannot be undone.' ),
+                        'tables'  => array( 'type' => 'array',   'description' => 'Optional: specific table names to search. Default: wp_posts, wp_postmeta, wp_options.' ),
+                    ),
+                ),
+            ),
+            // Options
+            array(
+                'name'        => 'get_option',
+                'description' => 'Read a WordPress option by key (wp_options table). Requires manage_options + ' . DS_TOOLKIT_ADMIN_DOMAIN . '.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'Option name (e.g. blogname, siteurl, blogdescription)' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'update_option',
+                'description' => 'Update a WordPress option by key. Requires manage_options + ' . DS_TOOLKIT_ADMIN_DOMAIN . '.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key', 'value' ),
+                    'properties' => array(
+                        'key'   => array( 'type' => 'string', 'description' => 'Option name' ),
+                        'value' => array( 'description' => 'New value (string, number, boolean, or object)' ),
+                    ),
+                ),
+            ),
+            // Users
+            array(
+                'name'        => 'list_users',
+                'description' => 'List WordPress users with optional role and search filters.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'role'     => array( 'type' => 'string',  'description' => 'Filter by role: administrator, editor, author, contributor, subscriber' ),
+                        'search'   => array( 'type' => 'string',  'description' => 'Keyword search (name, email, login)' ),
+                        'per_page' => array( 'type' => 'integer', 'description' => 'Results per page (max 200). Default: 50' ),
+                        'offset'   => array( 'type' => 'integer', 'description' => 'Offset for pagination. Default: 0' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'get_user',
+                'description' => 'Get a WordPress user by ID or email address.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'id'    => array( 'type' => 'integer', 'description' => 'User ID (use id or email)' ),
+                        'email' => array( 'type' => 'string',  'description' => 'User email (use id or email)' ),
+                    ),
+                ),
+            ),
+            // Media
+            array(
+                'name'        => 'regenerate_thumbnails',
+                'description' => 'Regenerate image thumbnail sizes for Media Library attachments.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'ids'   => array( 'type' => 'array',   'description' => 'Optional: specific attachment IDs to regenerate. If omitted, processes the most recent images.' ),
+                        'limit' => array( 'type' => 'integer', 'description' => 'Max number of images to process (max 100). Default: 20' ),
+                    ),
+                ),
+            ),
         );
+    }
+
+    // -------------------------------------------------------------------------
+    // Menu Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_list_menus( $id ) {
+        $gate = $this->is_group_enabled( 'mcp_menus_enabled' );
+        if ( ! $gate ) {
+            return $this->group_disabled_error( $id, 'mcp_menus_enabled' );
+        }
+        $menus = wp_get_nav_menus();
+        $locations = get_nav_menu_locations();
+        $location_map = array();
+        foreach ( $locations as $loc => $menu_id ) {
+            $location_map[ $menu_id ][] = $loc;
+        }
+        $result = array();
+        foreach ( $menus as $menu ) {
+            $result[] = array(
+                'id'        => $menu->term_id,
+                'name'      => $menu->name,
+                'slug'      => $menu->slug,
+                'count'     => $menu->count,
+                'locations' => isset( $location_map[ $menu->term_id ] ) ? $location_map[ $menu->term_id ] : array(),
+            );
+        }
+        return $this->tool_result( $id, array( 'menus' => $result, 'registered_locations' => array_keys( get_registered_nav_menus() ) ) );
+    }
+
+    private function tool_get_menu( $id, $args ) {
+        $gate = $this->is_group_enabled( 'mcp_menus_enabled' );
+        if ( ! $gate ) {
+            return $this->group_disabled_error( $id, 'mcp_menus_enabled' );
+        }
+        if ( empty( $args['id'] ) && empty( $args['slug'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Provide id or slug' );
+        }
+        $menu = ! empty( $args['id'] ) ? wp_get_nav_menu_object( (int) $args['id'] ) : wp_get_nav_menu_object( sanitize_text_field( $args['slug'] ) );
+        if ( ! $menu ) {
+            return $this->rpc_error( $id, -32602, 'Menu not found' );
+        }
+        $items = wp_get_nav_menu_items( $menu->term_id );
+        $formatted = array();
+        if ( $items ) {
+            foreach ( $items as $item ) {
+                $formatted[] = array(
+                    'id'          => $item->ID,
+                    'title'       => $item->title,
+                    'url'         => $item->url,
+                    'order'       => $item->menu_order,
+                    'parent'      => (int) $item->menu_item_parent,
+                    'object_type' => $item->object,
+                    'object_id'   => (int) $item->object_id,
+                    'target'      => $item->target,
+                    'classes'     => $item->classes,
+                );
+            }
+        }
+        return $this->tool_result( $id, array(
+            'id'    => $menu->term_id,
+            'name'  => $menu->name,
+            'slug'  => $menu->slug,
+            'items' => $formatted,
+        ) );
+    }
+
+    private function tool_set_menu_items( $id, $args ) {
+        $gate = $this->is_group_enabled( 'mcp_menus_enabled' );
+        if ( ! $gate ) {
+            return $this->group_disabled_error( $id, 'mcp_menus_enabled' );
+        }
+        if ( empty( $args['id'] ) && empty( $args['slug'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Provide id or slug' );
+        }
+        if ( empty( $args['confirm'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Set confirm: true to replace the menu structure. This removes all existing items.' );
+        }
+        if ( empty( $args['items'] ) || ! is_array( $args['items'] ) ) {
+            return $this->rpc_error( $id, -32602, 'items array is required' );
+        }
+        $menu = ! empty( $args['id'] ) ? wp_get_nav_menu_object( (int) $args['id'] ) : wp_get_nav_menu_object( sanitize_text_field( $args['slug'] ) );
+        if ( ! $menu ) {
+            return $this->rpc_error( $id, -32602, 'Menu not found' );
+        }
+        // Delete existing items
+        $existing = wp_get_nav_menu_items( $menu->term_id, array( 'post_status' => 'any' ) );
+        if ( $existing ) {
+            foreach ( $existing as $item ) {
+                wp_delete_post( $item->ID, true );
+            }
+        }
+        // Insert new items — two passes to handle parent references
+        $id_map    = array();
+        $new_items = array();
+        foreach ( $args['items'] as $index => $item ) {
+            $item_args = array(
+                'menu-item-title'   => sanitize_text_field( isset( $item['title'] ) ? $item['title'] : '' ),
+                'menu-item-url'     => isset( $item['url'] ) ? esc_url_raw( $item['url'] ) : '',
+                'menu-item-status'  => 'publish',
+                'menu-item-target'  => isset( $item['target'] ) ? sanitize_text_field( $item['target'] ) : '',
+                'menu-item-classes' => isset( $item['classes'] ) ? sanitize_text_field( $item['classes'] ) : '',
+            );
+            if ( ! empty( $item['object_id'] ) && ! empty( $item['object_type'] ) ) {
+                $item_args['menu-item-object']    = sanitize_text_field( $item['object_type'] );
+                $item_args['menu-item-object-id'] = (int) $item['object_id'];
+                $item_args['menu-item-type']      = 'post_type';
+            } else {
+                $item_args['menu-item-type'] = 'custom';
+            }
+            $new_items[] = array( 'args' => $item_args, 'temp_parent' => isset( $item['parent_index'] ) ? (int) $item['parent_index'] : 0 );
+        }
+        foreach ( $new_items as $index => $data ) {
+            $parent_id = 0;
+            if ( $data['temp_parent'] > 0 && isset( $id_map[ $data['temp_parent'] ] ) ) {
+                $parent_id = $id_map[ $data['temp_parent'] ];
+            }
+            $data['args']['menu-item-parent-id'] = $parent_id;
+            $new_id = wp_update_nav_menu_item( $menu->term_id, 0, $data['args'] );
+            if ( ! is_wp_error( $new_id ) ) {
+                $id_map[ $index ] = $new_id;
+            }
+        }
+        return $this->tool_result( $id, array( 'success' => true, 'menu_id' => $menu->term_id, 'items_created' => count( $id_map ) ) );
+    }
+
+    private function tool_assign_menu_to_location( $id, $args ) {
+        $gate = $this->is_group_enabled( 'mcp_menus_enabled' );
+        if ( ! $gate ) {
+            return $this->group_disabled_error( $id, 'mcp_menus_enabled' );
+        }
+        if ( empty( $args['menu_id'] ) || empty( $args['location'] ) ) {
+            return $this->rpc_error( $id, -32602, 'menu_id and location are required' );
+        }
+        $menu = wp_get_nav_menu_object( (int) $args['menu_id'] );
+        if ( ! $menu ) {
+            return $this->rpc_error( $id, -32602, 'Menu not found' );
+        }
+        $registered = get_registered_nav_menus();
+        $location   = sanitize_text_field( $args['location'] );
+        if ( ! isset( $registered[ $location ] ) ) {
+            return $this->rpc_error( $id, -32602, 'Location "' . $location . '" is not registered. Use list_menus to see registered_locations.' );
+        }
+        $locations              = get_nav_menu_locations();
+        $locations[ $location ] = $menu->term_id;
+        set_theme_mod( 'nav_menu_locations', $locations );
+        return $this->tool_result( $id, array( 'success' => true, 'menu' => $menu->name, 'location' => $location ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Maintenance Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_flush_rewrite_rules( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_maintenance_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_maintenance_enabled' );
+        }
+        flush_rewrite_rules( true );
+        return $this->tool_result( $id, array( 'success' => true, 'message' => 'Rewrite rules flushed.' ) );
+    }
+
+    private function tool_flush_cache( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_maintenance_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_maintenance_enabled' );
+        }
+        wp_cache_flush();
+        return $this->tool_result( $id, array( 'success' => true, 'message' => 'Object cache flushed.' ) );
+    }
+
+    private function tool_delete_transients( $id ) {
+        if ( ! $this->is_group_enabled( 'mcp_maintenance_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_maintenance_enabled' );
+        }
+        global $wpdb;
+        $deleted = $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%' OR option_name LIKE '_site_transient_%'" );
+        return $this->tool_result( $id, array( 'success' => true, 'deleted_rows' => (int) $deleted ) );
+    }
+
+    private function tool_search_replace( $id, $args ) {
+        $gate = $this->leagueapps_gate( $id, 'mcp_maintenance_enabled' );
+        if ( $gate ) return $gate;
+        if ( empty( $args['search'] ) || ! isset( $args['replace'] ) ) {
+            return $this->rpc_error( $id, -32602, 'search and replace are required' );
+        }
+        if ( empty( $args['confirm'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Set confirm: true. search_replace modifies the database directly and cannot be undone.' );
+        }
+        global $wpdb;
+        $search  = $args['search'];
+        $replace = $args['replace'];
+        $tables  = ! empty( $args['tables'] ) ? array_map( 'sanitize_text_field', $args['tables'] ) : array( $wpdb->posts, $wpdb->postmeta, $wpdb->options );
+        $total   = 0;
+        $report  = array();
+        foreach ( $tables as $table ) {
+            // Only allow tables in this database
+            $cols = $wpdb->get_results( "SHOW COLUMNS FROM `{$table}`", ARRAY_A );
+            if ( ! $cols ) continue;
+            $text_cols = array();
+            foreach ( $cols as $col ) {
+                if ( preg_match( '/char|text|mediumtext|longtext/i', $col['Type'] ) ) {
+                    $text_cols[] = $col['Field'];
+                }
+            }
+            $updated = 0;
+            foreach ( $text_cols as $col ) {
+                $result = $wpdb->query( $wpdb->prepare(
+                    "UPDATE `{$table}` SET `{$col}` = REPLACE(`{$col}`, %s, %s) WHERE `{$col}` LIKE %s",
+                    $search, $replace, '%' . $wpdb->esc_like( $search ) . '%'
+                ) );
+                if ( $result ) $updated += $result;
+            }
+            if ( $updated ) {
+                $report[] = array( 'table' => $table, 'rows_updated' => $updated );
+                $total   += $updated;
+            }
+        }
+        return $this->tool_result( $id, array( 'success' => true, 'total_rows_updated' => $total, 'report' => $report ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Options Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_get_option( $id, $args ) {
+        $gate = $this->leagueapps_gate( $id, 'mcp_options_enabled' );
+        if ( $gate ) return $gate;
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'key is required' );
+        }
+        $key   = sanitize_text_field( $args['key'] );
+        $value = get_option( $key );
+        if ( false === $value ) {
+            return $this->rpc_error( $id, -32602, 'Option "' . $key . '" not found.' );
+        }
+        return $this->tool_result( $id, array( 'key' => $key, 'value' => $value ) );
+    }
+
+    private function tool_update_option( $id, $args ) {
+        $gate = $this->leagueapps_gate( $id, 'mcp_options_enabled' );
+        if ( $gate ) return $gate;
+        if ( empty( $args['key'] ) || ! isset( $args['value'] ) ) {
+            return $this->rpc_error( $id, -32602, 'key and value are required' );
+        }
+        $key     = sanitize_text_field( $args['key'] );
+        $updated = update_option( $key, $args['value'] );
+        return $this->tool_result( $id, array( 'success' => true, 'key' => $key, 'updated' => $updated ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // User Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_list_users( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_users_enabled' );
+        }
+        $query_args = array(
+            'number'  => min( absint( isset( $args['per_page'] ) ? $args['per_page'] : 50 ), 200 ),
+            'offset'  => isset( $args['offset'] ) ? absint( $args['offset'] ) : 0,
+            'orderby' => 'registered',
+            'order'   => 'DESC',
+        );
+        if ( ! empty( $args['role'] ) )   $query_args['role']   = sanitize_text_field( $args['role'] );
+        if ( ! empty( $args['search'] ) ) $query_args['search'] = '*' . sanitize_text_field( $args['search'] ) . '*';
+        $users  = get_users( $query_args );
+        $result = array();
+        foreach ( $users as $user ) {
+            $result[] = array(
+                'id'           => $user->ID,
+                'login'        => $user->user_login,
+                'email'        => $user->user_email,
+                'display_name' => $user->display_name,
+                'roles'        => $user->roles,
+                'registered'   => $user->user_registered,
+            );
+        }
+        return $this->tool_result( $id, array( 'users' => $result, 'count' => count( $result ) ) );
+    }
+
+    private function tool_get_user( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_users_enabled' );
+        }
+        if ( empty( $args['id'] ) && empty( $args['email'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Provide id or email' );
+        }
+        $user = ! empty( $args['id'] ) ? get_user_by( 'id', (int) $args['id'] ) : get_user_by( 'email', sanitize_email( $args['email'] ) );
+        if ( ! $user ) {
+            return $this->rpc_error( $id, -32602, 'User not found' );
+        }
+        return $this->tool_result( $id, array(
+            'id'           => $user->ID,
+            'login'        => $user->user_login,
+            'email'        => $user->user_email,
+            'display_name' => $user->display_name,
+            'first_name'   => $user->first_name,
+            'last_name'    => $user->last_name,
+            'roles'        => $user->roles,
+            'registered'   => $user->user_registered,
+            'url'          => $user->user_url,
+            'description'  => $user->description,
+            'capabilities' => array_keys( array_filter( (array) $user->wp_capabilities ) ),
+        ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // Media Tools
+    // -------------------------------------------------------------------------
+
+    private function tool_regenerate_thumbnails( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_users_enabled' );
+        }
+        $limit     = min( absint( isset( $args['limit'] ) ? $args['limit'] : 20 ), 100 );
+        $post__in  = ! empty( $args['ids'] ) && is_array( $args['ids'] ) ? array_map( 'absint', $args['ids'] ) : array();
+        $query_args = array(
+            'post_type'      => 'attachment',
+            'post_mime_type' => 'image',
+            'post_status'    => 'inherit',
+            'posts_per_page' => $limit,
+            'fields'         => 'ids',
+        );
+        if ( $post__in ) $query_args['post__in'] = $post__in;
+        $ids       = get_posts( $query_args );
+        $succeeded = 0;
+        $failed    = 0;
+        foreach ( $ids as $attachment_id ) {
+            $file = get_attached_file( $attachment_id );
+            if ( $file && file_exists( $file ) ) {
+                $metadata = wp_generate_attachment_metadata( $attachment_id, $file );
+                if ( ! is_wp_error( $metadata ) && $metadata ) {
+                    wp_update_attachment_metadata( $attachment_id, $metadata );
+                    $succeeded++;
+                } else {
+                    $failed++;
+                }
+            } else {
+                $failed++;
+            }
+        }
+        return $this->tool_result( $id, array(
+            'success'   => true,
+            'processed' => count( $ids ),
+            'succeeded' => $succeeded,
+            'failed'    => $failed,
+        ) );
     }
 
     // -------------------------------------------------------------------------
@@ -1815,6 +2513,10 @@ class DS_MCP_Server {
             'mcp_toolkit_settings_enabled' => 'Toolkit Settings',
             'mcp_bb_enabled'               => 'Beaver Builder',
             'mcp_acf_schema_enabled'       => 'ACF Schema (Post Types & Taxonomies)',
+            'mcp_menus_enabled'            => 'Menus',
+            'mcp_maintenance_enabled'      => 'Maintenance',
+            'mcp_options_enabled'          => 'Options',
+            'mcp_users_enabled'            => 'Users & Media',
         );
         $label = isset( $labels[ $group_key ] ) ? $labels[ $group_key ] : $group_key;
         return $this->rpc_error( $id, -32603, '"' . $label . '" tools are disabled. Enable them in DS Toolkit → Settings → MCP tab.' );

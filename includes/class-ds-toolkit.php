@@ -94,6 +94,10 @@ class DS_Toolkit {
             'mcp_toolkit_settings_enabled'       => 1,
             'mcp_bb_enabled'                     => 1,
             'mcp_acf_schema_enabled'             => 1,
+            'mcp_menus_enabled'                  => 1,
+            'mcp_maintenance_enabled'            => 1,
+            'mcp_options_enabled'                => 1,
+            'mcp_users_enabled'                  => 1,
         );
     }
 

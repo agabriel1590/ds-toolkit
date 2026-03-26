@@ -4,6 +4,44 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.9.2] - 2026-03-26
+### Added
+- `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management
+- `flush_rewrite_rules`, `flush_cache`, `delete_transients`, `search_replace` MCP tools — maintenance operations
+- `get_option`, `update_option` MCP tools — read/write wp_options (leagueapps-gated)
+- `list_users`, `get_user`, `regenerate_thumbnails` MCP tools — user lookup and media
+- `create_post`/`update_post` now accept `post_parent`, `slug`, `menu_order`, `page_template`, `post_author`, `comment_status`
+- `get_post`/`list_posts` return `slug`, `post_parent`, `menu_order`; `list_posts` accepts `post_parent`, `orderby`, `order` filters
+- Four new MCP access-control groups: Menus, Maintenance, Options, Users & Media
+### Fixed
+- Beta updater now correctly detects beta.N → beta.N+1 upgrades
+
+## [0.9.9.2-beta.4] - 2026-03-26
+### Fixed
+- Beta updater now correctly detects beta.N → beta.N+1 upgrades (same base version, higher beta number) — PHP's `version_compare` is unreliable for this case
+
+## [0.9.9.2-beta.3] - 2026-03-26
+### Added
+- `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management (list, inspect, rebuild structure, assign to location)
+- `flush_rewrite_rules`, `flush_cache`, `delete_transients`, `search_replace` MCP tools — maintenance operations; `search_replace` requires @leagueapps.com + `confirm: true`
+- `get_option`, `update_option` MCP tools — read/write wp_options; restricted to @leagueapps.com
+- `list_users`, `get_user` MCP tools — user lookup with role/search filters
+- `regenerate_thumbnails` MCP tool — regenerate image sizes for Media Library attachments
+- Four new MCP access-control groups: **Menus**, **Maintenance**, **Options**, **Users & Media** (all enabled by default)
+### Changed
+- `create_post`, `update_post` — now accept `post_parent`, `slug`, `menu_order`, `page_template`, `post_author`, `comment_status`
+- `get_post` — now returns `slug`, `post_parent`, `menu_order`, `page_template`, `comment_status`, `author_id`
+- `list_posts` — now returns `slug`, `post_parent`, `menu_order`; accepts `post_parent`, `orderby`, `order` filters
+
+## [0.9.9.2-beta.2] - 2026-03-26
+### Added
+- `get_partner_settings` MCP tool — read all ACF Partner Settings (logo, email, phone, address, Facebook, Instagram, X, YouTube, LinkedIn, TikTok, LeagueApps)
+- `update_partner_settings` MCP tool — update any partner fields by name; URL fields sanitized, logo accepts Media Library attachment ID
+
+## [0.9.9.2-beta.1] - 2026-03-26
+### Changed
+- Updated MCP example prompts to showcase current feature set — content editing, taxonomy terms, BB layout switching, global colors, CSS editing, ACF field groups, ACF post types, and settings
+
 ## [0.9.9.1] - 2026-03-26
 ### Fixed
 - WordPress "View version details" changelog tab now shows the full CHANGELOG.md history instead of only the latest GitHub release body
