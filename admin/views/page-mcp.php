@@ -467,15 +467,33 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="dst-card-row dst-shortcode-docs">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-chat"></span></div>
         <div class="dst-card-info">
-            <strong>Once connected, try asking Claude:</strong>
-            <p>List all published pages on the site</p>
-            <code>List all published pages on this WordPress site</code>
-            <p>Edit a post</p>
-            <code>Update the title of post ID 42 to "Our Updated Programs"</code>
+            <strong>Content</strong>
+            <p>List posts and edit one</p>
+            <code>List all published pages on this site, then update the title of the About page to "About Us"</code>
+            <p>Assign taxonomy terms</p>
+            <code>Assign the "Basketball" and "Spring 2025" terms to post ID 88</code>
+
+            <strong style="margin-top:12px;display:block;">Design</strong>
+            <p>Switch the site header</p>
+            <code>Change the site header to Header Style 4</code>
+            <p>Switch the homepage layout</p>
+            <code>Apply Home Page Layout 3 to the front page</code>
+            <p>Update brand colors</p>
+            <code>Change the Primary BB global color to #e63946 and Accent to #457b9d</code>
+            <p>Edit global CSS</p>
+            <code>Show me the Global CSS, then add a rule that makes all h2 headings color #333</code>
+
+            <strong style="margin-top:12px;display:block;">ACF Schema</strong>
+            <p>Explore field groups</p>
+            <code>List all ACF field groups and show me the fields inside the "Event Details" group</code>
+            <p>Create a field group</p>
+            <code>Create an ACF field group called "Athlete Profile" on the athletes post type with fields: bio (textarea), position (text), jersey_number (number)</code>
+            <p>Manage post types</p>
+            <code>List all ACF post types and show me the settings for the "athletes" one</code>
+
+            <strong style="margin-top:12px;display:block;">Settings</strong>
             <p>Toggle a feature</p>
             <code>Disable the [current_year] shortcode in DS Toolkit settings</code>
-            <p>Read and edit CSS</p>
-            <code>Show me the Global CSS in DS Toolkit, then add a rule that makes all h2 headings #333</code>
         </div>
     </div>
 </div>
