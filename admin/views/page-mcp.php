@@ -389,6 +389,54 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 </div>
 
+<p class="dst-section-title dst-section-subtitle">ACF Field Groups <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only</span></p>
+<div class="dst-card" style="<?php echo $mcp_acf_schema_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_field_groups</strong><span>List all ACF field groups — returns key, title, active status, and location rules.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-search"></span></div>
+        <div class="dst-card-info"><strong>acf_get_field_group</strong><span>Get a single field group by key, including all its fields (key, label, name, type).</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_field_group</strong><span>Create a new ACF field group with optional location rules and fields in a single call.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-edit"></span></div>
+        <div class="dst-card-info"><strong>acf_update_field_group</strong><span>Update an existing field group — title, location, position, label placement, or active state.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_field_group</strong><span>Permanently delete a field group and all its fields. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
+<p class="dst-section-title dst-section-subtitle">ACF Options Pages <span style="color:#b32d2e;font-size:11px;">&#9888; @leagueapps.com only &bull; ACF Pro 6.2+</span></p>
+<div class="dst-card" style="<?php echo $mcp_acf_schema_enabled ? '' : 'opacity:.5;'; ?>">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-list-view"></span></div>
+        <div class="dst-card-info"><strong>acf_list_options_pages</strong><span>List all ACF Pro options pages — returns key, title, menu_slug, and parent_slug.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-plus-alt"></span></div>
+        <div class="dst-card-info"><strong>acf_create_options_page</strong><span>Create a new ACF Pro options page with title, menu slug, parent, capability, and optional redirect.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-trash"></span></div>
+        <div class="dst-card-info"><strong>acf_delete_options_page</strong><span>Permanently delete an ACF Pro options page. Irreversible.</span></div>
+        <span class="dst-mcp-cap">manage_options</span>
+    </div>
+</div>
+
 <p class="dst-section-title dst-section-subtitle">Beaver Builder</p>
 <div class="dst-card" style="<?php echo $mcp_bb_enabled ? '' : 'opacity:.5;'; ?>">
     <div class="dst-card-row">

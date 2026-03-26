@@ -159,6 +159,14 @@ class DS_MCP_Server {
             'acf_create_taxonomy'     => 'mcp_acf_schema_enabled',
             'acf_update_taxonomy'     => 'mcp_acf_schema_enabled',
             'acf_delete_taxonomy'     => 'mcp_acf_schema_enabled',
+            'acf_list_field_groups'   => 'mcp_acf_schema_enabled',
+            'acf_get_field_group'     => 'mcp_acf_schema_enabled',
+            'acf_create_field_group'  => 'mcp_acf_schema_enabled',
+            'acf_update_field_group'  => 'mcp_acf_schema_enabled',
+            'acf_delete_field_group'  => 'mcp_acf_schema_enabled',
+            'acf_list_options_pages'  => 'mcp_acf_schema_enabled',
+            'acf_create_options_page' => 'mcp_acf_schema_enabled',
+            'acf_delete_options_page' => 'mcp_acf_schema_enabled',
         );
         return isset( $map[ $name ] ) ? $this->is_group_enabled( $map[ $name ] ) : true;
     }
@@ -203,6 +211,16 @@ class DS_MCP_Server {
             case 'acf_create_taxonomy':   return $this->tool_acf_create_taxonomy( $id, $arguments );
             case 'acf_update_taxonomy':   return $this->tool_acf_update_taxonomy( $id, $arguments );
             case 'acf_delete_taxonomy':   return $this->tool_acf_delete_taxonomy( $id, $arguments );
+            // ACF Schema — Field Groups
+            case 'acf_list_field_groups':   return $this->tool_acf_list_field_groups( $id );
+            case 'acf_get_field_group':     return $this->tool_acf_get_field_group( $id, $arguments );
+            case 'acf_create_field_group':  return $this->tool_acf_create_field_group( $id, $arguments );
+            case 'acf_update_field_group':  return $this->tool_acf_update_field_group( $id, $arguments );
+            case 'acf_delete_field_group':  return $this->tool_acf_delete_field_group( $id, $arguments );
+            // ACF Schema — Options Pages
+            case 'acf_list_options_pages':   return $this->tool_acf_list_options_pages( $id );
+            case 'acf_create_options_page':  return $this->tool_acf_create_options_page( $id, $arguments );
+            case 'acf_delete_options_page':  return $this->tool_acf_delete_options_page( $id, $arguments );
             default:
                 return $this->rpc_error( $id, -32602, 'Unknown tool: ' . $name );
         }
@@ -939,6 +957,232 @@ class DS_MCP_Server {
     }
 
     // -------------------------------------------------------------------------
+    // ACF Schema Tools — Field Groups
+    // -------------------------------------------------------------------------
+
+    private function tool_acf_list_field_groups( $id ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        $groups = acf_get_field_groups();
+        $result = array();
+        foreach ( $groups as $group ) {
+            $result[] = array(
+                'key'      => $group['key'],
+                'title'    => $group['title'],
+                'active'   => $group['active'],
+                'location' => $group['location'],
+                'position' => $group['position'],
+            );
+        }
+        return $this->tool_result( $id, array( 'field_groups' => $result ) );
+    }
+
+    private function tool_acf_get_field_group( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key' );
+        }
+        $group = acf_get_field_group( sanitize_text_field( $args['key'] ) );
+        if ( empty( $group ) ) {
+            return $this->rpc_error( $id, -32602, 'Field group not found for key: ' . $args['key'] );
+        }
+        $fields = acf_get_fields( $group );
+        $fields = $fields ?: array();
+        $simplified_fields = array();
+        foreach ( $fields as $field ) {
+            $simplified_fields[] = array(
+                'key'      => $field['key'],
+                'label'    => $field['label'],
+                'name'     => $field['name'],
+                'type'     => $field['type'],
+                'required' => $field['required'],
+            );
+        }
+        return $this->tool_result( $id, array(
+            'key'      => $group['key'],
+            'title'    => $group['title'],
+            'active'   => $group['active'],
+            'location' => $group['location'],
+            'position' => $group['position'],
+            'fields'   => $simplified_fields,
+        ) );
+    }
+
+    private function tool_acf_create_field_group( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['title'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: title' );
+        }
+        // Default location: show on all posts if not provided
+        $location = isset( $args['location'] ) && is_array( $args['location'] )
+            ? $args['location']
+            : array( array( array( 'param' => 'post_type', 'operator' => '==', 'value' => 'post' ) ) );
+
+        $group = array(
+            'title'           => sanitize_text_field( $args['title'] ),
+            'location'        => $location,
+            'position'        => isset( $args['position'] ) ? sanitize_key( $args['position'] ) : 'normal',
+            'label_placement' => isset( $args['label_placement'] ) ? sanitize_key( $args['label_placement'] ) : 'top',
+            'active'          => isset( $args['active'] ) ? (bool) $args['active'] : true,
+        );
+        $result = acf_update_field_group( $group );
+        if ( empty( $result['key'] ) ) {
+            return $this->rpc_error( $id, -32603, 'Failed to create field group.' );
+        }
+        // Add fields if provided
+        $fields_created = array();
+        if ( ! empty( $args['fields'] ) && is_array( $args['fields'] ) ) {
+            foreach ( $args['fields'] as $field_def ) {
+                if ( empty( $field_def['label'] ) || empty( $field_def['name'] ) || empty( $field_def['type'] ) ) {
+                    continue;
+                }
+                $field = array(
+                    'label'    => sanitize_text_field( $field_def['label'] ),
+                    'name'     => sanitize_key( $field_def['name'] ),
+                    'type'     => sanitize_key( $field_def['type'] ),
+                    'required' => ! empty( $field_def['required'] ) ? 1 : 0,
+                    'parent'   => $result['key'],
+                );
+                if ( isset( $field_def['instructions'] ) ) {
+                    $field['instructions'] = sanitize_text_field( $field_def['instructions'] );
+                }
+                if ( isset( $field_def['default_value'] ) ) {
+                    $field['default_value'] = $field_def['default_value'];
+                }
+                $saved = acf_update_field( $field );
+                if ( ! empty( $saved['key'] ) ) {
+                    $fields_created[] = array( 'key' => $saved['key'], 'name' => $saved['name'], 'type' => $saved['type'] );
+                }
+            }
+        }
+        return $this->tool_result( $id, array(
+            'key'            => $result['key'],
+            'title'          => $result['title'],
+            'created'        => true,
+            'fields_created' => $fields_created,
+        ) );
+    }
+
+    private function tool_acf_update_field_group( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_field_groups to get it)' );
+        }
+        $existing = acf_get_field_group( sanitize_text_field( $args['key'] ) );
+        if ( empty( $existing ) ) {
+            return $this->rpc_error( $id, -32602, 'Field group not found for key: ' . $args['key'] );
+        }
+        $allowed = array( 'title', 'location', 'position', 'label_placement', 'active' );
+        foreach ( $allowed as $field ) {
+            if ( isset( $args[ $field ] ) ) {
+                $existing[ $field ] = $args[ $field ];
+            }
+        }
+        $result = acf_update_field_group( $existing );
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'title' => $result['title'], 'updated' => true ) );
+    }
+
+    private function tool_acf_delete_field_group( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_field_groups to get it)' );
+        }
+        $group = acf_get_field_group( sanitize_text_field( $args['key'] ) );
+        if ( empty( $group ) ) {
+            return $this->rpc_error( $id, -32602, 'Field group not found for key: ' . $args['key'] );
+        }
+        $post = acf_get_field_group_post( sanitize_text_field( $args['key'] ) );
+        if ( empty( $post ) ) {
+            return $this->rpc_error( $id, -32603, 'Could not locate internal post for this field group.' );
+        }
+        $deleted = acf_delete_field_group( $post->ID );
+        return $this->tool_result( $id, array( 'key' => $args['key'], 'deleted' => (bool) $deleted ) );
+    }
+
+    // -------------------------------------------------------------------------
+    // ACF Schema Tools — Options Pages
+    // -------------------------------------------------------------------------
+
+    private function tool_acf_list_options_pages( $id ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( ! function_exists( 'acf_get_ui_options_pages' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF Pro 6.2+ is required for Options Pages' );
+        }
+        $pages  = acf_get_ui_options_pages();
+        $result = array();
+        foreach ( $pages as $page ) {
+            $result[] = array(
+                'key'         => $page['key'],
+                'title'       => $page['title'],
+                'menu_slug'   => $page['menu_slug'],
+                'menu_title'  => $page['menu_title'],
+                'parent_slug' => $page['parent_slug'],
+                'capability'  => $page['capability'],
+            );
+        }
+        return $this->tool_result( $id, array( 'options_pages' => $result ) );
+    }
+
+    private function tool_acf_create_options_page( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( ! function_exists( 'acf_update_ui_options_page' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF Pro 6.2+ is required for Options Pages' );
+        }
+        if ( empty( $args['title'] ) || empty( $args['menu_slug'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required arguments: title, menu_slug' );
+        }
+        $data = array(
+            'title'       => sanitize_text_field( $args['title'] ),
+            'menu_slug'   => sanitize_key( $args['menu_slug'] ),
+            'menu_title'  => isset( $args['menu_title'] ) ? sanitize_text_field( $args['menu_title'] ) : '',
+            'parent_slug' => isset( $args['parent_slug'] ) ? sanitize_text_field( $args['parent_slug'] ) : '',
+            'capability'  => isset( $args['capability'] ) ? sanitize_key( $args['capability'] ) : 'edit_posts',
+            'redirect'    => isset( $args['redirect'] ) ? (bool) $args['redirect'] : false,
+            'description' => isset( $args['description'] ) ? sanitize_textarea_field( $args['description'] ) : '',
+        );
+        $result = acf_update_ui_options_page( $data );
+        if ( empty( $result['key'] ) ) {
+            return $this->rpc_error( $id, -32603, 'Failed to create options page. The menu_slug may already be in use.' );
+        }
+        return $this->tool_result( $id, array( 'key' => $result['key'], 'menu_slug' => $result['menu_slug'], 'created' => true ) );
+    }
+
+    private function tool_acf_delete_options_page( $id, $args ) {
+        $err = $this->acf_schema_gate( $id, 'mcp_acf_schema_enabled' );
+        if ( $err ) return $err;
+
+        if ( ! function_exists( 'acf_delete_ui_options_page' ) ) {
+            return $this->rpc_error( $id, -32603, 'ACF Pro 6.2+ is required for Options Pages' );
+        }
+        if ( empty( $args['key'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: key (use acf_list_options_pages to get it)' );
+        }
+        $page = acf_get_ui_options_page( sanitize_text_field( $args['key'] ) );
+        if ( empty( $page ) ) {
+            return $this->rpc_error( $id, -32602, 'Options page not found for key: ' . $args['key'] );
+        }
+        $post = acf_get_ui_options_page_post( sanitize_text_field( $args['key'] ) );
+        if ( empty( $post ) ) {
+            return $this->rpc_error( $id, -32603, 'Could not locate internal post for this options page.' );
+        }
+        $deleted = acf_delete_ui_options_page( $post->ID );
+        return $this->tool_result( $id, array( 'key' => $args['key'], 'deleted' => (bool) $deleted ) );
+    }
+
+    // -------------------------------------------------------------------------
     // Tool Schema
     // -------------------------------------------------------------------------
 
@@ -1253,6 +1497,114 @@ class DS_MCP_Server {
                     'required'   => array( 'key' ),
                     'properties' => array(
                         'key' => array( 'type' => 'string', 'description' => 'ACF taxonomy key — get from acf_list_taxonomies' ),
+                    ),
+                ),
+            ),
+            // ACF Schema — Field Groups
+            array(
+                'name'        => 'acf_list_field_groups',
+                'description' => 'List all ACF field groups. Returns key, title, active status, and location rules. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'acf_get_field_group',
+                'description' => 'Get a single ACF field group by key, including its fields (key, label, name, type, required). Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'ACF field group key — get from acf_list_field_groups' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_create_field_group',
+                'description' => 'Create a new ACF field group, optionally with fields. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'title' ),
+                    'properties' => array(
+                        'title'           => array( 'type' => 'string', 'description' => 'Field group title' ),
+                        'location'        => array( 'type' => 'array',  'description' => 'ACF location rules array. Defaults to show on all posts if omitted.' ),
+                        'position'        => array( 'type' => 'string', 'description' => 'Meta box position: normal, side, acf_after_title. Default: normal' ),
+                        'label_placement' => array( 'type' => 'string', 'description' => 'Label placement: top or left. Default: top' ),
+                        'active'          => array( 'type' => 'boolean', 'description' => 'Whether the group is active. Default: true' ),
+                        'fields'          => array(
+                            'type'        => 'array',
+                            'description' => 'Optional fields to create. Each field: {label, name, type, required, instructions, default_value}',
+                            'items'       => array(
+                                'type'       => 'object',
+                                'properties' => array(
+                                    'label'         => array( 'type' => 'string' ),
+                                    'name'          => array( 'type' => 'string' ),
+                                    'type'          => array( 'type' => 'string', 'description' => 'ACF field type: text, textarea, number, email, url, image, file, select, checkbox, radio, true_false, relationship, etc.' ),
+                                    'required'      => array( 'type' => 'boolean' ),
+                                    'instructions'  => array( 'type' => 'string' ),
+                                    'default_value' => array( 'type' => 'string' ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_update_field_group',
+                'description' => 'Update an existing ACF field group. Merges only provided fields. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key'             => array( 'type' => 'string',  'description' => 'ACF field group key — get from acf_list_field_groups' ),
+                        'title'           => array( 'type' => 'string',  'description' => 'New title' ),
+                        'location'        => array( 'type' => 'array',   'description' => 'New location rules' ),
+                        'position'        => array( 'type' => 'string',  'description' => 'New position: normal, side, acf_after_title' ),
+                        'label_placement' => array( 'type' => 'string',  'description' => 'New label placement: top or left' ),
+                        'active'          => array( 'type' => 'boolean', 'description' => 'Enable or disable the group' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_delete_field_group',
+                'description' => 'Permanently delete an ACF field group and all its fields. Irreversible. Requires manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'ACF field group key — get from acf_list_field_groups' ),
+                    ),
+                ),
+            ),
+            // ACF Schema — Options Pages
+            array(
+                'name'        => 'acf_list_options_pages',
+                'description' => 'List all ACF Pro options pages. Returns key, title, menu_slug, and parent_slug. Requires ACF Pro 6.2+, manage_options + @leagueapps.com.',
+                'inputSchema' => array( 'type' => 'object', 'properties' => new stdClass() ),
+            ),
+            array(
+                'name'        => 'acf_create_options_page',
+                'description' => 'Create a new ACF Pro options page. Requires ACF Pro 6.2+, manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'title', 'menu_slug' ),
+                    'properties' => array(
+                        'title'       => array( 'type' => 'string',  'description' => 'Options page title' ),
+                        'menu_slug'   => array( 'type' => 'string',  'description' => 'Unique menu slug (URL-safe)' ),
+                        'menu_title'  => array( 'type' => 'string',  'description' => 'Admin menu label. Defaults to title if omitted.' ),
+                        'parent_slug' => array( 'type' => 'string',  'description' => 'Parent admin menu slug (e.g. "edit.php" to nest under Posts)' ),
+                        'capability'  => array( 'type' => 'string',  'description' => 'Required capability. Default: edit_posts' ),
+                        'redirect'    => array( 'type' => 'boolean', 'description' => 'Redirect to first child page. Default: false' ),
+                        'description' => array( 'type' => 'string',  'description' => 'Optional description' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'acf_delete_options_page',
+                'description' => 'Permanently delete an ACF Pro options page. Irreversible. Requires ACF Pro 6.2+, manage_options + @leagueapps.com.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'key' ),
+                    'properties' => array(
+                        'key' => array( 'type' => 'string', 'description' => 'Options page key — get from acf_list_options_pages' ),
                     ),
                 ),
             ),
