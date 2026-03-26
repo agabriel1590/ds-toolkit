@@ -4,6 +4,20 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.7] - 2026-03-26
+### Added
+- Beta update channel — set `define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' )` in `wp-config.php` to receive pre-releases
+- MCP per-group access controls — enable/disable Claude's access to Posts & Pages, CPTs, Taxonomies, ACF Fields, and Toolkit Settings
+- New MCP tools: `list_post_types`, `list_taxonomies`, `list_terms`, `get_term`, `create_term`, `update_term`, `delete_term`, `get_post_fields`, `update_post_fields`
+- ACF-aware field tools — uses `get_fields()` / `update_field()` when ACF active, falls back to `get_post_meta()`
+### Changed
+- All 365 university team logos converted from PNG to WebP (60% smaller)
+### Fixed
+- MCP config generator outputs correct `mcp-remote` stdio format for Claude Desktop
+- MCP tab detects `WP_ENVIRONMENT_TYPE=local` and switches to `http://` URL for LocalWP
+- Add `--allow-http` flag automatically when MCP URL is non-HTTPS
+- "Check for Updates (beta channel)" button now correctly clears beta release cache and forces immediate update check
+
 ## [0.9.7-beta.1] - 2026-03-26
 ### Fixed
 - "Check for Updates (beta channel)" button now correctly clears the beta release cache
