@@ -45,7 +45,19 @@ class DS_Toolkit_Updater {
         $current_version = DS_TOOLKIT_VERSION;
         $plugin_file     = $this->plugin_file();
 
-        if ( version_compare( $latest_version, $current_version, '>' ) ) {
+        $is_newer = version_compare( $latest_version, $current_version, '>' );
+        // On the beta channel, a beta of the same base version as the current stable
+        // is also an update — e.g. 0.9.8-beta.2 should be offered to someone on 0.9.8.
+        // PHP's version_compare treats 0.9.8-beta.2 < 0.9.8, so we handle it explicitly.
+        if ( ! $is_newer && $is_beta && strpos( $latest_version, '-beta.' ) !== false && strpos( $current_version, '-beta.' ) === false ) {
+            $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest_version );
+            $current_base = preg_replace( '/-beta\.\d+$/', '', $current_version );
+            if ( version_compare( $latest_base, $current_base, '>=' ) ) {
+                $is_newer = true;
+            }
+        }
+
+        if ( $is_newer ) {
             $transient->response[ $plugin_file ] = (object) array(
                 'slug'        => $this->slug,
                 'plugin'      => $plugin_file,
