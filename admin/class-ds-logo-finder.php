@@ -38,16 +38,16 @@ class DS_Logo_Finder {
      */
     public function get_logo_list() {
         $dir   = DS_TOOLKIT_PATH . 'assets/images/team_logos/';
-        $files = glob( $dir . '*.png' );
+        $files = glob( $dir . '*.webp' );
         if ( ! $files ) {
             return array();
         }
         $logos = array();
         foreach ( $files as $file ) {
-            $name    = basename( $file, '.png' );
+            $name    = basename( $file, '.webp' );
             $logos[] = array(
                 'name' => $name,
-                'url'  => DS_TOOLKIT_URL . 'assets/images/team_logos/' . rawurlencode( $name ) . '.png',
+                'url'  => DS_TOOLKIT_URL . 'assets/images/team_logos/' . rawurlencode( $name ) . '.webp',
             );
         }
         usort( $logos, function( $a, $b ) {
@@ -72,7 +72,7 @@ class DS_Logo_Finder {
             wp_send_json_error( array( 'message' => 'No logo name provided.' ) );
         }
 
-        $filename = $name . '.png';
+        $filename = $name . '.webp';
         $source   = DS_TOOLKIT_PATH . 'assets/images/team_logos/' . $filename;
 
         if ( ! file_exists( $source ) ) {
