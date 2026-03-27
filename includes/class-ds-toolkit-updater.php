@@ -240,7 +240,8 @@ class DS_Toolkit_Updater {
         $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
         $cached    = get_transient( $cache_key );
 
-        if ( $cached !== false ) {
+        // Discard old ETag-format cache ({ release: [...], etag: '...' }) from previous updater version.
+        if ( $cached !== false && isset( $cached['tag_name'] ) ) {
             return $cached;
         }
 

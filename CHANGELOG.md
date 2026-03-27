@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.11-beta.3] - 2026-03-28
+### Fixed
+- Updater no longer throws "Undefined array key tag_name" warning — discards old ETag-format transient left over from previous updater version
+
 ## [0.9.11-beta.2] - 2026-03-27
 ### Changed
 - Plugin updater now re-checks GitHub every 60 seconds automatically — new releases appear within one minute with no manual "Check for Updates" click required
