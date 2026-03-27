@@ -62,16 +62,7 @@ class DS_Toolkit_Admin {
             $this->logo_finder->enqueue_assets();
 
         } elseif ( $active_tab === 'global-css' ) {
-            $settings = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
-            if ( $settings ) {
-                wp_add_inline_script(
-                    'code-editor',
-                    sprintf(
-                        'jQuery( function() { wp.codeEditor.initialize( "global_css_content", %s ); } );',
-                        wp_json_encode( $settings )
-                    )
-                );
-            }
+            // CSS is read-only — no CodeMirror editor loaded.
 
         } elseif ( $active_tab === 'global-js' ) {
             $settings = wp_enqueue_code_editor( array( 'type' => 'text/javascript' ) );

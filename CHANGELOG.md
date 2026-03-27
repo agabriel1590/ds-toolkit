@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13-beta.2] - 2026-03-28
+### Changed
+- Global CSS tab replaced with a utility class reference — lists all available classes with descriptions grouped by category; full CSS source shown read-only at the bottom; CSS is now managed directly in `includes/defaults/global-css.css`
+
 ## [0.9.13-beta.1] - 2026-03-28
 ### Added
 - bump the css class height-avatar under global css to 350
