@@ -1,44 +1,82 @@
 <?php
 /**
- * Global CSS tab — utility class reference.
- * The CSS is managed directly in includes/defaults/global-css.css (plugin file).
- * This page documents all available utility classes for developers and page builders.
+ * Global CSS tab — CSS variable overrides + utility class reference.
+ * Base CSS is managed in includes/defaults/global-css.css (plugin file).
+ * Overrides are stored in wp_options and survive plugin updates.
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 
+<!-- Info card -->
 <div class="dst-card" style="margin-bottom:20px;">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-editor-code"></span></div>
         <div class="dst-card-info">
             <strong>Global CSS — Plugin Managed</strong>
-            <span>Styles are defined in <code>includes/defaults/global-css.css</code> inside the plugin. Add or update classes there and they apply to all sites on the next plugin update. Use the utility classes below directly in Beaver Builder row/column/module CSS class fields.</span>
+            <span>Base styles live in <code>includes/defaults/global-css.css</code> and update with the plugin. Use <strong>CSS Overrides</strong> below to change variable values per-site — overrides are stored in the database and survive every plugin update.</span>
+        </div>
+        <div class="dst-toggle">
+            <form method="post" action="options.php" style="display:contents;">
+                <?php settings_fields( 'ds_toolkit_options' ); ?>
+                <input type="hidden" name="ds_toolkit_settings[global_css_enabled]" value="0">
+                <input type="checkbox" id="global_css_enabled" name="ds_toolkit_settings[global_css_enabled]" value="1" <?php checked( $global_css_enabled ); ?> onchange="this.form.submit()">
+                <label for="global_css_enabled"></label>
+            </form>
         </div>
     </div>
 </div>
 
+<!-- CSS Variable Overrides -->
+<p class="dst-section-title" style="margin-top:20px;">CSS Variable Overrides <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8c9aaa;font-size:11px;">— stored in database · survives plugin updates</span></p>
+
+<form method="post" action="options.php">
+    <?php settings_fields( 'ds_toolkit_options' ); ?>
+    <input type="hidden" name="ds_toolkit_settings[global_css_enabled]" value="<?php echo $global_css_enabled ? '1' : '0'; ?>">
+
+    <div class="dst-card" style="margin-bottom:16px;padding:16px 20px;">
+        <p style="margin:0 0 10px;color:#4a5568;font-size:13px;">Override any <code>--dst-*</code> variable below. Only add what you want to change — defaults apply for everything else.</p>
+        <pre style="background:#f8f9fa;border:1px solid #e2e8f0;border-radius:6px;padding:12px;font-size:12px;color:#4a5568;margin:0 0 12px;">:root {
+  --dst-height-tall:   80vh;   /* was 65vh */
+  --dst-border-radius: 16px;   /* was 10px */
+}</pre>
+        <p style="margin:0;color:#8c9aaa;font-size:12px;"><strong>Available variables:</strong> <code>--dst-height-tall</code> · <code>--dst-height-tall-tablet</code> · <code>--dst-height-medium</code> · <code>--dst-height-medium-tablet</code> · <code>--dst-height-small</code> · <code>--dst-height-avatar</code> · <code>--dst-small-icon</code> · <code>--dst-sponsor-height</code> · <code>--dst-border-radius</code> · <code>--dst-zindex-medium</code> · <code>--dst-zindex-high</code> · <code>--dst-sticky-logo-width</code> · <code>--dst-sticky-logo-height</code> · <code>--dst-sticky-logo-margin</code> · <code>--dst-h2-home</code> · <code>--dst-h2-home-mobile</code> · <code>--dst-grid-gap</code> · <code>--dst-grid-gap-tablet</code> · <code>--dst-grid-item-padding</code></p>
+    </div>
+
+    <div class="dst-code-editor-wrap">
+        <textarea id="global_css_overrides" name="ds_toolkit_settings[global_css_overrides]" rows="12" placeholder=":root {&#10;  --dst-height-tall: 80vh;&#10;}"><?php echo esc_textarea( $global_css_overrides ); ?></textarea>
+    </div>
+
+    <div class="dst-footer">
+        <?php submit_button( 'Save Overrides', 'primary', 'submit', false ); ?>
+        <span class="dst-footer-meta">
+            <a href="https://github.com/agabriel1590/ds-toolkit" target="_blank" rel="noopener">GitHub</a>
+            &nbsp;&middot;&nbsp; By Alipio Gabriel
+        </span>
+    </div>
+</form>
+
 <!-- Image Heights -->
-<p class="dst-section-title" style="margin-top:20px;">Image Heights</p>
+<p class="dst-section-title" style="margin-top:28px;">Image Heights</p>
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
-        <div class="dst-card-info"><strong>.height-tall</strong><span>Sets images and carousels to <code>65vh</code> height — full-bleed hero banners.</span></div>
+        <div class="dst-card-info"><strong>.height-tall</strong><span>Images/carousels to <code>--dst-height-tall</code> (default <code>65vh</code>) — full-bleed hero banners.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
-        <div class="dst-card-info"><strong>.height-medium</strong><span>Sets images and carousels to <code>45vh</code> height — mid-size feature sections.</span></div>
+        <div class="dst-card-info"><strong>.height-medium</strong><span>Images/carousels to <code>--dst-height-medium</code> (default <code>45vh</code>) — mid-size feature sections.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
-        <div class="dst-card-info"><strong>.height-small</strong><span>Sets images and carousels to <code>35vh</code> height — compact image rows.</span></div>
+        <div class="dst-card-info"><strong>.height-small</strong><span>Images/carousels to <code>--dst-height-small</code> (default <code>35vh</code>) — compact image rows.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
-        <div class="dst-card-info"><strong>.height-avatar</strong><span>Sets images to <code>350px</code> fixed height, top-center crop — ideal for headshot/profile photos.</span></div>
+        <div class="dst-card-info"><strong>.height-avatar</strong><span>Images to <code>--dst-height-avatar</code> (default <code>350px</code>), top-center crop — headshot/profile photos.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
-        <div class="dst-card-info"><strong>.small-icon</strong><span>Limits images to <code>55px</code> max height — for small logos or inline icons.</span></div>
+        <div class="dst-card-info"><strong>.small-icon</strong><span>Limits images to <code>--dst-small-icon</code> (default <code>55px</code>) — small logos or inline icons.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
@@ -55,7 +93,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-editor-textcolor"></span></div>
-        <div class="dst-card-info"><strong>.color-white</strong><span>Forces text to <code>--fl-global-white</code> — all child elements included.</span></div>
+        <div class="dst-card-info"><strong>.color-white</strong><span>Forces text to <code>--fl-global-white</code>.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-editor-textcolor"></span></div>
@@ -92,7 +130,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-text"></span></div>
-        <div class="dst-card-info"><strong>.h2-home</strong><span>Sets h2 to <code>76px</code> desktop / <code>46px</code> mobile — oversized hero headline.</span></div>
+        <div class="dst-card-info"><strong>.h2-home</strong><span>Sets h2 to <code>--dst-h2-home</code> (default <code>76px</code>) desktop / <code>--dst-h2-home-mobile</code> (default <code>46px</code>) mobile.</span></div>
     </div>
 </div>
 
@@ -105,19 +143,19 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
-        <div class="dst-card-info"><strong>.border-radius</strong><span>Applies <code>10px</code> border-radius to the element and all children.</span></div>
+        <div class="dst-card-info"><strong>.border-radius</strong><span>Applies <code>--dst-border-radius</code> (default <code>10px</code>) to the element and all children.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
-        <div class="dst-card-info"><strong>.zindex-medium</strong><span>Sets <code>position: relative; z-index: 100</code> — brings element above standard stacking context.</span></div>
+        <div class="dst-card-info"><strong>.zindex-medium</strong><span>Sets <code>position: relative; z-index: --dst-zindex-medium</code> (default <code>100</code>).</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
-        <div class="dst-card-info"><strong>.zindex-high</strong><span>Sets <code>position: relative; z-index: 1000</code> — brings element above overlays and most widgets.</span></div>
+        <div class="dst-card-info"><strong>.zindex-high</strong><span>Sets <code>position: relative; z-index: --dst-zindex-high</code> (default <code>1000</code>).</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-layout"></span></div>
-        <div class="dst-card-info"><strong>.grid-list</strong><span>Converts a UABB Info List into a <code>3-column</code> card grid (2 tablet, 1 mobile) with card styling and hover background.</span></div>
+        <div class="dst-card-info"><strong>.grid-list</strong><span>Converts a UABB Info List into a 3-column card grid (2 tablet, 1 mobile). Gap: <code>--dst-grid-gap</code>. Item padding: <code>--dst-grid-item-padding</code>.</span></div>
     </div>
 </div>
 
@@ -126,11 +164,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-admin-appearance"></span></div>
-        <div class="dst-card-info"><strong>.text-mix-blend-difference</strong><span>Applies <code>mix-blend-mode: difference</code> — inverts colors against the background for contrast text effects.</span></div>
+        <div class="dst-card-info"><strong>.text-mix-blend-difference</strong><span>Applies <code>mix-blend-mode: difference</code> — inverts colors against the background.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-admin-appearance"></span></div>
-        <div class="dst-card-info"><strong>.mix-blend-multiply</strong><span>Applies <code>mix-blend-mode: multiply</code> on pseudo-elements — blends image overlays naturally with background.</span></div>
+        <div class="dst-card-info"><strong>.mix-blend-multiply</strong><span>Applies <code>mix-blend-mode: multiply</code> on pseudo-elements — blends image overlays with background.</span></div>
     </div>
 </div>
 
@@ -139,7 +177,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
-        <div class="dst-card-info"><strong>.menu-justify</strong><span>Flexes the primary menu to the right with full-width stretch — for horizontal right-aligned nav layouts.</span></div>
+        <div class="dst-card-info"><strong>.menu-justify</strong><span>Flexes the primary menu to the right with full-width stretch.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-menu"></span></div>
@@ -152,7 +190,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-admin-appearance"></span></div>
-        <div class="dst-card-info"><strong>.sticky-row</strong><span>Makes a BB row stick to the top on scroll — background switches to <code>--header-scrolled-bar-color</code> and logo shrinks to <code>80×60px</code>. Requires the DS Toolkit global JS scroll listener.</span></div>
+        <div class="dst-card-info"><strong>.sticky-row</strong><span>Makes a BB row stick to the top on scroll. Logo shrinks to <code>--dst-sticky-logo-width</code> × <code>--dst-sticky-logo-height</code> (defaults <code>80×60px</code>). Requires DS Toolkit Global JS.</span></div>
     </div>
 </div>
 
@@ -161,7 +199,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-images-alt2"></span></div>
-        <div class="dst-card-info"><strong>.sponsor-carousel</strong><span>Styles UABB Image Carousel images as white-background sponsor logos — <code>90px</code> fixed height, contained, with grey border.</span></div>
+        <div class="dst-card-info"><strong>.sponsor-carousel</strong><span>Styles UABB Image Carousel as white-background sponsor logos — height controlled by <code>--dst-sponsor-height</code> (default <code>90px</code>).</span></div>
     </div>
 </div>
 
@@ -170,7 +208,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-megaphone"></span></div>
-        <div class="dst-card-info"><strong>.cta-tile</strong><span>Rounds UABB Info Box 2 corners and adds a white gradient fade at the bottom — card-style CTA tile.</span></div>
+        <div class="dst-card-info"><strong>.cta-tile</strong><span>Rounds UABB Info Box 2 corners and adds a white gradient fade at the bottom.</span></div>
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-megaphone"></span></div>
@@ -178,7 +216,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-megaphone"></span></div>
-        <div class="dst-card-info"><strong>.info-box-cta</strong><span>On hover, title and body text switch to white — use on dark or image-background info boxes.</span></div>
+        <div class="dst-card-info"><strong>.info-box-cta</strong><span>On hover, title and body text switch to white.</span></div>
     </div>
 </div>
 
@@ -187,7 +225,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-arrow-down"></span></div>
-        <div class="dst-card-info"><strong>.v-line-container + .v-line</strong><span>Animated vertical scroll-down indicator line. Place a <code>div.v-line-container > div.v-line</code> inside a BB HTML module on a hero row.</span></div>
+        <div class="dst-card-info"><strong>.v-line-container + .v-line</strong><span>Animated vertical scroll-down indicator. Place <code>div.v-line-container > div.v-line</code> inside a BB HTML module on a hero row.</span></div>
     </div>
 </div>
 
@@ -196,7 +234,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <div class="dst-card">
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-share"></span></div>
-        <div class="dst-card-info"><strong>.top-social</strong><span>Flexes a UABB Info List into a horizontal right-aligned social icon row — removes extra margins and sets auto width per item.</span></div>
+        <div class="dst-card-info"><strong>.top-social</strong><span>Flexes a UABB Info List into a horizontal right-aligned social icon row.</span></div>
     </div>
 </div>
 

@@ -124,10 +124,18 @@ Outputs the current 4-digit year. Auto-updates — no maintenance needed.
 Injects a custom `{email_partner}` merge tag into Forminator forms, resolved from the ACF `partner_email` options field. Configurable fallback email in the Features tab.
 
 ### Global CSS
-Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. The **Global CSS tab** displays a grouped utility class reference with descriptions — the CSS is managed directly in `includes/defaults/global-css.css` inside the plugin.
+Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. All values use `--dst-*` CSS custom properties so any value can be overridden without editing the plugin file.
+
+- **Plugin-managed** — CSS is maintained in `includes/defaults/global-css.css`; updates take effect on next page load automatically
+- **CSS Variable Overrides** — enter custom CSS in **Settings → DS Toolkit → Global CSS** to override any `--dst-*` variable or add site-specific rules; overrides are stored in the database and survive every plugin update
+- The tab shows a grouped utility class reference with descriptions; full CSS source is shown read-only at the bottom
 
 ### Global JS
-Site-wide JavaScript injected before `</body>` at priority 99. Pre-loaded with SiteUI JS (sticky header, clickable columns, equal heights, button normaliser). CodeMirror editor.
+Site-wide JavaScript injected before `</body>` at priority 99.
+
+- **Plugin-managed** — JS is maintained in `includes/defaults/global-js.js`; updates take effect on next page load automatically
+- Features: sticky header (`.sticky-row`), clickable columns (`.column-link`), equal heights (`same_height_*`), button normaliser (`.uabb-button → .fl-button`)
+- The tab shows feature documentation with usage examples; full JS source is shown read-only at the bottom; call `window.equalizeHeightsRefresh()` from custom JS to re-run equalisation after dynamic content loads
 
 ### [child_pages] Shortcode
 Renders child pages of the current page as a responsive card grid using a Beaver Builder saved layout template.

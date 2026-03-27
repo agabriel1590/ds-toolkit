@@ -1,4 +1,41 @@
 /*─────────────────────────────────────────────────────────────────────────────
+  DS Toolkit — CSS Custom Properties (defaults)
+  Override any variable in Settings → DS Toolkit → Global CSS → CSS Overrides
+─────────────────────────────────────────────────────────────────────────────*/
+:root {
+  /* Image heights */
+  --dst-height-tall:          65vh;
+  --dst-height-tall-tablet:   45vh;
+  --dst-height-medium:        45vh;
+  --dst-height-medium-tablet: 40vh;
+  --dst-height-small:         35vh;
+  --dst-height-avatar:        350px;
+  --dst-small-icon:           55px;
+
+  /* Sponsor carousel */
+  --dst-sponsor-height:       90px;
+
+  /* Layout */
+  --dst-border-radius:        10px;
+  --dst-zindex-medium:        100;
+  --dst-zindex-high:          1000;
+
+  /* Sticky header logo */
+  --dst-sticky-logo-width:    80px;
+  --dst-sticky-logo-height:   60px;
+  --dst-sticky-logo-margin:   10px;
+
+  /* Typography */
+  --dst-h2-home:              76px;
+  --dst-h2-home-mobile:       46px;
+
+  /* Grid list */
+  --dst-grid-gap:             20px;
+  --dst-grid-gap-tablet:      10px;
+  --dst-grid-item-padding:    25px;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
   Typography, Headings, Text Utilities
 ─────────────────────────────────────────────────────────────────────────────*/
 .uabb-content.uabb-tab-acc-content h1,
@@ -25,8 +62,8 @@
 /*─────────────────────────────────────────────────────────────────────────────
   Images, Media Helpers
 ─────────────────────────────────────────────────────────────────────────────*/
-.small-icon img{
-    max-height: 55px;
+.small-icon img {
+    max-height: var(--dst-small-icon);
     object-fit: contain;
 }
 
@@ -92,7 +129,6 @@ div.fl-callout-text-wrap > .fl-callout-button a.fl-button {
     border-top: 5px solid var(--fl-global-primary) !important;
 }
 
-/* target exactly the wrapper you showed */
 div.fl-callout-text-wrap {
   display: flex;
   flex-direction: row;
@@ -102,26 +138,24 @@ div.fl-callout-text-wrap {
 
 div.fl-callout-text-wrap > .fl-callout-text {
   flex: 1 1 auto;
-  margin: 0; /* reset any extra spacing */
+  margin: 0;
 }
 
 div.fl-callout-text-wrap > .fl-callout-button {
   flex: 0 0 auto;
 }
 
-/* 1. Let the button-wrapper stretch to fill the container's cross-axis */
 div.fl-callout-button {
   align-self: stretch !important;
-  display: flex;               /* establish a flex context for centering inside */
+  display: flex;
 }
 
-/* 2. Make the actual button fill its wrapper's height */
 div.fl-callout-button a.fl-button {
   height: 100%;
-  display: flex;               /* so we can center the icon/text */
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1rem;             /* adjust horizontal padding as needed */
+  padding: 0 1rem;
   border-radius: 0 !important;
 }
 
@@ -166,8 +200,8 @@ div.fl-callout-text-wrap > .fl-callout-text {
 .menu-justify #menu-primary-menu > li {
     display: flex;
     align-items: center;
-    border-right: 1px solid rgb(255, 255, 255, 0.5); /* adjust color as needed */
-    padding: 0 15px; /* optional spacing */
+    border-right: 1px solid rgb(255, 255, 255, 0.5);
+    padding: 0 15px;
     text-align: center;
 }
 
@@ -181,25 +215,25 @@ div.fl-callout-text-wrap > .fl-callout-text {
   list-style: none;
 }
 
-.justify-menu ul{
+.justify-menu ul {
     display: flex;
-    justify-content: space-evenly; /* Distributes items evenly */
-    width: 100%; /* Ensures full-width distribution */
-    padding: 0 ;
+    justify-content: space-evenly;
+    width: 100%;
+    padding: 0;
     list-style: none;
     margin: 0;
     gap: 0px !important;
 }
 
-.justify-menu li{
-    flex-grow: 1; /* Allows each item to expand evenly */
-    text-align: left; /* Centers the text inside each item */
+.justify-menu li {
+    flex-grow: 1;
+    text-align: left;
     border: 1px solid #444444;
     padding: 0 !important;
     margin: 0 !important;
 }
 
-.justify-menu li a{
+.justify-menu li a {
     padding: 15px !important;
 }
 
@@ -236,7 +270,7 @@ div.fl-callout-text-wrap > .fl-callout-text {
   Border Radius Utility
 ─────────────────────────────────────────────────────────────────────────────*/
 .border-radius, .border-radius * {
-  border-radius: 10px;
+  border-radius: var(--dst-border-radius);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -258,9 +292,9 @@ div.fl-callout-text-wrap > .fl-callout-text {
   transition: all 0.2s ease-in;
 }
 .sticky-row.scrolled .fl-row-content-wrap img {
-  max-width: 80px;
-  max-height: 60px;
-  margin: 10px;
+  max-width: var(--dst-sticky-logo-width);
+  max-height: var(--dst-sticky-logo-height);
+  margin: var(--dst-sticky-logo-margin);
   object-fit: contain;
 }
 .sticky-row.scrolled .logo > div {
@@ -302,40 +336,40 @@ div.fl-callout-text-wrap > .fl-callout-text {
 ─────────────────────────────────────────────────────────────────────────────*/
 .height-tall img,
 .height-tall .uabb-image-carousel img {
-  height: 65vh !important;
+  height: var(--dst-height-tall) !important;
   object-fit: cover !important;
 }
 .height-medium img,
 .height-medium .uabb-image-carousel img {
-  height: 45vh !important;
+  height: var(--dst-height-medium) !important;
   object-fit: cover;
 }
 .height-small img,
 .height-small .uabb-image-carousel img {
-  height: 35vh !important;
+  height: var(--dst-height-small) !important;
   object-fit: cover;
 }
 
 .height-avatar img {
-    height: 350px !important;
+    height: var(--dst-height-avatar) !important;
     object-fit: cover;
     object-position: top center;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  Grid List (Mel)
+  Grid List
 ─────────────────────────────────────────────────────────────────────────────*/
 .grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: var(--dst-grid-gap);
   align-content: center;
 }
 .grid-list .uabb-info-list-item {
   background-color: #fafafa;
-  border-radius: 10px;
+  border-radius: var(--dst-border-radius);
   height: 100%;
-  padding: 25px !important;
+  padding: var(--dst-grid-item-padding) !important;
   width: 100%;
 }
 .grid-list .uabb-info-list-item:hover {
@@ -351,22 +385,22 @@ div.fl-callout-text-wrap > .fl-callout-text {
 @media (max-width: 1200px) {
   .grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: var(--dst-grid-gap-tablet);
   }
 
   .height-tall img,
   .height-tall .uabb-image-carousel img {
-    height: 45vh !important;
+    height: var(--dst-height-tall-tablet) !important;
     object-fit: cover !important;
   }
   .height-medium img,
   .height-medium .uabb-image-carousel img {
-    height: 40vh !important;
+    height: var(--dst-height-medium-tablet) !important;
     object-fit: cover;
   }
   .height-small img,
   .height-small .uabb-image-carousel img {
-    height: 35vh !important;
+    height: var(--dst-height-small) !important;
     object-fit: cover;
   }
 }
@@ -374,22 +408,20 @@ div.fl-callout-text-wrap > .fl-callout-text {
 @media (max-width: 800px) {
   .grid-list ul.uabb-info-list-wrapper.uabb-info-list-left {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: var(--dst-grid-gap-tablet);
   }
 
   .h2-home h2,
   h2.h2-home {
-    font-size: 46px !important;
+    font-size: var(--dst-h2-home-mobile) !important;
   }
 
-  /* Stack text and button */
   div.fl-callout-text-wrap {
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: flex-start !important;
   }
 
-  /* Remove the left margin and add a top margin on the button */
   div.fl-callout-text-wrap > .fl-callout-button {
     margin-left: 0 !important;
     margin-top: 1rem !important;
@@ -411,7 +443,7 @@ div.fl-callout-text-wrap > .fl-callout-text {
 ─────────────────────────────────────────────────────────────────────────────*/
 .h2-home h2,
 h2.h2-home {
-  font-size: 76px !important;
+  font-size: var(--dst-h2-home) !important;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -446,7 +478,7 @@ h2.h2-home {
   CTA Tiles
 ─────────────────────────────────────────────────────────────────────────────*/
 .cta-tile .uabb-module-content {
-  border-radius: 10px;
+  border-radius: var(--dst-border-radius);
   position: relative;
 }
 .cta-tile .uabb-module-content.uabb-ib2-outter:before {
@@ -496,8 +528,8 @@ h2.h2-home {
 /*─────────────────────────────────────────────────────────────────────────────
   Z-Index Utilities
 ─────────────────────────────────────────────────────────────────────────────*/
-.zindex-medium { position: relative; z-index: 100; }
-.zindex-high   { position: relative; z-index: 1000; }
+.zindex-medium { position: relative; z-index: var(--dst-zindex-medium); }
+.zindex-high   { position: relative; z-index: var(--dst-zindex-high); }
 
 /*─────────────────────────────────────────────────────────────────────────────
   White Background Helper
@@ -582,10 +614,9 @@ i.fl-button-icon.fl-button-icon-after.ua-icon.ua-icon-arrow-right {
   max-width: 250px !important;
   padding: 20px;
   background-color: #fff;
-  border: 1px solid #fff;
-  height: 90px !important;
-  max-height: 90px !important;
-  min-height: 90px !important;
+  height: var(--dst-sponsor-height) !important;
+  max-height: var(--dst-sponsor-height) !important;
+  min-height: var(--dst-sponsor-height) !important;
   object-fit: contain;
   object-position: center;
   border: 1px #ccc solid;
