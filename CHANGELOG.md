@@ -4,6 +4,12 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.7] - 2026-03-27
+### Added
+- `list_media`, `get_media` MCP tools — search and inspect Media Library attachments (title, URL, MIME type, dimensions, all registered image sizes)
+- `thumbnail_id` support in `create_post` and `update_post` — pass a Media Library attachment ID to set the featured image, or 0 to remove it
+- `thumbnail_id` returned in `get_post` and `list_posts` responses
+
 ## [0.9.10-beta.6] - 2026-03-27
 ### Added
 - Available Tools sections are now collapsible — click any section title to expand/collapse, keeping the MCP page compact

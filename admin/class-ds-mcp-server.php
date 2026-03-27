@@ -198,6 +198,8 @@ class DS_MCP_Server {
             'update_option'           => 'mcp_options_enabled',
             'list_users'              => 'mcp_users_enabled',
             'get_user'                => 'mcp_users_enabled',
+            'list_media'              => 'mcp_users_enabled',
+            'get_media'               => 'mcp_users_enabled',
             'regenerate_thumbnails'   => 'mcp_users_enabled',
         );
         return isset( $map[ $name ] ) ? $this->is_group_enabled( $map[ $name ] ) : true;
@@ -275,6 +277,8 @@ class DS_MCP_Server {
             case 'list_users':             return $this->tool_list_users( $id, $arguments );
             case 'get_user':               return $this->tool_get_user( $id, $arguments );
             // Media
+            case 'list_media':             return $this->tool_list_media( $id, $arguments );
+            case 'get_media':              return $this->tool_get_media( $id, $arguments );
             case 'regenerate_thumbnails':  return $this->tool_regenerate_thumbnails( $id, $arguments );
             default:
                 return $this->rpc_error( $id, -32602, 'Unknown tool: ' . $name );
@@ -310,11 +314,12 @@ class DS_MCP_Server {
                 'slug'        => $post->post_name,
                 'status'      => $post->post_status,
                 'type'        => $post->post_type,
-                'post_parent' => $post->post_parent,
-                'menu_order'  => $post->menu_order,
-                'url'         => get_permalink( $post->ID ),
-                'date'        => $post->post_date,
-                'modified'    => $post->post_modified,
+                'post_parent'  => $post->post_parent,
+                'menu_order'   => $post->menu_order,
+                'thumbnail_id' => (int) get_post_thumbnail_id( $post->ID ) ?: null,
+                'url'          => get_permalink( $post->ID ),
+                'date'         => $post->post_date,
+                'modified'     => $post->post_modified,
             );
         }
         return $this->tool_result( $id, array( 'total' => $query->found_posts, 'posts' => $posts ) );
@@ -353,6 +358,7 @@ class DS_MCP_Server {
             'menu_order'     => $post->menu_order,
             'page_template'  => get_page_template_slug( $post->ID ),
             'comment_status' => $post->comment_status,
+            'thumbnail_id'   => (int) get_post_thumbnail_id( $post->ID ) ?: null,
             'author_id'      => (int) $post->post_author,
             'author'         => get_the_author_meta( 'display_name', $post->post_author ),
             'url'            => get_permalink( $post->ID ),
@@ -386,6 +392,10 @@ class DS_MCP_Server {
         $post_id = wp_insert_post( $post_data, true );
         if ( is_wp_error( $post_id ) ) {
             return $this->rpc_error( $id, -32603, $post_id->get_error_message() );
+        }
+        if ( isset( $args['thumbnail_id'] ) ) {
+            $thumb_id = absint( $args['thumbnail_id'] );
+            $thumb_id ? set_post_thumbnail( $post_id, $thumb_id ) : delete_post_thumbnail( $post_id );
         }
         $terms_assigned = array();
         if ( ! empty( $args['terms'] ) && is_array( $args['terms'] ) ) {
@@ -427,6 +437,10 @@ class DS_MCP_Server {
         $result = wp_update_post( $post_data, true );
         if ( is_wp_error( $result ) ) {
             return $this->rpc_error( $id, -32603, $result->get_error_message() );
+        }
+        if ( isset( $args['thumbnail_id'] ) ) {
+            $thumb_id = absint( $args['thumbnail_id'] );
+            $thumb_id ? set_post_thumbnail( $post->ID, $thumb_id ) : delete_post_thumbnail( $post->ID );
         }
         $terms_assigned = array();
         if ( ! empty( $args['terms'] ) && is_array( $args['terms'] ) ) {
@@ -1494,7 +1508,7 @@ class DS_MCP_Server {
             // Posts & Pages
             array(
                 'name'        => 'list_posts',
-                'description' => 'List WordPress posts, pages, or custom post types. Returns ID, title, status, type, URL, and dates.',
+                'description' => 'List WordPress posts, pages, or custom post types. Returns ID, title, status, type, URL, thumbnail_id, and dates.',
                 'inputSchema' => array(
                     'type'       => 'object',
                     'properties' => array(
@@ -1510,7 +1524,7 @@ class DS_MCP_Server {
             ),
             array(
                 'name'        => 'get_post',
-                'description' => 'Get the full content of a post, page, or CPT entry by ID.',
+                'description' => 'Get the full content of a post, page, or CPT entry by ID. Returns thumbnail_id for the featured image.',
                 'inputSchema' => array(
                     'type'       => 'object',
                     'required'   => array( 'id' ),
@@ -1537,6 +1551,7 @@ class DS_MCP_Server {
                         'page_template'  => array( 'type' => 'string',  'description' => 'Page template filename, e.g. "template-full-width.php"' ),
                         'post_author'    => array( 'type' => 'integer', 'description' => 'Author user ID. Defaults to current user.' ),
                         'comment_status' => array( 'type' => 'string',  'description' => 'open or closed. Default: closed' ),
+                        'thumbnail_id'   => array( 'type' => 'integer', 'description' => 'Media Library attachment ID to set as the featured image. Use 0 to remove.' ),
                         'terms'          => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs. Example: {"category":[1,3],"event_category":["basketball"]}' ),
                     ),
                 ),
@@ -1559,6 +1574,7 @@ class DS_MCP_Server {
                         'page_template'  => array( 'type' => 'string',  'description' => 'Page template filename' ),
                         'post_author'    => array( 'type' => 'integer', 'description' => 'New author user ID' ),
                         'comment_status' => array( 'type' => 'string',  'description' => 'open or closed' ),
+                        'thumbnail_id'   => array( 'type' => 'integer', 'description' => 'Media Library attachment ID to set as the featured image. Use 0 to remove.' ),
                         'terms'          => array( 'type' => 'object',  'description' => 'Taxonomy terms to assign. Keys are taxonomy slugs, values are arrays of term IDs or slugs.' ),
                     ),
                 ),
@@ -2141,6 +2157,30 @@ class DS_MCP_Server {
             ),
             // Media
             array(
+                'name'        => 'list_media',
+                'description' => 'Search and list Media Library files. Filter by type, keyword, or the post they are attached to.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'properties' => array(
+                        'search'      => array( 'type' => 'string',  'description' => 'Search by filename or title' ),
+                        'mime_type'   => array( 'type' => 'string',  'description' => 'Filter by MIME type: image, video, audio, application/pdf, image/png, etc.' ),
+                        'uploaded_to' => array( 'type' => 'integer', 'description' => 'Filter by the post/page ID the file is attached to' ),
+                        'per_page'    => array( 'type' => 'integer', 'description' => 'Number of results (max 100). Default: 20' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'get_media',
+                'description' => 'Get full details for a single Media Library item — URL, alt text, caption, dimensions, file size, and all registered image sizes.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'id' ),
+                    'properties' => array(
+                        'id' => array( 'type' => 'integer', 'description' => 'Attachment ID' ),
+                    ),
+                ),
+            ),
+            array(
                 'name'        => 'regenerate_thumbnails',
                 'description' => 'Regenerate image thumbnail sizes for Media Library attachments.',
                 'inputSchema' => array(
@@ -2460,6 +2500,89 @@ class DS_MCP_Server {
     // -------------------------------------------------------------------------
     // Media Tools
     // -------------------------------------------------------------------------
+
+    private function tool_list_media( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_users_enabled' );
+        }
+        $per_page = min( absint( isset( $args['per_page'] ) ? $args['per_page'] : 20 ), 100 );
+        $query_args = array(
+            'post_type'      => 'attachment',
+            'post_status'    => 'inherit',
+            'posts_per_page' => $per_page,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        );
+        if ( ! empty( $args['search'] ) ) {
+            $query_args['s'] = sanitize_text_field( $args['search'] );
+        }
+        if ( ! empty( $args['mime_type'] ) ) {
+            $query_args['post_mime_type'] = sanitize_text_field( $args['mime_type'] );
+        }
+        if ( ! empty( $args['uploaded_to'] ) ) {
+            $query_args['post_parent'] = absint( $args['uploaded_to'] );
+        }
+        $attachments = get_posts( $query_args );
+        $result      = array();
+        foreach ( $attachments as $att ) {
+            $meta = wp_get_attachment_metadata( $att->ID );
+            $result[] = array(
+                'id'        => $att->ID,
+                'title'     => $att->post_title,
+                'filename'  => basename( get_attached_file( $att->ID ) ),
+                'url'       => wp_get_attachment_url( $att->ID ),
+                'mime_type' => $att->post_mime_type,
+                'alt'       => get_post_meta( $att->ID, '_wp_attachment_image_alt', true ),
+                'date'      => $att->post_date,
+                'filesize'  => isset( $meta['filesize'] ) ? $meta['filesize'] : null,
+                'width'     => isset( $meta['width'] )    ? $meta['width']    : null,
+                'height'    => isset( $meta['height'] )   ? $meta['height']   : null,
+            );
+        }
+        return $this->tool_result( $id, array( 'items' => $result, 'count' => count( $result ) ) );
+    }
+
+    private function tool_get_media( $id, $args ) {
+        if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {
+            return $this->group_disabled_error( $id, 'mcp_users_enabled' );
+        }
+        if ( empty( $args['id'] ) ) {
+            return $this->rpc_error( $id, -32602, 'id is required' );
+        }
+        $att = get_post( absint( $args['id'] ) );
+        if ( ! $att || $att->post_type !== 'attachment' ) {
+            return $this->rpc_error( $id, -32602, 'Attachment not found' );
+        }
+        $meta  = wp_get_attachment_metadata( $att->ID );
+        $sizes = array();
+        if ( ! empty( $meta['sizes'] ) ) {
+            $upload_dir = wp_upload_dir();
+            $base_url   = $upload_dir['baseurl'] . '/' . dirname( $meta['file'] ) . '/';
+            foreach ( $meta['sizes'] as $size_name => $size_data ) {
+                $sizes[ $size_name ] = array(
+                    'url'    => $base_url . $size_data['file'],
+                    'width'  => $size_data['width'],
+                    'height' => $size_data['height'],
+                );
+            }
+        }
+        return $this->tool_result( $id, array(
+            'id'          => $att->ID,
+            'title'       => $att->post_title,
+            'caption'     => $att->post_excerpt,
+            'description' => $att->post_content,
+            'filename'    => basename( get_attached_file( $att->ID ) ),
+            'url'         => wp_get_attachment_url( $att->ID ),
+            'mime_type'   => $att->post_mime_type,
+            'alt'         => get_post_meta( $att->ID, '_wp_attachment_image_alt', true ),
+            'date'        => $att->post_date,
+            'uploaded_to' => (int) $att->post_parent,
+            'filesize'    => isset( $meta['filesize'] ) ? $meta['filesize'] : null,
+            'width'       => isset( $meta['width'] )    ? $meta['width']    : null,
+            'height'      => isset( $meta['height'] )   ? $meta['height']   : null,
+            'sizes'       => $sizes,
+        ) );
+    }
 
     private function tool_regenerate_thumbnails( $id, $args ) {
         if ( ! $this->is_group_enabled( 'mcp_users_enabled' ) ) {

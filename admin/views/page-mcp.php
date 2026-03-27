@@ -617,7 +617,15 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="dst-card-info"><strong>get_user</strong><span>Get a user's profile by ID or email — name, roles, capabilities, registration date.</span></div>
     </div>
     <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-search"></span></div>
+        <div class="dst-card-info"><strong>list_media</strong><span>Search and list Media Library files. Filter by keyword, MIME type (image, video, audio, application/pdf), or the post they're attached to.</span></div>
+    </div>
+    <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-format-image"></span></div>
+        <div class="dst-card-info"><strong>get_media</strong><span>Get full details for a single attachment — URL, alt text, caption, dimensions, file size, and all registered image sizes.</span></div>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-image-rotate"></span></div>
         <div class="dst-card-info"><strong>regenerate_thumbnails</strong><span>Regenerate image thumbnail sizes for Media Library images. Optionally pass specific attachment IDs.</span></div>
     </div>
 </div>
