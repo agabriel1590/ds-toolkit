@@ -200,32 +200,40 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="dst-card-row">
         <div class="dst-card-icon dst-step-num">1</div>
         <div class="dst-card-info">
-            <strong>Install Node.js <span style="font-weight:400;color:#888;">(required)</span></strong>
-            <span>The MCP connection uses <code>npx mcp-remote</code> which requires Node.js on the computer running Claude. Download the LTS version at <a href="https://nodejs.org/en/download" target="_blank" rel="noopener"><strong>nodejs.org/en/download</strong></a>. After install, confirm it works by running <code>node -v</code> in your terminal.</span>
+            <strong>Install Node.js <span style="font-weight:400;color:#888;">(required on all platforms)</span></strong>
+            <span>Download and install the <strong>LTS version</strong> from <a href="https://nodejs.org/en/download" target="_blank" rel="noopener"><strong>nodejs.org/en/download</strong></a>. After install, open a terminal and run <code>node -v</code> to confirm it works.</span>
         </div>
     </div>
 
     <div class="dst-card-row">
         <div class="dst-card-icon dst-step-num">2</div>
         <div class="dst-card-info">
-            <strong>Create an Application Password</strong>
-            <span>Go to <a href="<?php echo esc_url( admin_url( 'profile.php' ) ); ?>" target="_blank"><strong>WP Admin → Users → Your Profile</strong></a>, scroll to the <strong>Application Passwords</strong> section, enter a name (e.g. <em>Claude MCP</em>), click <em>Add New Application Password</em>, and copy the generated password. <strong>Save it — it won't be shown again.</strong></span>
+            <strong>Install the mcp-remote package <span style="font-weight:400;color:#888;">(Windows only)</span></strong>
+            <span>On <strong>Windows</strong>, Claude Desktop cannot resolve <code>npx</code> directly. Install mcp-remote globally so it's available as a <code>.cmd</code> file:<br>Open <strong>Command Prompt or PowerShell</strong> and run: <code>npm install -g mcp-remote</code></span>
         </div>
     </div>
 
     <div class="dst-card-row">
         <div class="dst-card-icon dst-step-num">3</div>
         <div class="dst-card-info">
-            <strong>Generate your Claude config below</strong>
-            <span>Enter your WordPress username and the Application Password. The tool will generate the exact JSON config to paste into Claude Desktop, or the command to run for Claude Code.</span>
+            <strong>Create an Application Password</strong>
+            <span>Go to <a href="<?php echo esc_url( admin_url( 'profile.php' ) ); ?>" target="_blank"><strong>WP Admin → Users → Your Profile</strong></a>, scroll to <strong>Application Passwords</strong>, enter a name (e.g. <em>Claude MCP</em>), click <em>Add New Application Password</em>, and copy the password. <strong>Save it — it won't be shown again.</strong></span>
         </div>
     </div>
 
     <div class="dst-card-row">
         <div class="dst-card-icon dst-step-num">4</div>
         <div class="dst-card-info">
+            <strong>Generate your Claude config below</strong>
+            <span>Select your operating system, enter your WordPress username and Application Password. The tool generates the exact config to paste into Claude Desktop, or the command for Claude Code.</span>
+        </div>
+    </div>
+
+    <div class="dst-card-row">
+        <div class="dst-card-icon dst-step-num">5</div>
+        <div class="dst-card-info">
             <strong>Restart Claude and start talking to WordPress</strong>
-            <span>After adding the config, restart Claude Desktop (or reload in Claude Code). You'll see <em><?php echo esc_html( 'ds-toolkit-' . sanitize_title( get_bloginfo( 'name' ) ) ); ?></em> listed as an MCP server, and Claude will be able to use the tools listed below.</span>
+            <span>After adding the config, restart Claude Desktop (or reload Claude Code). You'll see <em><?php echo esc_html( 'ds-toolkit-' . sanitize_title( get_bloginfo( 'name' ) ) ); ?></em> listed as an MCP server.</span>
         </div>
     </div>
 
@@ -234,6 +242,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 <!-- Config generator -->
 <p class="dst-section-title" style="margin-top:24px;">Generate Claude Config</p>
 <div class="dst-card">
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-desktop"></span></div>
+        <div class="dst-card-info">
+            <strong>Operating System</strong>
+            <span>Select the OS of the computer running Claude</span>
+        </div>
+        <div class="dst-field-inline" style="min-width:220px;">
+            <label style="display:block;margin-bottom:6px;"><input type="radio" name="dst-mcp-os" value="mac" checked> Mac / Linux</label>
+            <label style="display:block;"><input type="radio" name="dst-mcp-os" value="windows"> Windows</label>
+        </div>
+    </div>
     <div class="dst-card-row">
         <div class="dst-card-icon"><span class="dashicons dashicons-admin-users"></span></div>
         <div class="dst-card-info">
@@ -248,7 +267,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="dst-card-icon"><span class="dashicons dashicons-lock"></span></div>
         <div class="dst-card-info">
             <strong>Application Password</strong>
-            <span>The password from Step 1 — spaces are fine</span>
+            <span>The password from Step 3 — spaces are fine</span>
         </div>
         <div class="dst-field-inline" style="min-width:220px;">
             <input type="text" id="dst-mcp-apppass" class="regular-text" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx" style="width:100%;">
@@ -264,7 +283,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <div style="width:100%;">
                 <p class="dst-mcp-config-label">
                     <strong>Claude Desktop</strong>
-                    <span>Add inside <code>mcpServers</code> in <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></span>
+                    <span id="dst-mcp-desktop-path">Add inside <code>mcpServers</code> in your Claude Desktop config file</span>
                 </p>
                 <div class="dst-mcp-textarea-wrap">
                     <textarea id="dst-mcp-config-desktop" class="dst-mcp-textarea" readonly rows="14"></textarea>
@@ -670,6 +689,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     $('#dst-mcp-generate').on('click', function () {
         var username = $('#dst-mcp-username').val().trim();
         var apppass  = $('#dst-mcp-apppass').val().trim();
+        var os       = $('input[name="dst-mcp-os"]:checked').val();
 
         if ( ! username || ! apppass ) {
             alert('Please enter both your WordPress username and Application Password.');
@@ -681,22 +701,42 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         var encoded     = btoa( unescape( encodeURIComponent( credentials ) ) );
         var authHeader  = 'Basic ' + encoded;
 
-        var isLocal  = mcpUrl.indexOf('http://') === 0;
-        var mcpArgs  = [ 'mcp-remote', mcpUrl ];
-        if ( isLocal ) mcpArgs.push( '--allow-http' );
-        mcpArgs.push( '--header', 'Authorization:' + authHeader );
+        var isLocal = mcpUrl.indexOf('http://') === 0;
+        var mcpArgs, command, desktopPath, cliCommand;
+
+        if ( os === 'windows' ) {
+            // On Windows, Claude Desktop cannot resolve plain `npx`.
+            // mcp-remote must be installed globally (npm install -g mcp-remote)
+            // which creates mcp-remote.cmd in the npm global bin directory.
+            command = 'npx.cmd';
+            mcpArgs = [ 'mcp-remote', mcpUrl ];
+            if ( isLocal ) mcpArgs.push( '--allow-http' );
+            mcpArgs.push( '--header', 'Authorization:' + authHeader );
+            desktopPath = 'Add inside <code>mcpServers</code> in <code>%APPDATA%\\Claude\\claude_desktop_config.json</code>';
+            cliCommand  =
+                'claude mcp add ' + mcpServerKey + ' ^\n' +
+                '  --transport http ^\n' +
+                '  --header "Authorization: ' + authHeader + '" ^\n' +
+                '  ' + mcpUrl;
+        } else {
+            command = 'npx';
+            mcpArgs = [ 'mcp-remote', mcpUrl ];
+            if ( isLocal ) mcpArgs.push( '--allow-http' );
+            mcpArgs.push( '--header', 'Authorization:' + authHeader );
+            desktopPath = 'Add inside <code>mcpServers</code> in <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>';
+            cliCommand  =
+                'claude mcp add ' + mcpServerKey + ' \\\n' +
+                '  --transport http \\\n' +
+                '  --header "Authorization: ' + authHeader + '" \\\n' +
+                '  ' + mcpUrl;
+        }
 
         var mcpServers = {};
-        mcpServers[ mcpServerKey ] = { "command": "npx", "args": mcpArgs };
+        mcpServers[ mcpServerKey ] = { "command": command, "args": mcpArgs };
 
         var desktopConfig = JSON.stringify({ "mcpServers": mcpServers }, null, 2);
 
-        var cliCommand =
-            'claude mcp add ' + mcpServerKey + ' \\\n' +
-            '  --transport http \\\n' +
-            '  --header "Authorization: ' + authHeader + '" \\\n' +
-            '  ' + mcpUrl;
-
+        $('#dst-mcp-desktop-path').html( desktopPath );
         $('#dst-mcp-config-desktop').val( desktopConfig );
         $('#dst-mcp-config-cli').val( cliCommand );
         $('#dst-mcp-output').slideDown(200);

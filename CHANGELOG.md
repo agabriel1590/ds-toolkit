@@ -4,6 +4,11 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.3] - 2026-03-27
+### Added
+- OS toggle in config generator (Mac/Linux vs Windows) — Windows generates `npx.cmd` as the command and shows the correct config file path (`%APPDATA%\Claude\claude_desktop_config.json`)
+- Setup Instructions step 2 now calls out that Windows users must run `npm install -g mcp-remote` before connecting
+
 ## [0.9.10-beta.2] - 2026-03-27
 ### Fixed
 - Plugin update badge and nag now appear automatically on the Plugins page without requiring a manual "Check for Updates" click — hooks `site_transient_update_plugins` (read filter) so WP-Cron is no longer required
