@@ -124,7 +124,7 @@ Outputs the current 4-digit year. Auto-updates — no maintenance needed.
 Injects a custom `{email_partner}` merge tag into Forminator forms, resolved from the ACF `partner_email` options field. Configurable fallback email in the Features tab.
 
 ### Global CSS
-Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. CodeMirror editor with syntax highlighting.
+Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. The **Global CSS tab** displays a grouped utility class reference with descriptions — the CSS is managed directly in `includes/defaults/global-css.css` inside the plugin.
 
 ### Global JS
 Site-wide JavaScript injected before `</body>` at priority 99. Pre-loaded with SiteUI JS (sticky header, clickable columns, equal heights, button normaliser). CodeMirror editor.
@@ -158,10 +158,12 @@ Each tool group can be independently enabled/disabled from **Settings → DS Too
 |---|---|
 | `list_posts` | List posts, pages, or CPT entries with filters (type, status, search) |
 | `get_post` | Get full content + assigned taxonomy terms by post ID |
-| `create_post` | Create a post/page/CPT entry; optionally assign taxonomy terms inline |
-| `update_post` | Update title, content, excerpt, status, or taxonomy terms |
+| `create_post` | Create a post/page/CPT entry; optionally assign taxonomy terms and featured image inline |
+| `update_post` | Update title, content, excerpt, status, taxonomy terms, or featured image (`thumbnail_id`) |
 | `delete_post` | Trash or permanently delete a post |
 | `list_post_types` | Discover all registered public post types |
+| `bulk_create_posts` | Create multiple posts in a single call — accepts an array of post objects |
+| `bulk_update_posts` | Update multiple posts in a single call — accepts an array of post objects with `id` |
 
 #### Taxonomies
 | Tool | Description |
@@ -213,6 +215,8 @@ Each tool group can be independently enabled/disabled from **Settings → DS Too
 |---|---|
 | `list_users` | List users filtered by role, search, with pagination |
 | `get_user` | Get a user's profile by ID or email |
+| `list_media` | List Media Library items with filters (type, search, pagination) |
+| `get_media` | Get a single media item's details, URLs, and metadata by ID |
 | `regenerate_thumbnails` | Regenerate image thumbnail sizes for Media Library images |
 
 #### Beaver Builder — `manage_options`
