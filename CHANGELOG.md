@@ -4,7 +4,7 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
-## [Unreleased]
+## [0.9.14] - 2026-03-28
 ### Added
 - CSS custom properties (`--dst-*`) system in `global-css.css` — all hardcoded values (heights, grid gaps, z-indexes, border radius, sticky logo dimensions, etc.) are now CSS variables, letting site CSS override any value without touching the plugin file
 - **CSS Variable Overrides** field on the Global CSS tab — CSS entered here is stored in `wp_options` and injected as a second `<style>` block after the plugin CSS, so overrides survive every plugin update
