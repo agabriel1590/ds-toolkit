@@ -4,14 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
-## [0.9.12-beta.2] - 2026-03-28
+## [0.9.12] - 2026-03-28
 ### Fixed
 - Beta channel now automatically disabled on production environments (`WP_ENVIRONMENT_TYPE=production`) — pushing a local wp-config.php to WP Engine no longer accidentally activates beta updates
-- Beta version comparison no longer offers same-base beta as an upgrade over its stable release (e.g. `0.9.12-beta.1` no longer offered to users already on `0.9.12`)
-
-## [0.9.12-beta.1] - 2026-03-28
-### Added
--
+- Beta version comparison no longer offers same-base beta as an upgrade over its stable release
 
 ## [0.9.11] - 2026-03-28
 ### Added
