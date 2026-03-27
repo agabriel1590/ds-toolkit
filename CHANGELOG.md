@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.6] - 2026-03-27
+### Added
+- Available Tools sections are now collapsible — click any section title to expand/collapse, keeping the MCP page compact
+
 ## [0.9.10-beta.5] - 2026-03-27
 ### Fixed
 - OS radio buttons in MCP config generator rendered as stretched ovals — excluded radio/checkbox inputs from the `.dst-field-inline` width rule

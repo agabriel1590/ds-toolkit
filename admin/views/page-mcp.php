@@ -742,6 +742,27 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         $('#dst-mcp-output').slideDown(200);
     });
 
+    // Collapsible tool sections — make every .dst-section-subtitle a toggle
+    $('.dst-section-title.dst-section-subtitle').each(function () {
+        var $title = $(this);
+        var $card  = $title.next('.dst-card');
+        if ( ! $card.length ) return;
+
+        $title.css({ cursor: 'pointer', userSelect: 'none' })
+              .append('<span class="dst-tools-chevron" style="float:right;font-size:18px;line-height:1;transition:transform .2s;">&#8964;</span>');
+
+        $title.on('click', function () {
+            var $chevron = $title.find('.dst-tools-chevron');
+            if ( $card.is(':visible') ) {
+                $card.slideUp( 200 );
+                $chevron.css('transform', 'rotate(-90deg)');
+            } else {
+                $card.slideDown( 200 );
+                $chevron.css('transform', 'rotate(0deg)');
+            }
+        });
+    });
+
     // Copy buttons
     $(document).on('click', '.dst-mcp-copy', function () {
         var targetId = $(this).data('target');
