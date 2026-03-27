@@ -62,19 +62,19 @@ class DS_Toolkit_Admin {
             $this->logo_finder->enqueue_assets();
 
         } elseif ( $active_tab === 'global-css' ) {
-            // CSS is read-only — no CodeMirror editor loaded.
-
-        } elseif ( $active_tab === 'global-js' ) {
-            $settings = wp_enqueue_code_editor( array( 'type' => 'text/javascript' ) );
+            $settings = wp_enqueue_code_editor( array( 'type' => 'text/css' ) );
             if ( $settings ) {
                 wp_add_inline_script(
                     'code-editor',
                     sprintf(
-                        'jQuery( function() { wp.codeEditor.initialize( "global_js_content", %s ); } );',
+                        'jQuery( function() { wp.codeEditor.initialize( "global_css_overrides", %s ); } );',
                         wp_json_encode( $settings )
                     )
                 );
             }
+
+        } elseif ( $active_tab === 'global-js' ) {
+            // JS is plugin-managed and read-only — no editor needed.
 
         } else {
             // Features tab
@@ -136,13 +136,12 @@ class DS_Toolkit_Admin {
                 require DS_TOOLKIT_PATH . 'admin/views/page-logo-finder.php';
 
             } elseif ( $active_tab === 'global-css' ) {
-                $global_css_enabled = ! empty( $opts['global_css_enabled'] );
-                $global_css_content = isset( $opts['global_css_content'] ) ? $opts['global_css_content'] : '';
+                $global_css_enabled   = ! empty( $opts['global_css_enabled'] );
+                $global_css_overrides = isset( $opts['global_css_overrides'] ) ? $opts['global_css_overrides'] : '';
                 require DS_TOOLKIT_PATH . 'admin/views/page-global-css.php';
 
             } elseif ( $active_tab === 'global-js' ) {
                 $global_js_enabled = ! empty( $opts['global_js_enabled'] );
-                $global_js_content = isset( $opts['global_js_content'] ) ? $opts['global_js_content'] : '';
                 require DS_TOOLKIT_PATH . 'admin/views/page-global-js.php';
 
             } elseif ( $active_tab === 'mcp' ) {

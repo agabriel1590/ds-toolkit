@@ -124,10 +124,18 @@ Outputs the current 4-digit year. Auto-updates — no maintenance needed.
 Injects a custom `{email_partner}` merge tag into Forminator forms, resolved from the ACF `partner_email` options field. Configurable fallback email in the Features tab.
 
 ### Global CSS
-Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. CodeMirror editor with syntax highlighting.
+Site-wide CSS injected into `<head>` at priority 99. Full LaunchPad 4 baseline pre-loaded on activation. All values use `--dst-*` CSS custom properties so any value can be overridden without editing the plugin file.
+
+- **Plugin-managed** — CSS is maintained in `includes/defaults/global-css.css`; updates take effect on next page load automatically
+- **CSS Variable Overrides** — enter custom CSS in **Settings → DS Toolkit → Global CSS** to override any `--dst-*` variable or add site-specific rules; overrides are stored in the database and survive every plugin update
+- The tab shows a grouped utility class reference with descriptions; full CSS source is shown read-only at the bottom
 
 ### Global JS
-Site-wide JavaScript injected before `</body>` at priority 99. Pre-loaded with SiteUI JS (sticky header, clickable columns, equal heights, button normaliser). CodeMirror editor.
+Site-wide JavaScript injected before `</body>` at priority 99.
+
+- **Plugin-managed** — JS is maintained in `includes/defaults/global-js.js`; updates take effect on next page load automatically
+- Features: sticky header (`.sticky-row`), clickable columns (`.column-link`), equal heights (`same_height_*`), button normaliser (`.uabb-button → .fl-button`)
+- The tab shows feature documentation with usage examples; full JS source is shown read-only at the bottom; call `window.equalizeHeightsRefresh()` from custom JS to re-run equalisation after dynamic content loads
 
 ### [child_pages] Shortcode
 Renders child pages of the current page as a responsive card grid using a Beaver Builder saved layout template.
@@ -158,10 +166,12 @@ Each tool group can be independently enabled/disabled from **Settings → DS Too
 |---|---|
 | `list_posts` | List posts, pages, or CPT entries with filters (type, status, search) |
 | `get_post` | Get full content + assigned taxonomy terms by post ID |
-| `create_post` | Create a post/page/CPT entry; optionally assign taxonomy terms inline |
-| `update_post` | Update title, content, excerpt, status, or taxonomy terms |
+| `create_post` | Create a post/page/CPT entry; optionally assign taxonomy terms and featured image inline |
+| `update_post` | Update title, content, excerpt, status, taxonomy terms, or featured image (`thumbnail_id`) |
 | `delete_post` | Trash or permanently delete a post |
 | `list_post_types` | Discover all registered public post types |
+| `bulk_create_posts` | Create multiple posts in a single call — accepts an array of post objects |
+| `bulk_update_posts` | Update multiple posts in a single call — accepts an array of post objects with `id` |
 
 #### Taxonomies
 | Tool | Description |
@@ -213,6 +223,8 @@ Each tool group can be independently enabled/disabled from **Settings → DS Too
 |---|---|
 | `list_users` | List users filtered by role, search, with pagination |
 | `get_user` | Get a user's profile by ID or email |
+| `list_media` | List Media Library items with filters (type, search, pagination) |
+| `get_media` | Get a single media item's details, URLs, and metadata by ID |
 | `regenerate_thumbnails` | Regenerate image thumbnail sizes for Media Library images |
 
 #### Beaver Builder — `manage_options`

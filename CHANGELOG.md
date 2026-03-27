@@ -4,6 +4,15 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.14] - 2026-03-28
+### Added
+- CSS custom properties (`--dst-*`) system in `global-css.css` — all hardcoded values (heights, grid gaps, z-indexes, border radius, sticky logo dimensions, etc.) are now CSS variables, letting site CSS override any value without touching the plugin file
+- **CSS Variable Overrides** field on the Global CSS tab — CSS entered here is stored in `wp_options` and injected as a second `<style>` block after the plugin CSS, so overrides survive every plugin update
+### Changed
+- Global CSS is now fully plugin-managed — the admin textarea is replaced with a utility class reference grouped by category; full CSS source shown read-only at the bottom
+- Global JS is now fully plugin-managed — the CodeMirror editor is replaced with a feature documentation page (Sticky Header, Clickable Columns, Equal Heights, Button Normaliser); full JS source shown read-only at the bottom
+- Both `class-ds-global-css.php` and `class-ds-global-js.php` now always read their respective plugin files at runtime — changes to plugin files take effect on next page load with no admin action needed
+
 ## [0.9.13] - 2026-03-28
 ### Added
 - `bulk_create_posts` and `bulk_update_posts` MCP tools — accept an array of post objects in a single call, reducing context usage for CSV import workflows
