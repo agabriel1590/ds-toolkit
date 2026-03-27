@@ -6,7 +6,7 @@ All notable changes to DS Toolkit are documented here.
 
 ## [0.9.13-beta.1] - 2026-03-28
 ### Added
--
+- bump the css class height-avatar under global css to 350
 
 ## [0.9.12] - 2026-03-28
 ### Fixed
