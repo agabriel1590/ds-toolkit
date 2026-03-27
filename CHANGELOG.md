@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.15] - 2026-03-28
+### Changed
+- Disabled `.top-social` flex layout overrides in `global-css.css` — rules commented out to stop interfering with site-specific social icon layouts
+
 ## [0.9.14] - 2026-03-28
 ### Added
 - CSS custom properties (`--dst-*`) system in `global-css.css` — all hardcoded values (heights, grid gaps, z-indexes, border radius, sticky logo dimensions, etc.) are now CSS variables, letting site CSS override any value without touching the plugin file
