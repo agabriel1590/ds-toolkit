@@ -543,12 +543,12 @@ h2.h2-home {
 /*─────────────────────────────────────────────────────────────────────────────
   Top Social Icons
 ─────────────────────────────────────────────────────────────────────────────*/
-.top-social .uabb-info-list-wrapper.uabb-info-list-top,
+/* .top-social .uabb-info-list-wrapper.uabb-info-list-top,
 .top-social .uabb-info-list-wrapper.uabb-info-list-left {
   display: flex;
   align-items: center !important;
   justify-content: flex-end !important;
-}
+} */
 .top-social .uabb-info-list-content,
 .top-social .uabb-info-list-icon {
   margin: 0 !important;
