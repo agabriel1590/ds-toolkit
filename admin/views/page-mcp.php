@@ -200,13 +200,21 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="dst-card-row">
         <div class="dst-card-icon dst-step-num">1</div>
         <div class="dst-card-info">
+            <strong>Install Node.js <span style="font-weight:400;color:#888;">(required)</span></strong>
+            <span>The MCP connection uses <code>npx mcp-remote</code> which requires Node.js on the computer running Claude. Download the LTS version at <a href="https://nodejs.org/en/download" target="_blank" rel="noopener"><strong>nodejs.org/en/download</strong></a>. After install, confirm it works by running <code>node -v</code> in your terminal.</span>
+        </div>
+    </div>
+
+    <div class="dst-card-row">
+        <div class="dst-card-icon dst-step-num">2</div>
+        <div class="dst-card-info">
             <strong>Create an Application Password</strong>
             <span>Go to <a href="<?php echo esc_url( admin_url( 'profile.php' ) ); ?>" target="_blank"><strong>WP Admin → Users → Your Profile</strong></a>, scroll to the <strong>Application Passwords</strong> section, enter a name (e.g. <em>Claude MCP</em>), click <em>Add New Application Password</em>, and copy the generated password. <strong>Save it — it won't be shown again.</strong></span>
         </div>
     </div>
 
     <div class="dst-card-row">
-        <div class="dst-card-icon dst-step-num">2</div>
+        <div class="dst-card-icon dst-step-num">3</div>
         <div class="dst-card-info">
             <strong>Generate your Claude config below</strong>
             <span>Enter your WordPress username and the Application Password. The tool will generate the exact JSON config to paste into Claude Desktop, or the command to run for Claude Code.</span>
@@ -214,10 +222,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 
     <div class="dst-card-row">
-        <div class="dst-card-icon dst-step-num">3</div>
+        <div class="dst-card-icon dst-step-num">4</div>
         <div class="dst-card-info">
             <strong>Restart Claude and start talking to WordPress</strong>
-            <span>After adding the config, restart Claude Desktop (or reload in Claude Code). You'll see <em>DS Toolkit</em> listed as an MCP server, and Claude will be able to use the tools listed below.</span>
+            <span>After adding the config, restart Claude Desktop (or reload in Claude Code). You'll see <em><?php echo esc_html( 'ds-toolkit-' . sanitize_title( get_bloginfo( 'name' ) ) ); ?></em> listed as an MCP server, and Claude will be able to use the tools listed below.</span>
         </div>
     </div>
 
@@ -650,7 +658,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 (function ($) {
     'use strict';
 
-    var mcpUrl = <?php echo wp_json_encode( $mcp_url ); ?>;
+    var mcpUrl       = <?php echo wp_json_encode( $mcp_url ); ?>;
+    var mcpServerKey = <?php echo wp_json_encode( 'ds-toolkit-' . sanitize_title( get_bloginfo( 'name' ) ) ); ?>;
 
     // Copy endpoint URL button
     $('.dst-copy-url-btn').on('click', function () {
@@ -677,17 +686,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         if ( isLocal ) mcpArgs.push( '--allow-http' );
         mcpArgs.push( '--header', 'Authorization:' + authHeader );
 
-        var desktopConfig = JSON.stringify({
-            "mcpServers": {
-                "ds-toolkit": {
-                    "command": "npx",
-                    "args": mcpArgs
-                }
-            }
-        }, null, 2);
+        var mcpServers = {};
+        mcpServers[ mcpServerKey ] = { "command": "npx", "args": mcpArgs };
+
+        var desktopConfig = JSON.stringify({ "mcpServers": mcpServers }, null, 2);
 
         var cliCommand =
-            'claude mcp add ds-toolkit \\\n' +
+            'claude mcp add ' + mcpServerKey + ' \\\n' +
             '  --transport http \\\n' +
             '  --header "Authorization: ' + authHeader + '" \\\n' +
             '  ' + mcpUrl;

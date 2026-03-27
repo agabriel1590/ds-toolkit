@@ -4,9 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
-## [0.9.10-beta.1] - 2026-03-26
+## [0.9.10-beta.1] - 2026-03-27
 ### Added
-- _(in development)_
+- Node.js install requirement added to MCP Setup Instructions (step 1) with link to nodejs.org/en/download
+- Generated Claude config now uses site-specific server key `ds-toolkit-{site-slug}` (e.g. `ds-toolkit-my-site`) instead of the generic `ds-toolkit` — prevents conflicts when managing multiple sites
 
 ## [0.9.9.2] - 2026-03-26
 ### Added
