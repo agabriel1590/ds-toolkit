@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13-beta.5] - 2026-03-28
+### Changed
+- Beta update channel is now fully automatic — no wp-config.php constants needed. Local environments (`.local`, `localhost`, `127.x`, `192.168.x`, or `WP_ENVIRONMENT_TYPE` set to non-production) receive beta updates automatically; live/WP Engine sites receive stable only
+
 ## [0.9.13-beta.4] - 2026-03-28
 ### Added
 - `DS_TOOLKIT_FORCE_BETA` constant — allows beta update channel on WP Engine / production environments. Add both `define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' )` and `define( 'DS_TOOLKIT_FORCE_BETA', true )` to wp-config.php to opt a live site into beta updates (e.g. dslaunchpad4 staging)

@@ -7,36 +7,20 @@ class DS_Toolkit_Updater {
     private $repo = 'agabriel1590/ds-toolkit';
 
     /**
-     * Returns true if the site is opted into the beta update channel.
-     * Set define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' ) in wp-config.php to enable.
-     *
-     * Even with the constant set, beta is silently disabled on live/production
-     * environments so pushing a local wp-config.php to WP Engine is safe:
-     *  - WP_ENVIRONMENT_TYPE = 'production'          → disabled (WP Engine live)
-     *  - WP_ENVIRONMENT_TYPE = 'local' / 'staging' / 'development' → enabled
+     * Returns true if the site is a local/development environment.
+     * No wp-config.php constants needed — detection is fully automatic:
+     *  - WP_ENVIRONMENT_TYPE = 'production'                        → stable
+     *  - WP_ENVIRONMENT_TYPE = 'local' / 'development' / 'staging' → beta
      *  - WP_ENVIRONMENT_TYPE not set → falls back to site URL:
-     *      *.local / localhost / 127.x / 192.168.x  → enabled
-     *      anything else (live domain)              → disabled
-     *
-     * To explicitly allow beta on a production/WP Engine site (e.g. a staging
-     * environment hosted on WP Engine), add BOTH constants to wp-config.php:
-     *   define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' );
-     *   define( 'DS_TOOLKIT_FORCE_BETA', true );
+     *      *.local / *.test / *.dev / localhost / 127.x / 192.168.x → beta
+     *      anything else (live domain)                               → stable
      */
     private function is_beta_channel() {
-        if ( ! defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) || DS_TOOLKIT_UPDATE_CHANNEL !== 'beta' ) {
-            return false;
-        }
-        // Explicit override — allows beta on WP Engine / production environments.
-        if ( defined( 'DS_TOOLKIT_FORCE_BETA' ) && DS_TOOLKIT_FORCE_BETA ) {
-            return true;
-        }
         if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
             return WP_ENVIRONMENT_TYPE !== 'production';
         }
-        // No WP_ENVIRONMENT_TYPE — infer from site URL.
         $host = parse_url( get_site_url(), PHP_URL_HOST );
-        return (bool) preg_match( '/\.(local|test|dev|localhost)$|^localhost$|^127\.|^192\.168\./', $host );
+        return (bool) preg_match( '/\.(local|test|dev)$|^localhost$|^127\.|^192\.168\./', $host );
     }
 
     public function init() {
