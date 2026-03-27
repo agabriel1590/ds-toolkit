@@ -9,9 +9,25 @@ class DS_Toolkit_Updater {
     /**
      * Returns true if the site is opted into the beta update channel.
      * Set define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' ) in wp-config.php to enable.
+     *
+     * Even with the constant set, beta is silently disabled on live/production
+     * environments so pushing a local wp-config.php to WP Engine is safe:
+     *  - WP_ENVIRONMENT_TYPE = 'production'          → disabled (WP Engine live)
+     *  - WP_ENVIRONMENT_TYPE = 'local' / 'staging' / 'development' → enabled
+     *  - WP_ENVIRONMENT_TYPE not set → falls back to site URL:
+     *      *.local / localhost / 127.x / 192.168.x  → enabled
+     *      anything else (live domain)              → disabled
      */
     private function is_beta_channel() {
-        return defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) && DS_TOOLKIT_UPDATE_CHANNEL === 'beta';
+        if ( ! defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) || DS_TOOLKIT_UPDATE_CHANNEL !== 'beta' ) {
+            return false;
+        }
+        if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
+            return WP_ENVIRONMENT_TYPE !== 'production';
+        }
+        // No WP_ENVIRONMENT_TYPE — infer from site URL.
+        $host = parse_url( get_site_url(), PHP_URL_HOST );
+        return (bool) preg_match( '/\.(local|test|dev|localhost)$|^localhost$|^127\.|^192\.168\./', $host );
     }
 
     public function init() {
@@ -108,8 +124,8 @@ class DS_Toolkit_Updater {
                 $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest );
                 $current_n = (int) preg_replace( '/^.*-beta\./', '', $current );
                 $is_newer  = $latest_n > $current_n;
-            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
-                // Beta of a newer-or-equal base over a stable: 0.9.9-beta.1 > 0.9.8
+            } elseif ( version_compare( $latest_base, $current_base, '>' ) ) {
+                // Beta of a strictly newer base over stable: 0.9.12-beta.1 > 0.9.11
                 $is_newer = true;
             }
         }

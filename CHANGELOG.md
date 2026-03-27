@@ -4,6 +4,20 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.12] - 2026-03-28
+### Fixed
+- Beta channel now automatically disabled on production environments (`WP_ENVIRONMENT_TYPE=production`) — pushing a local wp-config.php to WP Engine no longer accidentally activates beta updates
+- Beta version comparison no longer offers same-base beta as an upgrade over its stable release
+
+## [0.9.11] - 2026-03-28
+### Added
+- `bulk_create_posts` MCP tool — create multiple posts/pages/CPT entries in one call; ideal for CSV imports
+- `bulk_update_posts` MCP tool — update multiple posts in one call
+### Changed
+- Plugin updater re-checks GitHub every 60 seconds automatically — no manual click required
+### Fixed
+- Updater "Undefined array key tag_name" warning from stale ETag-format transient
+
 ## [0.9.11-beta.3] - 2026-03-28
 ### Fixed
 - Updater no longer throws "Undefined array key tag_name" warning — discards old ETag-format transient left over from previous updater version
