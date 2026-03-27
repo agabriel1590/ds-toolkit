@@ -77,11 +77,13 @@ define( 'DS_TOOLKIT_ADMIN_DOMAIN', '@yourdomain.com' );
 Default: `@leagueapps.com`
 
 ### Beta Update Channel
-Opt in to receive pre-release builds in the WordPress updater:
+Beta updates are enabled automatically on local environments — no configuration needed.
 
-```php
-define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' );
-```
+| Environment | Channel |
+|---|---|
+| `*.local`, `localhost`, `127.x`, `192.168.x` | Beta (automatic) |
+| `WP_ENVIRONMENT_TYPE = local / development / staging` | Beta (automatic) |
+| Live domains / WP Engine (`WP_ENVIRONMENT_TYPE = production`) | Stable only |
 
 ---
 

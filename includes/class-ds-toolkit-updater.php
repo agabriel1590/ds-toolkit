@@ -7,27 +7,20 @@ class DS_Toolkit_Updater {
     private $repo = 'agabriel1590/ds-toolkit';
 
     /**
-     * Returns true if the site is opted into the beta update channel.
-     * Set define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' ) in wp-config.php to enable.
-     *
-     * Even with the constant set, beta is silently disabled on live/production
-     * environments so pushing a local wp-config.php to WP Engine is safe:
-     *  - WP_ENVIRONMENT_TYPE = 'production'          → disabled (WP Engine live)
-     *  - WP_ENVIRONMENT_TYPE = 'local' / 'staging' / 'development' → enabled
+     * Returns true if the site is a local/development environment.
+     * No wp-config.php constants needed — detection is fully automatic:
+     *  - WP_ENVIRONMENT_TYPE = 'production'                        → stable
+     *  - WP_ENVIRONMENT_TYPE = 'local' / 'development' / 'staging' → beta
      *  - WP_ENVIRONMENT_TYPE not set → falls back to site URL:
-     *      *.local / localhost / 127.x / 192.168.x  → enabled
-     *      anything else (live domain)              → disabled
+     *      *.local / *.test / *.dev / localhost / 127.x / 192.168.x → beta
+     *      anything else (live domain)                               → stable
      */
     private function is_beta_channel() {
-        if ( ! defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) || DS_TOOLKIT_UPDATE_CHANNEL !== 'beta' ) {
-            return false;
-        }
         if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
             return WP_ENVIRONMENT_TYPE !== 'production';
         }
-        // No WP_ENVIRONMENT_TYPE — infer from site URL.
         $host = parse_url( get_site_url(), PHP_URL_HOST );
-        return (bool) preg_match( '/\.(local|test|dev|localhost)$|^localhost$|^127\.|^192\.168\./', $host );
+        return (bool) preg_match( '/\.(local|test|dev)$|^localhost$|^127\.|^192\.168\./', $host );
     }
 
     public function init() {
@@ -248,15 +241,14 @@ class DS_Toolkit_Updater {
     /**
      * Fetch the latest release from GitHub.
      *
-     * Caches the result for 60 seconds — new releases are detected automatically
-     * within one minute of publishing, no manual "Check for Updates" click needed.
+     * Caches for 12 hours. Click "Check for Updates" to clear the cache and
+     * fetch immediately — the button always shows the result right away.
      */
     private function get_latest_release() {
         $is_beta   = $this->is_beta_channel();
         $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
         $cached    = get_transient( $cache_key );
 
-        // Discard old ETag-format cache ({ release: [...], etag: '...' }) from previous updater version.
         if ( $cached !== false && isset( $cached['tag_name'] ) ) {
             return $cached;
         }
@@ -289,8 +281,8 @@ class DS_Toolkit_Updater {
             }
         }
 
-        // Cache for 60 seconds — new releases detected within one minute automatically.
-        set_transient( $cache_key, $data, 60 );
+        // Cache for 12 hours. "Check for Updates" clears this and fetches fresh immediately.
+        set_transient( $cache_key, $data, 12 * HOUR_IN_SECONDS );
 
         return $data;
     }
