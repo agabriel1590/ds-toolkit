@@ -17,10 +17,19 @@ class DS_Toolkit_Updater {
      *  - WP_ENVIRONMENT_TYPE not set → falls back to site URL:
      *      *.local / localhost / 127.x / 192.168.x  → enabled
      *      anything else (live domain)              → disabled
+     *
+     * To explicitly allow beta on a production/WP Engine site (e.g. a staging
+     * environment hosted on WP Engine), add BOTH constants to wp-config.php:
+     *   define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' );
+     *   define( 'DS_TOOLKIT_FORCE_BETA', true );
      */
     private function is_beta_channel() {
         if ( ! defined( 'DS_TOOLKIT_UPDATE_CHANNEL' ) || DS_TOOLKIT_UPDATE_CHANNEL !== 'beta' ) {
             return false;
+        }
+        // Explicit override — allows beta on WP Engine / production environments.
+        if ( defined( 'DS_TOOLKIT_FORCE_BETA' ) && DS_TOOLKIT_FORCE_BETA ) {
+            return true;
         }
         if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
             return WP_ENVIRONMENT_TYPE !== 'production';

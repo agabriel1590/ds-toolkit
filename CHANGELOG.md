@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13-beta.4] - 2026-03-28
+### Added
+- `DS_TOOLKIT_FORCE_BETA` constant — allows beta update channel on WP Engine / production environments. Add both `define( 'DS_TOOLKIT_UPDATE_CHANNEL', 'beta' )` and `define( 'DS_TOOLKIT_FORCE_BETA', true )` to wp-config.php to opt a live site into beta updates (e.g. dslaunchpad4 staging)
+
 ## [0.9.13-beta.3] - 2026-03-28
 ### Changed
 - Updater reverted to 12-hour cache — clicking "Check for Updates" clears the cache and fetches from GitHub immediately; no background polling on every page load
