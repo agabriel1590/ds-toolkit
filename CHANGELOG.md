@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.5] - 2026-03-27
+### Fixed
+- OS radio buttons in MCP config generator rendered as stretched ovals — excluded radio/checkbox inputs from the `.dst-field-inline` width rule
+
 ## [0.9.10-beta.4] - 2026-03-27
 ### Fixed
 - Update badge now detects new releases instantly on every admin page load using GitHub's ETag conditional requests — `304 Not Modified` responses are free (don't count against rate limits) so no polling cost when nothing has changed; a `200` response means a new release is available and the badge appears immediately

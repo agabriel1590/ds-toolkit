@@ -303,7 +303,7 @@
 .dst-field-inline {
     flex-shrink: 0;
 }
-.dst-field-inline input {
+.dst-field-inline input:not([type="radio"]):not([type="checkbox"]) {
     width: 80px;
     text-align: center;
 }
