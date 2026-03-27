@@ -248,15 +248,14 @@ class DS_Toolkit_Updater {
     /**
      * Fetch the latest release from GitHub.
      *
-     * Caches the result for 60 seconds — new releases are detected automatically
-     * within one minute of publishing, no manual "Check for Updates" click needed.
+     * Caches for 12 hours. Click "Check for Updates" to clear the cache and
+     * fetch immediately — the button always shows the result right away.
      */
     private function get_latest_release() {
         $is_beta   = $this->is_beta_channel();
         $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
         $cached    = get_transient( $cache_key );
 
-        // Discard old ETag-format cache ({ release: [...], etag: '...' }) from previous updater version.
         if ( $cached !== false && isset( $cached['tag_name'] ) ) {
             return $cached;
         }
@@ -289,8 +288,8 @@ class DS_Toolkit_Updater {
             }
         }
 
-        // Cache for 60 seconds — new releases detected within one minute automatically.
-        set_transient( $cache_key, $data, 60 );
+        // Cache for 12 hours. "Check for Updates" clears this and fetches fresh immediately.
+        set_transient( $cache_key, $data, 12 * HOUR_IN_SECONDS );
 
         return $data;
     }

@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13-beta.3] - 2026-03-28
+### Changed
+- Updater reverted to 12-hour cache — clicking "Check for Updates" clears the cache and fetches from GitHub immediately; no background polling on every page load
+
 ## [0.9.13-beta.2] - 2026-03-28
 ### Changed
 - Global CSS tab replaced with a utility class reference — lists all available classes with descriptions grouped by category; full CSS source shown read-only at the bottom; CSS is now managed directly in `includes/defaults/global-css.css`
