@@ -4,6 +4,26 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.11-beta.3] - 2026-03-28
+### Fixed
+- Updater no longer throws "Undefined array key tag_name" warning — discards old ETag-format transient left over from previous updater version
+
+## [0.9.11-beta.2] - 2026-03-27
+### Changed
+- Plugin updater now re-checks GitHub every 60 seconds automatically — new releases appear within one minute with no manual "Check for Updates" click required
+
+## [0.9.11-beta.1] - 2026-03-27
+### Added
+- `bulk_create_posts` MCP tool — create multiple posts/pages/CPT entries in one call (ideal for CSV imports); returns per-item results with IDs and errors
+- `bulk_update_posts` MCP tool — update multiple posts in one call; each item needs an id plus the fields to change
+
+## [0.9.10] - 2026-03-27
+### Added
+- `list_media`, `get_media` MCP tools — search and inspect Media Library attachments (title, URL, MIME type, dimensions, all registered image sizes)
+- `thumbnail_id` support in `create_post` and `update_post` — set or remove the featured image
+- `thumbnail_id` returned in `get_post` and `list_posts` responses
+- Available Tools accordion redesigned — collapsed by default, styled card-row headers with chevron
+
 ## [0.9.10-beta.8] - 2026-03-27
 ### Changed
 - Available Tools accordion redesigned — sections are now styled card-row headers (white background, border, chevron arrow) and collapsed by default; click to expand

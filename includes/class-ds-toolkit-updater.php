@@ -230,21 +230,20 @@ class DS_Toolkit_Updater {
     }
 
     /**
-     * Fetch the latest release from GitHub using conditional requests (ETag).
+     * Fetch the latest release from GitHub.
      *
-     * On the first call: full request → stores release data + ETag in a transient.
-     * On every subsequent call: sends If-None-Match header with the stored ETag.
-     *   - GitHub returns 304 Not Modified (no body, free — doesn't count against rate limit)
-     *     → we return the cached data unchanged.
-     *   - GitHub returns 200 with new data → we update the cache + ETag immediately.
-     *
-     * Result: instant update detection on every admin page load with zero rate-limit cost
-     * when there is no new release. No fixed TTL needed.
+     * Caches the result for 60 seconds — new releases are detected automatically
+     * within one minute of publishing, no manual "Check for Updates" click needed.
      */
     private function get_latest_release() {
         $is_beta   = $this->is_beta_channel();
         $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
-        $cached    = get_transient( $cache_key ); // array( 'release' => [...], 'etag' => '...' )
+        $cached    = get_transient( $cache_key );
+
+        // Discard old ETag-format cache ({ release: [...], etag: '...' }) from previous updater version.
+        if ( $cached !== false && isset( $cached['tag_name'] ) ) {
+            return $cached;
+        }
 
         // Beta channel: fetch all releases (includes pre-releases), pick the most recent.
         // Stable channel: fetch /releases/latest which skips pre-releases automatically.
@@ -252,29 +251,13 @@ class DS_Toolkit_Updater {
             ? 'https://api.github.com/repos/' . $this->repo . '/releases'
             : 'https://api.github.com/repos/' . $this->repo . '/releases/latest';
 
-        $headers = array( 'Accept' => 'application/vnd.github+json' );
-        if ( ! empty( $cached['etag'] ) ) {
-            $headers['If-None-Match'] = $cached['etag'];
-        }
-
         $response = wp_remote_get( $url, array(
-            'headers' => $headers,
+            'headers' => array( 'Accept' => 'application/vnd.github+json' ),
             'timeout' => 10,
         ) );
 
-        if ( is_wp_error( $response ) ) {
-            return ! empty( $cached['release'] ) ? $cached['release'] : false;
-        }
-
-        $code = wp_remote_retrieve_response_code( $response );
-
-        // 304 Not Modified — GitHub confirms nothing has changed, return cached data as-is.
-        if ( $code === 304 ) {
-            return ! empty( $cached['release'] ) ? $cached['release'] : false;
-        }
-
-        if ( $code !== 200 ) {
-            return ! empty( $cached['release'] ) ? $cached['release'] : false;
+        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+            return false;
         }
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -290,9 +273,8 @@ class DS_Toolkit_Updater {
             }
         }
 
-        // Store release data alongside the new ETag. No TTL — ETag keeps it fresh forever.
-        $etag = wp_remote_retrieve_header( $response, 'etag' );
-        set_transient( $cache_key, array( 'release' => $data, 'etag' => $etag ), 0 );
+        // Cache for 60 seconds — new releases detected within one minute automatically.
+        set_transient( $cache_key, $data, 60 );
 
         return $data;
     }

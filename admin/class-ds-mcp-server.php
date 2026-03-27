@@ -216,6 +216,8 @@ class DS_MCP_Server {
             case 'create_post':         return $this->tool_create_post( $id, $arguments );
             case 'update_post':         return $this->tool_update_post( $id, $arguments );
             case 'delete_post':         return $this->tool_delete_post( $id, $arguments );
+            case 'bulk_create_posts':   return $this->tool_bulk_create_posts( $id, $arguments );
+            case 'bulk_update_posts':   return $this->tool_bulk_update_posts( $id, $arguments );
             // CPT discovery
             case 'list_post_types':     return $this->tool_list_post_types( $id );
             // Taxonomies
@@ -474,6 +476,107 @@ class DS_MCP_Server {
             return $this->rpc_error( $id, -32603, 'Failed to delete post ' . $post->ID );
         }
         return $this->tool_result( $id, array( 'id' => $post->ID, 'deleted' => true, 'trashed' => ! $force ) );
+    }
+
+    private function tool_bulk_create_posts( $id, $args ) {
+        if ( empty( $args['posts'] ) || ! is_array( $args['posts'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: posts (array)' );
+        }
+        if ( ! current_user_can( 'publish_posts' ) ) {
+            return $this->rpc_error( $id, -32603, 'Insufficient permissions — publish_posts required' );
+        }
+        $results = array();
+        foreach ( $args['posts'] as $index => $item ) {
+            $post_type = ! empty( $item['post_type'] ) ? sanitize_key( $item['post_type'] ) : 'post';
+            if ( ! $this->is_group_enabled( $this->group_for_post_type( $post_type ) ) ) {
+                $results[] = array( 'index' => $index, 'error' => 'Group disabled for post type: ' . $post_type );
+                continue;
+            }
+            $post_data = array(
+                'post_title'   => sanitize_text_field( isset( $item['title'] ) ? $item['title'] : 'Untitled' ),
+                'post_content' => wp_kses_post( isset( $item['content'] ) ? $item['content'] : '' ),
+                'post_status'  => sanitize_key( isset( $item['status'] ) ? $item['status'] : 'draft' ),
+                'post_type'    => $post_type,
+            );
+            if ( ! empty( $item['excerpt'] ) )       $post_data['post_excerpt']   = sanitize_textarea_field( $item['excerpt'] );
+            if ( isset( $item['post_parent'] ) )     $post_data['post_parent']    = absint( $item['post_parent'] );
+            if ( ! empty( $item['slug'] ) )          $post_data['post_name']      = sanitize_title( $item['slug'] );
+            if ( isset( $item['menu_order'] ) )      $post_data['menu_order']     = (int) $item['menu_order'];
+            if ( ! empty( $item['page_template'] ) ) $post_data['page_template']  = sanitize_text_field( $item['page_template'] );
+            if ( ! empty( $item['post_author'] ) )   $post_data['post_author']    = absint( $item['post_author'] );
+            if ( isset( $item['comment_status'] ) )  $post_data['comment_status'] = in_array( $item['comment_status'], array( 'open', 'closed' ), true ) ? $item['comment_status'] : 'closed';
+            $post_id = wp_insert_post( $post_data, true );
+            if ( is_wp_error( $post_id ) ) {
+                $results[] = array( 'index' => $index, 'title' => $post_data['post_title'], 'error' => $post_id->get_error_message() );
+                continue;
+            }
+            if ( isset( $item['thumbnail_id'] ) ) {
+                $thumb_id = absint( $item['thumbnail_id'] );
+                $thumb_id ? set_post_thumbnail( $post_id, $thumb_id ) : delete_post_thumbnail( $post_id );
+            }
+            if ( ! empty( $item['terms'] ) && is_array( $item['terms'] ) ) {
+                foreach ( $item['terms'] as $taxonomy => $terms ) {
+                    wp_set_object_terms( $post_id, $terms, sanitize_key( $taxonomy ) );
+                }
+            }
+            $results[] = array( 'index' => $index, 'id' => $post_id, 'title' => $post_data['post_title'], 'url' => get_permalink( $post_id ), 'created' => true );
+        }
+        $created = count( array_filter( $results, function( $r ) { return ! empty( $r['created'] ); } ) );
+        return $this->tool_result( $id, array( 'total' => count( $args['posts'] ), 'created' => $created, 'results' => $results ) );
+    }
+
+    private function tool_bulk_update_posts( $id, $args ) {
+        if ( empty( $args['posts'] ) || ! is_array( $args['posts'] ) ) {
+            return $this->rpc_error( $id, -32602, 'Missing required argument: posts (array)' );
+        }
+        $results = array();
+        foreach ( $args['posts'] as $index => $item ) {
+            if ( empty( $item['id'] ) ) {
+                $results[] = array( 'index' => $index, 'error' => 'Missing id' );
+                continue;
+            }
+            $post = get_post( (int) $item['id'] );
+            if ( ! $post ) {
+                $results[] = array( 'index' => $index, 'id' => (int) $item['id'], 'error' => 'Post not found' );
+                continue;
+            }
+            if ( ! $this->is_group_enabled( $this->group_for_post_type( $post->post_type ) ) ) {
+                $results[] = array( 'index' => $index, 'id' => $post->ID, 'error' => 'Group disabled for post type: ' . $post->post_type );
+                continue;
+            }
+            if ( ! current_user_can( 'edit_post', $post->ID ) ) {
+                $results[] = array( 'index' => $index, 'id' => $post->ID, 'error' => 'Insufficient permissions' );
+                continue;
+            }
+            $post_data = array( 'ID' => $post->ID );
+            if ( isset( $item['title'] ) )          $post_data['post_title']     = sanitize_text_field( $item['title'] );
+            if ( isset( $item['content'] ) )        $post_data['post_content']   = wp_kses_post( $item['content'] );
+            if ( isset( $item['excerpt'] ) )        $post_data['post_excerpt']   = sanitize_textarea_field( $item['excerpt'] );
+            if ( isset( $item['status'] ) )         $post_data['post_status']    = sanitize_key( $item['status'] );
+            if ( isset( $item['post_parent'] ) )    $post_data['post_parent']    = absint( $item['post_parent'] );
+            if ( isset( $item['slug'] ) )           $post_data['post_name']      = sanitize_title( $item['slug'] );
+            if ( isset( $item['menu_order'] ) )     $post_data['menu_order']     = (int) $item['menu_order'];
+            if ( isset( $item['page_template'] ) )  $post_data['page_template']  = sanitize_text_field( $item['page_template'] );
+            if ( isset( $item['post_author'] ) )    $post_data['post_author']    = absint( $item['post_author'] );
+            if ( isset( $item['comment_status'] ) ) $post_data['comment_status'] = in_array( $item['comment_status'], array( 'open', 'closed' ), true ) ? $item['comment_status'] : 'closed';
+            $result = wp_update_post( $post_data, true );
+            if ( is_wp_error( $result ) ) {
+                $results[] = array( 'index' => $index, 'id' => $post->ID, 'error' => $result->get_error_message() );
+                continue;
+            }
+            if ( isset( $item['thumbnail_id'] ) ) {
+                $thumb_id = absint( $item['thumbnail_id'] );
+                $thumb_id ? set_post_thumbnail( $post->ID, $thumb_id ) : delete_post_thumbnail( $post->ID );
+            }
+            if ( ! empty( $item['terms'] ) && is_array( $item['terms'] ) ) {
+                foreach ( $item['terms'] as $taxonomy => $terms ) {
+                    wp_set_object_terms( $post->ID, $terms, sanitize_key( $taxonomy ) );
+                }
+            }
+            $results[] = array( 'index' => $index, 'id' => $post->ID, 'updated' => true, 'url' => get_permalink( $post->ID ) );
+        }
+        $updated = count( array_filter( $results, function( $r ) { return ! empty( $r['updated'] ); } ) );
+        return $this->tool_result( $id, array( 'total' => count( $args['posts'] ), 'updated' => $updated, 'results' => $results ) );
     }
 
     // -------------------------------------------------------------------------
@@ -1588,6 +1691,36 @@ class DS_MCP_Server {
                     'properties' => array(
                         'id'    => array( 'type' => 'integer', 'description' => 'Post ID' ),
                         'force' => array( 'type' => 'boolean', 'description' => 'true = permanent delete, false = trash (default)' ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'bulk_create_posts',
+                'description' => 'Create multiple posts, pages, or CPT entries in one call. Ideal for CSV imports. Returns per-item results with IDs and any errors.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'posts' ),
+                    'properties' => array(
+                        'posts' => array(
+                            'type'        => 'array',
+                            'description' => 'Array of post objects to create. Each supports the same fields as create_post: title, content, excerpt, status, post_type, post_parent, slug, menu_order, page_template, post_author, comment_status, thumbnail_id, terms.',
+                            'items'       => array( 'type' => 'object' ),
+                        ),
+                    ),
+                ),
+            ),
+            array(
+                'name'        => 'bulk_update_posts',
+                'description' => 'Update multiple posts in one call. Each item must include an id. Only provided fields are changed. Returns per-item results.',
+                'inputSchema' => array(
+                    'type'       => 'object',
+                    'required'   => array( 'posts' ),
+                    'properties' => array(
+                        'posts' => array(
+                            'type'        => 'array',
+                            'description' => 'Array of post objects to update. Each must have id plus any fields to change: title, content, excerpt, status, post_parent, slug, menu_order, page_template, post_author, comment_status, thumbnail_id, terms.',
+                            'items'       => array( 'type' => 'object' ),
+                        ),
                     ),
                 ),
             ),
