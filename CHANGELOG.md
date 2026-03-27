@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13-beta.1] - 2026-03-28
+### Added
+-
+
 ## [0.9.12] - 2026-03-28
 ### Fixed
 - Beta channel now automatically disabled on production environments (`WP_ENVIRONMENT_TYPE=production`) — pushing a local wp-config.php to WP Engine no longer accidentally activates beta updates
