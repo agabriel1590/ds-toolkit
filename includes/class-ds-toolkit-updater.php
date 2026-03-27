@@ -15,7 +15,11 @@ class DS_Toolkit_Updater {
     }
 
     public function init() {
+        // Fires when WP writes the update transient (after a WP-Cron/manual check).
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+        // Fires every time WP reads the update transient — powers the automatic badge/nag
+        // on the Plugins page and Dashboard without needing WP-Cron to have run first.
+        add_filter( 'site_transient_update_plugins', array( $this, 'inject_update_info' ) );
         add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
         add_filter( 'upgrader_source_selection', array( $this, 'fix_source_dir' ), 10, 4 );
         add_filter( 'plugin_action_links_' . $this->plugin_file(), array( $this, 'add_check_update_link' ) );
@@ -31,8 +35,25 @@ class DS_Toolkit_Updater {
         return plugin_basename( DS_TOOLKIT_PATH . $this->slug . '.php' );
     }
 
+    /**
+     * Hooked to pre_set_site_transient_update_plugins.
+     * Runs when WP is about to persist the update transient (WP-Cron or manual check).
+     * Requires $transient->checked to be populated — skips otherwise.
+     */
     public function check_for_update( $transient ) {
         if ( empty( $transient->checked ) ) {
+            return $transient;
+        }
+        return $this->inject_update_info( $transient );
+    }
+
+    /**
+     * Hooked to site_transient_update_plugins.
+     * Fires on every admin page load that reads plugin update data — shows the update
+     * badge/nag automatically without requiring WP-Cron or a manual check click.
+     */
+    public function inject_update_info( $transient ) {
+        if ( ! is_object( $transient ) ) {
             return $transient;
         }
 
@@ -45,29 +66,7 @@ class DS_Toolkit_Updater {
         $current_version = DS_TOOLKIT_VERSION;
         $plugin_file     = $this->plugin_file();
 
-        $is_beta  = $this->is_beta_channel();
-        $is_newer = version_compare( $latest_version, $current_version, '>' );
-
-        if ( ! $is_newer && $is_beta && strpos( $latest_version, '-beta.' ) !== false ) {
-            $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest_version );
-            $current_base = preg_replace( '/-beta\.\d+$/', '', $current_version );
-
-            if ( $latest_base === $current_base && strpos( $current_version, '-beta.' ) !== false ) {
-                // Same base version, both beta — compare the beta number explicitly
-                // e.g. 0.9.9.2-beta.3 > 0.9.9.2-beta.2
-                $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest_version );
-                $current_n = (int) preg_replace( '/^.*-beta\./', '', $current_version );
-                if ( $latest_n > $current_n ) {
-                    $is_newer = true;
-                }
-            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
-                // Beta of a newer-or-equal base vs current stable — always an upgrade
-                // e.g. 0.9.8-beta.2 offered to someone on 0.9.8
-                $is_newer = true;
-            }
-        }
-
-        if ( $is_newer ) {
+        if ( $this->is_newer_version( $latest_version, $current_version ) ) {
             $transient->response[ $plugin_file ] = (object) array(
                 'slug'        => $this->slug,
                 'plugin'      => $plugin_file,
@@ -76,8 +75,11 @@ class DS_Toolkit_Updater {
                 'package'     => $this->get_download_url( $release ),
             );
         } else {
-            // Plugin is up to date — clear any stale response entry and mark as checked
+            // Plugin is up to date — clear any stale response entry and mark as checked.
             unset( $transient->response[ $plugin_file ] );
+            if ( ! isset( $transient->no_update ) ) {
+                $transient->no_update = array();
+            }
             $transient->no_update[ $plugin_file ] = (object) array(
                 'slug'        => $this->slug,
                 'plugin'      => $plugin_file,
@@ -88,6 +90,31 @@ class DS_Toolkit_Updater {
         }
 
         return $transient;
+    }
+
+    /**
+     * Returns true if $latest should be offered as an update over $current.
+     * Handles stable → stable, stable → beta (beta channel), and beta.N → beta.N+1.
+     */
+    private function is_newer_version( $latest, $current ) {
+        $is_newer = version_compare( $latest, $current, '>' );
+
+        if ( ! $is_newer && $this->is_beta_channel() && strpos( $latest, '-beta.' ) !== false ) {
+            $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest );
+            $current_base = preg_replace( '/-beta\.\d+$/', '', $current );
+
+            if ( $latest_base === $current_base && strpos( $current, '-beta.' ) !== false ) {
+                // Same base, both beta — compare suffix number: 0.9.9-beta.3 > 0.9.9-beta.2
+                $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest );
+                $current_n = (int) preg_replace( '/^.*-beta\./', '', $current );
+                $is_newer  = $latest_n > $current_n;
+            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
+                // Beta of a newer-or-equal base over a stable: 0.9.9-beta.1 > 0.9.8
+                $is_newer = true;
+            }
+        }
+
+        return $is_newer;
     }
 
     public function plugin_info( $result, $action, $args ) {
@@ -202,13 +229,22 @@ class DS_Toolkit_Updater {
         return $release['zipball_url'];
     }
 
+    /**
+     * Fetch the latest release from GitHub using conditional requests (ETag).
+     *
+     * On the first call: full request → stores release data + ETag in a transient.
+     * On every subsequent call: sends If-None-Match header with the stored ETag.
+     *   - GitHub returns 304 Not Modified (no body, free — doesn't count against rate limit)
+     *     → we return the cached data unchanged.
+     *   - GitHub returns 200 with new data → we update the cache + ETag immediately.
+     *
+     * Result: instant update detection on every admin page load with zero rate-limit cost
+     * when there is no new release. No fixed TTL needed.
+     */
     private function get_latest_release() {
         $is_beta   = $this->is_beta_channel();
         $cache_key = $is_beta ? 'ds_toolkit_latest_release_beta' : 'ds_toolkit_latest_release';
-        $cached    = get_transient( $cache_key );
-        if ( $cached ) {
-            return $cached;
-        }
+        $cached    = get_transient( $cache_key ); // array( 'release' => [...], 'etag' => '...' )
 
         // Beta channel: fetch all releases (includes pre-releases), pick the most recent.
         // Stable channel: fetch /releases/latest which skips pre-releases automatically.
@@ -216,19 +252,34 @@ class DS_Toolkit_Updater {
             ? 'https://api.github.com/repos/' . $this->repo . '/releases'
             : 'https://api.github.com/repos/' . $this->repo . '/releases/latest';
 
+        $headers = array( 'Accept' => 'application/vnd.github+json' );
+        if ( ! empty( $cached['etag'] ) ) {
+            $headers['If-None-Match'] = $cached['etag'];
+        }
+
         $response = wp_remote_get( $url, array(
-            'headers' => array( 'Accept' => 'application/vnd.github+json' ),
+            'headers' => $headers,
             'timeout' => 10,
         ) );
 
-        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-            return false;
+        if ( is_wp_error( $response ) ) {
+            return ! empty( $cached['release'] ) ? $cached['release'] : false;
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+
+        // 304 Not Modified — GitHub confirms nothing has changed, return cached data as-is.
+        if ( $code === 304 ) {
+            return ! empty( $cached['release'] ) ? $cached['release'] : false;
+        }
+
+        if ( $code !== 200 ) {
+            return ! empty( $cached['release'] ) ? $cached['release'] : false;
         }
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( $is_beta ) {
-            // /releases returns an array — take the first (most recent) entry
             if ( empty( $data ) || ! isset( $data[0]['tag_name'] ) ) {
                 return false;
             }
@@ -239,7 +290,10 @@ class DS_Toolkit_Updater {
             }
         }
 
-        set_transient( $cache_key, $data, 12 * HOUR_IN_SECONDS );
+        // Store release data alongside the new ETag. No TTL — ETag keeps it fresh forever.
+        $etag = wp_remote_retrieve_header( $response, 'etag' );
+        set_transient( $cache_key, array( 'release' => $data, 'etag' => $etag ), 0 );
+
         return $data;
     }
 }

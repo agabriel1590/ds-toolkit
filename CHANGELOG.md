@@ -4,6 +4,44 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.8] - 2026-03-27
+### Changed
+- Available Tools accordion redesigned — sections are now styled card-row headers (white background, border, chevron arrow) and collapsed by default; click to expand
+
+## [0.9.10-beta.7] - 2026-03-27
+### Added
+- `list_media`, `get_media` MCP tools — search and inspect Media Library attachments (title, URL, MIME type, dimensions, all registered image sizes)
+- `thumbnail_id` support in `create_post` and `update_post` — pass a Media Library attachment ID to set the featured image, or 0 to remove it
+- `thumbnail_id` returned in `get_post` and `list_posts` responses
+
+## [0.9.10-beta.6] - 2026-03-27
+### Added
+- Available Tools sections are now collapsible — click any section title to expand/collapse, keeping the MCP page compact
+
+## [0.9.10-beta.5] - 2026-03-27
+### Fixed
+- OS radio buttons in MCP config generator rendered as stretched ovals — excluded radio/checkbox inputs from the `.dst-field-inline` width rule
+
+## [0.9.10-beta.4] - 2026-03-27
+### Fixed
+- Update badge now detects new releases instantly on every admin page load using GitHub's ETag conditional requests — `304 Not Modified` responses are free (don't count against rate limits) so no polling cost when nothing has changed; a `200` response means a new release is available and the badge appears immediately
+
+## [0.9.10-beta.3] - 2026-03-27
+### Added
+- OS toggle in config generator (Mac/Linux vs Windows) — Windows generates `npx.cmd` as the command and shows the correct config file path (`%APPDATA%\Claude\claude_desktop_config.json`)
+- Setup Instructions step 2 now calls out that Windows users must run `npm install -g mcp-remote` before connecting
+
+## [0.9.10-beta.2] - 2026-03-27
+### Fixed
+- Plugin update badge and nag now appear automatically on the Plugins page without requiring a manual "Check for Updates" click — hooks `site_transient_update_plugins` (read filter) so WP-Cron is no longer required
+### Changed
+- Extracted version comparison into `is_newer_version()` private method — eliminates duplication between write and read filter paths
+
+## [0.9.10-beta.1] - 2026-03-27
+### Added
+- Node.js install requirement added to MCP Setup Instructions (step 1) with link to nodejs.org/en/download
+- Generated Claude config now uses site-specific server key `ds-toolkit-{site-slug}` (e.g. `ds-toolkit-my-site`) instead of the generic `ds-toolkit` — prevents conflicts when managing multiple sites
+
 ## [0.9.9.2] - 2026-03-26
 ### Added
 - `list_menus`, `get_menu`, `set_menu_items`, `assign_menu_to_location` MCP tools — full menu management
