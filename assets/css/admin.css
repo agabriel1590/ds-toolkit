@@ -96,6 +96,60 @@
     margin: 0 0 10px;
 }
 
+/* Accordion section headers (Available Tools) */
+.dst-section-subtitle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 18px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    margin: 0 0 8px;
+    color: #4a5568;
+    transition: background 0.15s, border-color 0.15s;
+}
+.dst-section-subtitle:hover {
+    background: #f8f9fa;
+    border-color: #c8d0d8;
+}
+.dst-section-subtitle.is-open {
+    border-radius: 8px 8px 0 0;
+    border-bottom-color: #f0f2f4;
+    margin-bottom: 0;
+    color: #2271b1;
+}
+.dst-section-subtitle + .dst-card {
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 8px;
+}
+.dst-tools-chevron {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+.dst-tools-chevron::after {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #8c9aaa;
+    border-bottom: 2px solid #8c9aaa;
+    transform: rotate(45deg);
+    margin-top: -4px;
+}
+.dst-section-subtitle.is-open .dst-tools-chevron::after {
+    transform: rotate(-135deg);
+    margin-top: 2px;
+}
+
 /* Card */
 .dst-card {
     background: #fff;

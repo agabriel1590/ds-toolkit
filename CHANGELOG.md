@@ -4,6 +4,10 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.8] - 2026-03-27
+### Changed
+- Available Tools accordion redesigned — sections are now styled card-row headers (white background, border, chevron arrow) and collapsed by default; click to expand
+
 ## [0.9.10-beta.7] - 2026-03-27
 ### Added
 - `list_media`, `get_media` MCP tools — search and inspect Media Library attachments (title, URL, MIME type, dimensions, all registered image sizes)
