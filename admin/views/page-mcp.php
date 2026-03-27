@@ -338,6 +338,16 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="dst-card-info"><strong>delete_post</strong><span>Trash or permanently delete a post.</span></div>
         <span class="dst-mcp-cap">delete_post</span>
     </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-upload"></span></div>
+        <div class="dst-card-info"><strong>bulk_create_posts</strong><span>Create multiple posts in one call — ideal for CSV imports. Pass an array of post objects; returns per-item results with IDs.</span></div>
+        <span class="dst-mcp-cap">publish_posts</span>
+    </div>
+    <div class="dst-card-row">
+        <div class="dst-card-icon"><span class="dashicons dashicons-update"></span></div>
+        <div class="dst-card-info"><strong>bulk_update_posts</strong><span>Update multiple posts in one call. Each item needs an id plus the fields to change; returns per-item results.</span></div>
+        <span class="dst-mcp-cap">edit_post</span>
+    </div>
 </div>
 
 <p class="dst-section-title dst-section-subtitle">Custom Post Types</p>
