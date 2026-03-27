@@ -4,6 +4,19 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.13] - 2026-03-28
+### Added
+- `bulk_create_posts` and `bulk_update_posts` MCP tools — accept an array of post objects in a single call, reducing context usage for CSV import workflows
+- `DS_TOOLKIT_FORCE_BETA` constant — allows beta channel on WP Engine / production environments when explicitly needed
+### Changed
+- Beta update channel is now fully automatic — no wp-config.php constants needed. Local environments (`.local`, `localhost`, `127.x`, `192.168.x`, or non-production `WP_ENVIRONMENT_TYPE`) receive beta updates automatically; live/WP Engine sites receive stable only
+- Global CSS tab replaced with a utility class reference — lists all available classes with descriptions grouped by category; full CSS source shown read-only at the bottom
+- Updater reverted to 12-hour cache — clicking "Check for Updates" clears cache and fetches from GitHub immediately
+- Available Tools sections on MCP tab are now collapsible accordions, collapsed by default
+### Fixed
+- `thumbnail_id` support added to `create_post` and `update_post` MCP tools
+- PHP warning "Undefined array key tag_name" in updater when old cache format was present
+
 ## [0.9.13-beta.5] - 2026-03-28
 ### Changed
 - Beta update channel is now fully automatic — no wp-config.php constants needed. Local environments (`.local`, `localhost`, `127.x`, `192.168.x`, or `WP_ENVIRONMENT_TYPE` set to non-production) receive beta updates automatically; live/WP Engine sites receive stable only
