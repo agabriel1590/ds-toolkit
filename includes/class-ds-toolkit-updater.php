@@ -15,7 +15,11 @@ class DS_Toolkit_Updater {
     }
 
     public function init() {
+        // Fires when WP writes the update transient (after a WP-Cron/manual check).
         add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'check_for_update' ) );
+        // Fires every time WP reads the update transient — powers the automatic badge/nag
+        // on the Plugins page and Dashboard without needing WP-Cron to have run first.
+        add_filter( 'site_transient_update_plugins', array( $this, 'inject_update_info' ) );
         add_filter( 'plugins_api', array( $this, 'plugin_info' ), 10, 3 );
         add_filter( 'upgrader_source_selection', array( $this, 'fix_source_dir' ), 10, 4 );
         add_filter( 'plugin_action_links_' . $this->plugin_file(), array( $this, 'add_check_update_link' ) );
@@ -31,8 +35,25 @@ class DS_Toolkit_Updater {
         return plugin_basename( DS_TOOLKIT_PATH . $this->slug . '.php' );
     }
 
+    /**
+     * Hooked to pre_set_site_transient_update_plugins.
+     * Runs when WP is about to persist the update transient (WP-Cron or manual check).
+     * Requires $transient->checked to be populated — skips otherwise.
+     */
     public function check_for_update( $transient ) {
         if ( empty( $transient->checked ) ) {
+            return $transient;
+        }
+        return $this->inject_update_info( $transient );
+    }
+
+    /**
+     * Hooked to site_transient_update_plugins.
+     * Fires on every admin page load that reads plugin update data — shows the update
+     * badge/nag automatically without requiring WP-Cron or a manual check click.
+     */
+    public function inject_update_info( $transient ) {
+        if ( ! is_object( $transient ) ) {
             return $transient;
         }
 
@@ -45,29 +66,7 @@ class DS_Toolkit_Updater {
         $current_version = DS_TOOLKIT_VERSION;
         $plugin_file     = $this->plugin_file();
 
-        $is_beta  = $this->is_beta_channel();
-        $is_newer = version_compare( $latest_version, $current_version, '>' );
-
-        if ( ! $is_newer && $is_beta && strpos( $latest_version, '-beta.' ) !== false ) {
-            $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest_version );
-            $current_base = preg_replace( '/-beta\.\d+$/', '', $current_version );
-
-            if ( $latest_base === $current_base && strpos( $current_version, '-beta.' ) !== false ) {
-                // Same base version, both beta — compare the beta number explicitly
-                // e.g. 0.9.9.2-beta.3 > 0.9.9.2-beta.2
-                $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest_version );
-                $current_n = (int) preg_replace( '/^.*-beta\./', '', $current_version );
-                if ( $latest_n > $current_n ) {
-                    $is_newer = true;
-                }
-            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
-                // Beta of a newer-or-equal base vs current stable — always an upgrade
-                // e.g. 0.9.8-beta.2 offered to someone on 0.9.8
-                $is_newer = true;
-            }
-        }
-
-        if ( $is_newer ) {
+        if ( $this->is_newer_version( $latest_version, $current_version ) ) {
             $transient->response[ $plugin_file ] = (object) array(
                 'slug'        => $this->slug,
                 'plugin'      => $plugin_file,
@@ -76,8 +75,11 @@ class DS_Toolkit_Updater {
                 'package'     => $this->get_download_url( $release ),
             );
         } else {
-            // Plugin is up to date — clear any stale response entry and mark as checked
+            // Plugin is up to date — clear any stale response entry and mark as checked.
             unset( $transient->response[ $plugin_file ] );
+            if ( ! isset( $transient->no_update ) ) {
+                $transient->no_update = array();
+            }
             $transient->no_update[ $plugin_file ] = (object) array(
                 'slug'        => $this->slug,
                 'plugin'      => $plugin_file,
@@ -88,6 +90,31 @@ class DS_Toolkit_Updater {
         }
 
         return $transient;
+    }
+
+    /**
+     * Returns true if $latest should be offered as an update over $current.
+     * Handles stable → stable, stable → beta (beta channel), and beta.N → beta.N+1.
+     */
+    private function is_newer_version( $latest, $current ) {
+        $is_newer = version_compare( $latest, $current, '>' );
+
+        if ( ! $is_newer && $this->is_beta_channel() && strpos( $latest, '-beta.' ) !== false ) {
+            $latest_base  = preg_replace( '/-beta\.\d+$/', '', $latest );
+            $current_base = preg_replace( '/-beta\.\d+$/', '', $current );
+
+            if ( $latest_base === $current_base && strpos( $current, '-beta.' ) !== false ) {
+                // Same base, both beta — compare suffix number: 0.9.9-beta.3 > 0.9.9-beta.2
+                $latest_n  = (int) preg_replace( '/^.*-beta\./', '', $latest );
+                $current_n = (int) preg_replace( '/^.*-beta\./', '', $current );
+                $is_newer  = $latest_n > $current_n;
+            } elseif ( version_compare( $latest_base, $current_base, '>=' ) ) {
+                // Beta of a newer-or-equal base over a stable: 0.9.9-beta.1 > 0.9.8
+                $is_newer = true;
+            }
+        }
+
+        return $is_newer;
     }
 
     public function plugin_info( $result, $action, $args ) {

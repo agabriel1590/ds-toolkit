@@ -4,6 +4,12 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
+## [0.9.10-beta.2] - 2026-03-27
+### Fixed
+- Plugin update badge and nag now appear automatically on the Plugins page without requiring a manual "Check for Updates" click — hooks `site_transient_update_plugins` (read filter) so WP-Cron is no longer required
+### Changed
+- Extracted version comparison into `is_newer_version()` private method — eliminates duplication between write and read filter paths
+
 ## [0.9.10-beta.1] - 2026-03-27
 ### Added
 - Node.js install requirement added to MCP Setup Instructions (step 1) with link to nodejs.org/en/download
