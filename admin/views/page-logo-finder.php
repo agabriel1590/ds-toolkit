@@ -6,13 +6,17 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <div class="dst-lf-toolbar">
-    <input type="text" id="dst-lf-search" placeholder="Search by university or mascot name…" autocomplete="off">
+    <input type="text" id="dst-lf-search" placeholder="Search by name, mascot, or acronym (e.g. OSU, AU, UNC)…" autocomplete="off">
     <span id="dst-lf-count"></span>
     <button type="button" class="button" id="dst-lf-select-all">Select All</button>
     <button type="button" class="button" id="dst-lf-clear">Clear</button>
 </div>
 
 <div id="dst-lf-grid"></div>
+
+<div id="dst-lf-load-more-wrap">
+    <button type="button" class="button" id="dst-lf-load-more" style="display:none;">Load More</button>
+</div>
 
 <!-- Floating import bar — animates up when logos are selected -->
 <div id="dst-lf-import-bar">
