@@ -40,7 +40,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 14px;
-    padding-bottom: 100px; /* space for floating bar */
 }
 .dst-lf-empty {
     grid-column: 1 / -1;
@@ -113,6 +112,18 @@
 .dst-lf-card.is-selected .dst-lf-select-btn {
     background: #2271b1;
     color: #fff;
+}
+
+/* Load More */
+#dst-lf-load-more-wrap {
+    text-align: center;
+    padding: 24px 0 12px;
+}
+#dst-lf-load-more {
+    min-width: 140px;
+    height: 36px;
+    font-size: 13px;
+    border-radius: 20px;
 }
 
 /* Floating import bar */

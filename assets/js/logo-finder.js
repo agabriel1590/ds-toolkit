@@ -2,9 +2,86 @@
 (function ($) {
     'use strict';
 
+    var PER_PAGE = 40;
+
     var allLogos = dsLogoFinder.logos; // [{ name, url }, ...]
-    var selected = {};                 // { 'University Name': true }
-    var visible  = allLogos.slice();
+    var selected = {};
+    var filtered = allLogos.slice();   // current search result
+    var shown    = 0;                  // how many cards are currently rendered
+
+    // -------------------------------------------------------------------------
+    // Extra keywords — acronyms that differ from auto-generated initials
+    // -------------------------------------------------------------------------
+    var EXTRA_KEYWORDS = {
+        'American University Eagles':   'AU',
+        'Auburn Tigers':                'AU',
+        'Ohio State Buckeyes':          'OSU',
+        'Oklahoma State Cowboys':       'OSU',
+        'Penn State Nittany Lions':     'PSU',
+        'Michigan State Spartans':      'MSU',
+        'Mississippi State Bulldogs':   'MSU',
+        'Florida State Seminoles':      'FSU',
+        'Michigan Wolverines':          'UM UofM',
+        'Minnesota Golden Gophers':     'UM UMN',
+        'Ole Miss Rebels':              'UM',
+        'Miami Hurricanes':             'UM The U',
+        'Alabama Crimson Tide':         'UA Bama',
+        'Arkansas Razorbacks':          'UA',
+        'Arizona State Sun Devils':     'ASU',
+        'North Carolina Tar Heels':     'UNC',
+        'Kansas Jayhawks':              'KU',
+        'Kentucky Wildcats':            'UK',
+        'Indiana Hoosiers':             'IU',
+        'West Virginia Mountaineers':   'WVU',
+        'Virginia Cavaliers':           'UVA',
+        'Iowa Hawkeyes':                'UI',
+        'Illinois Fighting Illini':     'UI UIUC',
+        'Nebraska Cornhuskers':         'NU',
+        'Northwestern Wildcats':        'NU',
+        'Oregon Ducks':                 'UO',
+        'Washington Huskies':           'UW',
+        'Wisconsin Badgers':            'UW',
+        'Georgia Bulldogs':             'UGA',
+        'Tennessee Volunteers':         'UT Vols',
+        'Texas Longhorns':              'UT',
+        'Texas Am Aggies':              'TAMU',
+        'Oklahoma Sooners':             'OU',
+        'Colorado Buffaloes':           'CU',
+        'California Golden Bears':      'Cal UCB UC Berkeley',
+        'Notre Dame Fighting Irish':    'ND',
+        'Purdue Boilermakers':          'PU',
+        'Maryland Terrapins':           'UMD Terps',
+        'Rutgers Scarlet Knights':      'RU',
+        'Ucla Bruins':                  'UCLA',
+        'Usc Trojans':                  'USC',
+        'Ucf Knights':                  'UCF',
+        'Uconn Huskies':                'UConn',
+        'Uab Blazers':                  'UAB',
+        'Uc Davis Aggies':              'UCD',
+        'Uc Irvine Anteaters':          'UCI',
+        'Uc Riverside Highlanders':     'UCR',
+        'Uc San Diego Tritons':         'UCSD',
+        'Uc Santa Barbara Gauchos':     'UCSB',
+        'Lsu Tigers':                   'LSU',
+        'Byu Cougars':                  'BYU',
+        'Tcu Horned Frogs':             'TCU',
+        'Smu Mustangs':                 'SMU',
+        'Vcu Rams':                     'VCU',
+        'Vmi Keydets':                  'VMI',
+        'Siu Edwardsville Cougars':     'SIUE',
+        'Uic Flames':                   'UIC',
+        'Njit Highlanders':             'NJIT',
+        'Umbc Retrievers':              'UMBC',
+        'Umass Lowell River Hawks':     'UML',
+        'Unlv Rebels':                  'UNLV',
+        'Utep Miners':                  'UTEP',
+        'Utsa Roadrunners':             'UTSA',
+        'Ualbany Great Danes':          'UAlbany',
+        'Ut Arlington Mavericks':       'UTA',
+        'Ut Martin Skyhawks':           'UTM',
+        'Ut Rio Grande Valley Vaqueros': 'UTRGV',
+        'Iu Indianapolis Jaguars':      'IUPUI',
+    };
 
     // -------------------------------------------------------------------------
     // Helpers
@@ -20,21 +97,23 @@
         } );
     }
 
-    // -------------------------------------------------------------------------
-    // Render
-    // -------------------------------------------------------------------------
-    function renderGrid( list ) {
-        visible = list;
-        var $grid = $( '#dst-lf-grid' ).empty();
+    // Auto-generate initials: "American University Eagles" → "AUE"
+    function getAcronym( name ) {
+        return name.split( ' ' ).map( function ( w ) { return w.charAt( 0 ); } ).join( '' );
+    }
 
-        if ( list.length === 0 ) {
-            $grid.html( '<p class="dst-lf-empty">No logos match your search.</p>' );
-            $( '#dst-lf-count' ).text( '0 logos' );
-            return;
-        }
+    // Everything we search against for a logo
+    function getSearchable( logo ) {
+        return ( logo.name + ' ' + getAcronym( logo.name ) + ' ' + ( EXTRA_KEYWORDS[ logo.name ] || '' ) ).toLowerCase();
+    }
 
-        var html = '';
-        $.each( list, function ( i, logo ) {
+    // -------------------------------------------------------------------------
+    // Render — appends `count` cards starting at `offset`, returns cards added
+    // -------------------------------------------------------------------------
+    function renderCards( list, offset, count ) {
+        var slice = list.slice( offset, offset + count );
+        var html  = '';
+        $.each( slice, function ( i, logo ) {
             var isSel = !! selected[ logo.name ];
             html +=
                 '<div class="dst-lf-card' + ( isSel ? ' is-selected' : '' ) + '" data-name="' + escAttr( logo.name ) + '">' +
@@ -45,11 +124,55 @@
                     '<button type="button" class="dst-lf-select-btn">' + ( isSel ? 'Selected ✓' : 'Select' ) + '</button>' +
                 '</div>';
         } );
-
-        $grid.html( html );
-        $( '#dst-lf-count' ).text( list.length + ' logo' + ( list.length === 1 ? '' : 's' ) );
+        $( '#dst-lf-grid' ).append( html );
+        return slice.length;
     }
 
+    function updateCount() {
+        var total = filtered.length;
+        var label = shown < total
+            ? 'Showing ' + shown + ' of ' + total + ' logos'
+            : total + ' logo' + ( total === 1 ? '' : 's' );
+        $( '#dst-lf-count' ).text( label );
+    }
+
+    function updateLoadMore() {
+        if ( shown < filtered.length ) {
+            $( '#dst-lf-load-more' ).show();
+        } else {
+            $( '#dst-lf-load-more' ).hide();
+        }
+    }
+
+    function renderGrid( list ) {
+        filtered = list;
+        shown    = 0;
+        $( '#dst-lf-grid' ).empty();
+
+        if ( list.length === 0 ) {
+            $( '#dst-lf-grid' ).html( '<p class="dst-lf-empty">No logos match your search.</p>' );
+            $( '#dst-lf-count' ).text( '0 logos' );
+            $( '#dst-lf-load-more' ).hide();
+            return;
+        }
+
+        shown = renderCards( list, 0, PER_PAGE );
+        updateCount();
+        updateLoadMore();
+    }
+
+    // -------------------------------------------------------------------------
+    // Load More
+    // -------------------------------------------------------------------------
+    $( '#dst-lf-load-more' ).on( 'click', function () {
+        shown += renderCards( filtered, shown, PER_PAGE );
+        updateCount();
+        updateLoadMore();
+    } );
+
+    // -------------------------------------------------------------------------
+    // Import bar
+    // -------------------------------------------------------------------------
     function updateImportBar() {
         var count = Object.keys( selected ).length;
         if ( count > 0 ) {
@@ -61,7 +184,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // Card select/deselect
+    // Card select / deselect
     // -------------------------------------------------------------------------
     $( document ).on( 'click', '.dst-lf-select-btn', function ( e ) {
         e.stopPropagation();
@@ -80,24 +203,27 @@
     } );
 
     // -------------------------------------------------------------------------
-    // Search
+    // Search — multi-token, searches name + auto-acronym + extra keywords
     // -------------------------------------------------------------------------
     $( '#dst-lf-search' ).on( 'input', function () {
-        var q = $( this ).val().trim().toLowerCase();
-        var filtered = q === '' ? allLogos : allLogos.filter( function ( logo ) {
-            return logo.name.toLowerCase().indexOf( q ) !== -1;
+        var q      = $( this ).val().trim().toLowerCase();
+        var tokens = q === '' ? [] : q.split( /\s+/ );
+        var result = tokens.length === 0 ? allLogos : allLogos.filter( function ( logo ) {
+            var s = getSearchable( logo );
+            return tokens.every( function ( t ) { return s.indexOf( t ) !== -1; } );
         } );
-        renderGrid( filtered );
+        renderGrid( result );
     } );
 
     // -------------------------------------------------------------------------
-    // Select All (visible) / Clear
+    // Select All (rendered cards only) / Clear
     // -------------------------------------------------------------------------
     $( '#dst-lf-select-all' ).on( 'click', function () {
-        $.each( visible, function ( i, logo ) {
-            selected[ logo.name ] = true;
+        $( '.dst-lf-card' ).each( function () {
+            var name = $( this ).data( 'name' );
+            selected[ name ] = true;
+            $( this ).addClass( 'is-selected' ).find( '.dst-lf-select-btn' ).text( 'Selected ✓' );
         } );
-        $( '.dst-lf-card' ).addClass( 'is-selected' ).find( '.dst-lf-select-btn' ).text( 'Selected ✓' );
         updateImportBar();
     } );
 
