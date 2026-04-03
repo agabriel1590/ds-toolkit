@@ -2,7 +2,7 @@
 (function ($) {
     'use strict';
 
-    var PER_PAGE = 50;
+    var PER_PAGE = 40;
 
     var allLogos = dsLogoFinder.logos; // [{ name, url }, ...]
     var selected = {};

@@ -4,9 +4,9 @@ All notable changes to DS Toolkit are documented here.
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-04-04
 ### Added
-- University Logo Finder now shows 50 logos at a time with a **Load More** button — avoids rendering all 365 logos at once
+- University Logo Finder now shows 40 logos at a time with a **Load More** button — avoids rendering all 365 logos at once
 - Acronym / keyword search in Logo Finder — auto-generates initials from every team name (e.g. "AUE" for American University Eagles) and includes a manual map of well-known acronyms (OSU, PSU, MSU, FSU, UNC, KU, etc.); search supports multiple space-separated tokens so "AU American" or "OSU Ohio" both work
 
 ## [0.9.15] - 2026-03-28
